@@ -1,0 +1,47 @@
+/* samueltung.com — elegant light theme (distinct from the stung.org portal) */
+:root{
+  --paper:#faf9f6;
+  --paper-2:#f3f1ea;
+  --ink:#1c1b19;
+  --ink-soft:#3b3934;
+  --muted:#807b72;
+  --line:#e6e2d8;
+  --accent:#a14a32;     /* warm clay */
+  --accent-ink:#8a3d28;
+  --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:'SFMono-Regular',ui-monospace,Consolas,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.7 var(--sans);
+  -webkit-font-smoothing:antialiased}
+code{font-family:var(--mono);font-size:.85em;background:var(--paper-2);padding:1px 5px;border-radius:4px}
+
+.page{max-width:680px;margin:0 auto;padding:0 24px;min-height:100svh;display:flex;flex-direction:column}
+
+.masthead{padding:40px 0 0}
+.mark{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  font:700 16px/1 var(--sans);letter-spacing:.02em;color:#fff;background:var(--accent);
+  box-shadow:0 6px 20px rgba(161,74,50,.28)}
+
+main{flex:1;padding:56px 0}
+.role{color:var(--accent-ink);font-weight:600;letter-spacing:.02em;font-size:14px;
+  text-transform:uppercase;margin:0 0 14px}
+h1{font-family:var(--serif);font-weight:600;font-size:52px;line-height:1.05;margin:0 0 22px;
+  letter-spacing:-.01em}
+.lede{font-size:19px;color:var(--ink-soft);max-width:56ch;margin:0 0 40px}
+.hint{color:var(--muted);font-size:15px}
+
+.links{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.links{grid-template-columns:1fr}h1{font-size:40px}}
+.link{display:flex;flex-direction:column;gap:2px;text-decoration:none;color:var(--ink);
+  border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff;
+  transition:border-color .18s,transform .18s,box-shadow .18s}
+.link:hover{border-color:var(--accent);transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(28,27,25,.06)}
+.link-title{font-weight:600;font-size:16px}
+.link-sub{color:var(--muted);font-size:13.5px}
+
+footer{padding:28px 0 40px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);
+  display:flex;gap:10px;align-items:center}
+footer .dot{opacity:.6}

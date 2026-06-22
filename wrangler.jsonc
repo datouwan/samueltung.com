@@ -1,0 +1,15 @@
+{
+  // Personal site for samueltung.com — static-assets-only Worker.
+  "name": "samueltung-com",
+  "compatibility_date": "2025-09-23",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  }
+
+  // ── Custom domain (attach once the samueltung.com zone is ACTIVE on Cloudflare) ──
+  //   "routes": [
+  //     { "pattern": "samueltung.com",     "custom_domain": true },
+  //     { "pattern": "www.samueltung.com", "custom_domain": true }
+  //   ]
+}
