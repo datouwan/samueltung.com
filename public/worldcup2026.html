@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>World Cup 2026 — Map, Groups & Live Scores</title>
+<meta name="description" content="Interactive world map of all 48 nations qualified for the FIFA World Cup 2026, with live group standings and the current live game and score." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='10' fill='%23a14a32'/></svg>" />
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+  :root{
+    --paper:#faf9f6; --paper-2:#f3f1ea; --ink:#1c1b19; --ink-soft:#3b3934; --muted:#807b72;
+    --line:#e6e2d8; --accent:#a14a32; --accent-ink:#8a3d28; --live:#d6422b; --go:#1f9d6b;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --c-host:#a14a32; --c-uefa:#2f6f9f; --c-conmebol:#1f9d6b;
+    --c-caf:#c98a1e; --c-afc:#7a52a8; --c-concacaf:#c4543f; --c-ofc:#3aa0a8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+
+  header.bar{padding:18px 22px 14px;border-bottom:1px solid var(--line);background:var(--paper)}
+  header.bar .role{color:var(--accent-ink);font-weight:600;letter-spacing:.04em;font-size:12px;
+    text-transform:uppercase;margin:0 0 4px}
+  header.bar h1{font-family:var(--serif);font-weight:600;font-size:26px;line-height:1.1;margin:0;letter-spacing:-.01em}
+  header.bar h1 .sub{color:var(--muted);font-family:var(--sans);font-weight:500;font-size:14px;margin-left:8px}
+  header.bar .back{float:right;font-size:13px;color:var(--muted);text-decoration:none}
+  header.bar .back:hover{color:var(--accent)}
+
+  /* live banner */
+  #liveBar{position:sticky;top:0;z-index:600;background:#1c1b19;color:#fff;
+    border-bottom:1px solid #000;min-height:46px;display:flex;align-items:center;gap:14px;
+    padding:8px 16px;overflow-x:auto;scrollbar-width:thin}
+  #liveBar .tag{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px;
+    letter-spacing:.06em;text-transform:uppercase;color:#ffb3a6;white-space:nowrap}
+  #liveBar .dot{width:9px;height:9px;border-radius:50%;background:var(--live);
+    box-shadow:0 0 0 0 rgba(214,66,43,.7);animation:pulse 1.5s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(214,66,43,.7)}70%{box-shadow:0 0 0 9px rgba(214,66,43,0)}100%{box-shadow:0 0 0 0 rgba(214,66,43,0)}}
+  .lgame{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px;
+    background:#2a2826;border:1px solid #3a3733;border-radius:20px;padding:5px 12px}
+  .lgame img{width:20px;height:14px;object-fit:contain;border-radius:2px;background:#fff}
+  .lgame .sc{font-family:var(--serif);font-weight:700;font-size:16px;padding:0 4px;letter-spacing:.02em}
+  .lgame .min{color:#ffb3a6;font-size:11px;font-weight:700;margin-left:2px}
+  .lgame .grp{color:#9c968c;font-size:11px;margin-left:4px}
+  #liveBar.idle{background:var(--paper-2);color:var(--ink-soft);border-bottom:1px solid var(--line)}
+  #liveBar.idle .tag{color:var(--muted)}
+
+  #map{height:54vh;min-height:340px;background:#eef0f2}
+
+  /* groups */
+  .groups-wrap{max-width:1180px;margin:0 auto;padding:28px 20px 48px}
+  .groups-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+  .groups-head h2{font-family:var(--serif);font-weight:600;font-size:22px;margin:0}
+  .groups-head .upd{color:var(--muted);font-size:13px}
+  .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+
+  .gcard{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;
+    box-shadow:0 4px 16px rgba(28,27,25,.04)}
+  .gcard.haslive{border-color:var(--live);box-shadow:0 6px 22px rgba(214,66,43,.16)}
+  .gcard .gh{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;background:var(--paper-2);border-bottom:1px solid var(--line)}
+  .gcard .gh b{font-family:var(--serif);font-size:16px}
+  .gcard .gh .livechip{font-size:10px;font-weight:800;letter-spacing:.05em;color:#fff;
+    background:var(--live);border-radius:10px;padding:2px 7px;display:inline-flex;align-items:center;gap:4px}
+  .gcard .gh .livechip .dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.5s infinite}
+  table.std{width:100%;border-collapse:collapse;font-size:13px}
+  table.std th{font-weight:600;color:var(--muted);font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.03em;text-align:center;padding:7px 4px;border-bottom:1px solid var(--line)}
+  table.std th.tm{text-align:left;padding-left:12px}
+  table.std td{padding:7px 4px;text-align:center;border-bottom:1px solid var(--paper-2)}
+  table.std tr:last-child td{border-bottom:none}
+  table.std td.tm{text-align:left;padding-left:10px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+  table.std td.tm img{width:22px;height:16px;object-fit:contain;border-radius:2px}
+  table.std td.tm .nm{overflow:hidden;text-overflow:ellipsis}
+  table.std td.pts{font-weight:700;font-family:var(--serif);font-size:15px}
+  table.std tr.adv td:first-child{box-shadow:inset 3px 0 0 var(--go)}
+  table.std tr.adv .pos{color:var(--go);font-weight:700}
+  .pos{display:inline-block;min-width:16px}
+
+  .state-note{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;background:#fff;
+    padding:18px 20px;color:var(--ink-soft);font-size:14px}
+  .state-note code{font-family:'SFMono-Regular',ui-monospace,Consolas,monospace;font-size:.86em;
+    background:var(--paper-2);padding:1px 5px;border-radius:4px}
+
+  /* map bits (unchanged) */
+  .flag-marker{width:30px;height:21px;border-radius:3px;overflow:hidden;border:2px solid var(--mk,#888);
+    background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .12s}
+  .flag-marker img{width:100%;height:100%;object-fit:cover;display:block}
+  .flag-marker:hover{transform:scale(1.25);z-index:1000}
+  .flag-marker.host{width:34px;height:24px;border-width:3px}
+  .conf-host{--mk:var(--c-host)} .conf-uefa{--mk:var(--c-uefa)} .conf-conmebol{--mk:var(--c-conmebol)}
+  .conf-caf{--mk:var(--c-caf)} .conf-afc{--mk:var(--c-afc)} .conf-concacaf{--mk:var(--c-concacaf)} .conf-ofc{--mk:var(--c-ofc)}
+  .leaflet-tooltip.team{background:#1c1b19;color:#fff;border:none;border-radius:6px;
+    font:600 12px var(--sans);padding:3px 8px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+  .leaflet-tooltip.team::before{border-top-color:#1c1b19}
+  .leaflet-popup-content{margin:12px 14px;font-family:var(--sans)}
+  .pop{text-align:center;min-width:130px}
+  .pop img{width:96px;border-radius:4px;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  .pop .nm{font-family:var(--serif);font-size:18px;font-weight:600;margin:8px 0 2px}
+  .pop .cf{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .pop .badge{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#fff;
+    background:var(--accent);border-radius:20px;padding:2px 9px}
+  .legend{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:12.5px;line-height:1.5;box-shadow:0 6px 20px rgba(0,0,0,.10)}
+  .legend b{font-family:var(--serif);font-size:13px;display:block;margin-bottom:6px}
+  .legend .row{display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .legend .sw{width:13px;height:13px;border-radius:3px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+  .legend .cnt{color:var(--muted)}
+  .leaflet-control-attribution{font-size:10px}
+  @media(max-width:560px){header.bar h1{font-size:21px}header.bar h1 .sub{display:none}.legend{display:none}}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a class="back" href="/">← samueltung.com</a>
+  <p class="role">FIFA World Cup 2026 · USA · Canada · Mexico</p>
+  <h1>Map, Groups &amp; Live Scores<span class="sub">48 teams · 12 groups · live tables</span></h1>
+</header>
+
+<div id="liveBar" class="idle"><span class="tag"><span class="dot"></span>Loading live scores…</span></div>
+
+<div id="map"></div>
+
+<section class="groups-wrap">
+  <div class="groups-head">
+    <h2>Group stage</h2>
+    <span class="upd" id="updated"></span>
+  </div>
+  <div class="groups" id="groups">
+    <div class="state-note">Loading group standings…</div>
+  </div>
+</section>
+
+<script>
+/* ───────── Map: 48 qualified teams ───────── */
+const CONF = {
+  host:'Host nation', uefa:'UEFA — Europe', conmebol:'CONMEBOL — S. America',
+  caf:'CAF — Africa', afc:'AFC — Asia', concacaf:'CONCACAF — N./C. America', ofc:'OFC — Oceania'
+};
+const TEAMS = [
+  ['United States','us',39.0,-98.0,'host'],['Canada','ca',58.0,-106.0,'host'],['Mexico','mx',23.6,-102.0,'host'],
+  ['Austria','at',47.6,14.5,'uefa'],['Belgium','be',50.6,4.6,'uefa'],['Bosnia & Herzegovina','ba',43.9,17.7,'uefa'],
+  ['Croatia','hr',45.1,16.2,'uefa'],['Czechia','cz',49.8,15.5,'uefa'],['England','gb-eng',52.6,-1.4,'uefa'],
+  ['France','fr',46.6,2.4,'uefa'],['Germany','de',51.2,10.4,'uefa'],['Netherlands','nl',52.2,5.5,'uefa'],
+  ['Norway','no',61.5,9.5,'uefa'],['Portugal','pt',39.6,-8.2,'uefa'],['Scotland','gb-sct',56.7,-4.2,'uefa'],
+  ['Spain','es',40.2,-3.7,'uefa'],['Sweden','se',62.0,15.5,'uefa'],['Switzerland','ch',46.8,8.2,'uefa'],
+  ['Türkiye','tr',39.0,35.2,'uefa'],
+  ['Argentina','ar',-35.0,-64.0,'conmebol'],['Brazil','br',-10.5,-52.0,'conmebol'],['Colombia','co',4.0,-73.0,'conmebol'],
+  ['Ecuador','ec',-1.4,-78.4,'conmebol'],['Paraguay','py',-23.4,-58.4,'conmebol'],['Uruguay','uy',-33.0,-56.0,'conmebol'],
+  ['Algeria','dz',28.0,2.6,'caf'],['Cape Verde','cv',16.0,-24.0,'caf'],['DR Congo','cd',-2.9,23.6,'caf'],
+  ["Côte d'Ivoire",'ci',7.6,-5.5,'caf'],['Egypt','eg',26.8,30.8,'caf'],['Ghana','gh',7.9,-1.0,'caf'],
+  ['Morocco','ma',31.8,-7.0,'caf'],['Senegal','sn',14.5,-14.5,'caf'],['South Africa','za',-29.0,24.5,'caf'],
+  ['Tunisia','tn',34.0,9.5,'caf'],
+  ['Australia','au',-25.0,134.0,'afc'],['Iran','ir',32.4,53.7,'afc'],['Iraq','iq',33.2,43.7,'afc'],
+  ['Japan','jp',36.2,138.3,'afc'],['Jordan','jo',31.2,36.5,'afc'],['South Korea','kr',36.5,127.9,'afc'],
+  ['Qatar','qa',25.3,51.2,'afc'],['Saudi Arabia','sa',24.0,45.0,'afc'],['Uzbekistan','uz',41.4,64.6,'afc'],
+  ['Curaçao','cw',12.2,-69.0,'concacaf'],['Haiti','ht',19.1,-72.3,'concacaf'],['Panama','pa',8.5,-80.1,'concacaf'],
+  ['New Zealand','nz',-41.5,173.0,'ofc'],
+];
+
+const map = L.map('map',{worldCopyJump:true,minZoom:2,maxZoom:6}).setView([24,5],2);
+map.setMaxBounds([[-85,-200],[85,200]]);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{
+  attribution:'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors', maxZoom:6
+}).addTo(map);
+
+TEAMS.forEach(([name,iso,lat,lng,conf])=>{
+  const host = conf==='host';
+  const icon = L.divIcon({className:'',
+    html:`<div class="flag-marker conf-${conf}${host?' host':''}"><img src="https://flagcdn.com/w40/${iso}.png" alt="${name} flag" loading="lazy"></div>`,
+    iconSize: host?[34,24]:[30,21], iconAnchor: host?[17,12]:[15,10], popupAnchor:[0,-12]});
+  L.marker([lat,lng],{icon,title:name})
+   .bindTooltip(name,{className:'team',direction:'top',offset:[0,-8]})
+   .bindPopup(`<div class="pop"><img src="https://flagcdn.com/w160/${iso}.png" alt="${name} flag">`
+     +`<div class="nm">${name}</div><div class="cf">${CONF[conf]}</div>`
+     +(host?'<div class="badge">HOST 2026</div>':'')+`</div>`).addTo(map);
+});
+
+const counts = TEAMS.reduce((a,[,,,,c])=>(a[c]=(a[c]||0)+1,a),{});
+const legend = L.control({position:'bottomright'});
+legend.onAdd = () => { const d = L.DomUtil.create('div','legend');
+  d.innerHTML = '<b>48 qualified teams</b>' + Object.keys(CONF).map(c =>
+    `<div class="row"><span class="sw" style="background:var(--c-${c})"></span><span>${CONF[c]}</span> <span class="cnt">· ${counts[c]||0}</span></div>`).join('');
+  return d; };
+legend.addTo(map);
+
+/* ───────── Live groups + scores (polls /api/wc) ───────── */
+const LIVE_STATUSES = ['IN_PLAY','PAUSED'];
+const esc = s => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const liveBar = document.getElementById('liveBar');
+const groupsEl = document.getElementById('groups');
+const updEl = document.getElementById('updated');
+
+function fmtScore(n){ return (n===null||n===undefined) ? '–' : n; }
+
+function renderLive(matches){
+  const live = matches.filter(m => LIVE_STATUSES.includes(m.status));
+  if(!live.length){
+    const next = matches.filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
+      .sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate))[0];
+    liveBar.className = 'idle';
+    if(next){
+      const t = new Date(next.utcDate).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      liveBar.innerHTML = `<span class="tag">No match live</span>`
+        + `<span class="lgame">Next today · ${esc(next.home.name)} v ${esc(next.away.name)} · ${t}`
+        + (next.group?` <span class="grp">Grp ${esc(next.group)}</span>`:'') + `</span>`;
+    } else {
+      liveBar.innerHTML = `<span class="tag">No match live right now</span>`;
+    }
+    return;
+  }
+  liveBar.className = '';
+  liveBar.innerHTML = `<span class="tag"><span class="dot"></span>Live now</span>` + live.map(m=>{
+    const min = m.minute ? `<span class="min">${esc(m.minute)}'</span>` : (m.status==='PAUSED'?'<span class="min">HT</span>':'');
+    return `<span class="lgame">`
+      + (m.home.crest?`<img src="${esc(m.home.crest)}" alt="">`:'') + `${esc(m.home.name)}`
+      + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
+      + `${esc(m.away.name)}` + (m.away.crest?`<img src="${esc(m.away.crest)}" alt="">`:'')
+      + min + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + `</span>`;
+  }).join('');
+}
+
+function renderGroups(groups, matches){
+  const liveByGroup = new Set(matches.filter(m=>LIVE_STATUSES.includes(m.status)).map(m=>m.group));
+  if(!groups.length){
+    groupsEl.innerHTML = `<div class="state-note">No group tables published yet. They’ll appear here once the draw/standings are available from the data feed.</div>`;
+    return;
+  }
+  groupsEl.innerHTML = groups.map(g=>{
+    const live = liveByGroup.has(g.letter);
+    const rows = g.table.map(r=>{
+      const adv = r.position<=2 ? ' class="adv"' : '';
+      const crest = r.crest?`<img src="${esc(r.crest)}" alt="">`:`<img src="" alt="" style="visibility:hidden">`;
+      return `<tr${adv}><td class="tm"><span class="pos">${r.position}</span>${crest}<span class="nm">${esc(r.name)}</span></td>`
+        + `<td>${r.played}</td><td>${r.won}</td><td>${r.draw}</td><td>${r.lost}</td>`
+        + `<td>${r.gd>0?'+':''}${r.gd}</td><td class="pts">${r.points}</td></tr>`;
+    }).join('');
+    return `<div class="gcard${live?' haslive':''}">`
+      + `<div class="gh"><b>Group ${esc(g.letter)}</b>`
+      + (live?`<span class="livechip"><span class="dot"></span>LIVE</span>`:'') + `</div>`
+      + `<table class="std"><thead><tr><th class="tm">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>`
+      + `<tbody>${rows}</tbody></table></div>`;
+  }).join('');
+}
+
+async function refresh(){
+  try{
+    const r = await fetch('/api/wc', {cache:'no-store'});
+    const data = await r.json();
+    if(data.error){
+      liveBar.className='idle';
+      liveBar.innerHTML = `<span class="tag">Live data unavailable</span>`;
+      groupsEl.innerHTML = data.error==='missing_token'
+        ? `<div class="state-note"><b>Live feed not configured yet.</b><br>Set the football-data.org API token on the Worker:<br>
+           <code>npx wrangler secret put FOOTBALL_DATA_TOKEN</code> (and add it to <code>.dev.vars</code> for local dev), then redeploy.
+           The map above works without it.</div>`
+        : `<div class="state-note">Couldn’t load standings right now (<code>${esc(data.error)}</code>). Will retry automatically.</div>`;
+      return;
+    }
+    renderLive(data.matches||[]);
+    renderGroups(data.groups||[], data.matches||[]);
+    if(data.updated){
+      const t = new Date(data.updated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      updEl.textContent = 'Updated ' + t + ' · auto-refreshes';
+    }
+  }catch(e){
+    liveBar.className='idle';
+    liveBar.innerHTML = `<span class="tag">Offline — retrying…</span>`;
+  }
+}
+refresh();
+setInterval(refresh, 30000); // poll every 30s
+</script>
+</body>
+</html>

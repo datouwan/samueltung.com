@@ -1,11 +1,19 @@
 {
-  // Personal site for samueltung.com — static-assets-only Worker.
+  // Personal site for samueltung.com — static assets + a tiny API Worker.
   "name": "samueltung-com",
+  "main": "src/index.js",
   "compatibility_date": "2025-09-23",
   "assets": {
     "directory": "./public",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // Static files are served first; the Worker only runs for unmatched
+    // paths (e.g. /api/*). ASSETS binding lets the Worker fall back to them.
+    "binding": "ASSETS"
   },
+
+  // FOOTBALL_DATA_TOKEN is a SECRET — set it with:
+  //   npx wrangler secret put FOOTBALL_DATA_TOKEN
+  // For local dev, put it in .dev.vars (git-ignored).
 
   // ── Custom domains ──
   "routes": [
