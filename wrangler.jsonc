@@ -6,14 +6,17 @@
   "assets": {
     "directory": "./public",
     "not_found_handling": "404-page",
-    // Static files are served first; the Worker only runs for unmatched
-    // paths (e.g. /api/*). ASSETS binding lets the Worker fall back to them.
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // Run the Worker BEFORE serving assets so it can password-gate the site
+    // (HTTP Basic Auth in src/index.js). The Worker falls back to ASSETS for
+    // authorized requests and for the public /worldcup pages.
+    "run_worker_first": true
   },
 
-  // FOOTBALL_DATA_TOKEN is a SECRET — set it with:
-  //   npx wrangler secret put FOOTBALL_DATA_TOKEN
-  // For local dev, put it in .dev.vars (git-ignored).
+  // SECRETS — set each with `npx wrangler secret put <NAME>`
+  // (and add to .dev.vars, git-ignored, for local dev):
+  //   FOOTBALL_DATA_TOKEN  — live World Cup data feed
+  //   SITE_PASSWORD        — password gating the whole site except /worldcup
 
   // ── Custom domains ──
   "routes": [

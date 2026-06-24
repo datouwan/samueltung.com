@@ -197,11 +197,18 @@
     color:var(--ink-soft);border-top:1px solid var(--line)}
   .sday:first-child{padding-top:0;border-top:none}
   .smatchlist{display:grid;gap:8px;margin-bottom:6px}
-  .srow{display:grid;grid-template-columns:54px 1fr auto 1fr 70px;align-items:center;gap:10px;
+  .srow{position:relative;display:grid;grid-template-columns:54px 1fr auto 1fr 70px;align-items:center;gap:10px;
     border:1px solid var(--line);border-radius:11px;background:var(--card);padding:9px 13px;
     cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}
   .srow:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 8px 22px rgba(28,27,25,.06)}
-  .srow.live{border-color:var(--live);box-shadow:0 4px 16px rgba(214,66,43,.14)}
+  .srow.live{border-color:var(--live);box-shadow:0 4px 16px rgba(214,66,43,.18)}
+  .srow.next{border-color:var(--accent);box-shadow:0 4px 16px rgba(161,74,50,.16)}
+  .sflag{position:absolute;top:-8px;right:12px;z-index:2;font:800 9px var(--sans);letter-spacing:.06em;
+    text-transform:uppercase;padding:2px 8px;border-radius:9px;line-height:1.35;color:#fff;
+    display:inline-flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .sflag.live{background:var(--live)}
+  .sflag.next{background:var(--accent)}
+  .sstat.nx{color:var(--accent);font-weight:800}
   .srow .stime{font-size:12px;font-weight:700;color:var(--muted);line-height:1.2}
   .srow .stime .sgrp{display:block;font-size:10px;font-weight:600;color:var(--accent-ink);margin-top:2px}
   .srow .sh{display:flex;align-items:center;gap:8px;min-width:0;justify-content:flex-end;text-align:right}
@@ -414,7 +421,6 @@
 
 <header class="bar">
   <div class="topright">
-    <a class="back" href="/">← samueltung.com</a>
     <button id="themeBtn" title="Toggle light / dark" aria-label="Toggle light or dark theme">🌙</button>
   </div>
   <p class="role">FIFA World Cup 2026 · USA · Canada · Mexico</p>
@@ -878,6 +884,8 @@ function renderSchedule(matches){
     pane.innerHTML = `<div class="state-note">No fixtures published yet. They’ll appear here once the schedule is available from the data feed.</div>`;
     return;
   }
+  // the "next" game = earliest match that hasn't started and isn't live
+  const nextMatch = list.find(m=> !LIVE_ALL.includes(m.status) && m.status!=='FINISHED') || null;
   // bucket by local calendar day
   const days = [];
   let cur = null;
@@ -893,17 +901,21 @@ function renderSchedule(matches){
     const rows = day.games.map(m=>{
       const live = LIVE_ALL.includes(m.status);
       const finished = m.status==='FINISHED';
+      const isNext = m===nextMatch;
       const played = live || finished;
       const time = new Date(m.utcDate).toLocaleTimeString([], timeFmt);
       const score = played
         ? `${fmtScore(m.home.score)}–${fmtScore(m.away.score)}`
         : `<span class="svs">vs</span>`;
       const stat = live ? `<span class="sstat lv">${m.minute!=null?esc(m.minute)+"'":'Live'}</span>`
-                 : (finished ? `<span class="sstat">FT</span>` : `<span class="sstat">${esc(time)}</span>`);
+                 : (finished ? `<span class="sstat">FT</span>`
+                 : (isNext ? `<span class="sstat nx">▶ NEXT</span>` : `<span class="sstat">${esc(time)}</span>`));
       const hc = m.home.crest ? `<img class="screst" src="${esc(m.home.crest)}" alt="">` : '';
       const ac = m.away.crest ? `<img class="screst" src="${esc(m.away.crest)}" alt="">` : '';
-      return `<div class="srow${live?' live':''}" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
+      const cls = `srow${live?' live':''}${isNext?' next':''}`;
+      return `<div class="${cls}" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
         + ` title="Show on map" onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
+        + (live?`<span class="sflag live">● LIVE</span>`:(isNext?`<span class="sflag next">NEXT UP</span>`:''))
         + `<span class="stime">${esc(time)}${m.group?`<span class="sgrp">Grp ${esc(m.group)}</span>`:''}</span>`
         + `<span class="sh"><span class="snm">${esc(m.home.name)}</span>${hc}</span>`
         + `<span class="sscore">${score}</span>`
@@ -917,10 +929,34 @@ function renderSchedule(matches){
 
 /* ───────── Stadium floating window ───────── */
 const sModal = document.getElementById('stadiumModal');
+
+// Set the stadium photo: show any api-football venue image immediately, then
+// upgrade to a Wikipedia photo (cached per stadium on first open). A sequence
+// guard stops a slow fetch from overwriting the image after another stadium
+// was opened.
+let stadiumPhotoSeq = 0;
+async function setStadiumPhoto(stadium, fallbackImg){
+  const img = document.getElementById('sImg');
+  const seq = ++stadiumPhotoSeq;
+  const apply = url => {
+    if(seq !== stadiumPhotoSeq || sModal.hidden) return;
+    if(url){ img.style.backgroundImage = `url("${url}")`; img.classList.remove('noimg'); }
+    else { img.style.backgroundImage = 'none'; img.classList.add('noimg'); }
+  };
+  apply(fallbackImg || '');
+  if(!stadium) return;
+  if(stadium._photo === undefined){
+    try{
+      const wb = await fetch(`/api/wiki?q=${encodeURIComponent(stadium.n)}&kind=stadium`).then(r=>r.json());
+      stadium._photo = (((wb.results||[])[0]) || {}).thumbnail || '';
+    }catch(e){ stadium._photo = ''; }
+  }
+  apply(stadium._photo || fallbackImg || '');
+}
+
 function openStadium(m){
   const vi = venueInfo(m.venue); if(!vi) return;
-  document.getElementById('sImg').style.backgroundImage = vi.img ? `url('${vi.img}')` : 'none';
-  document.getElementById('sImg').classList.toggle('noimg', !vi.img);
+  setStadiumPhoto(vi.s, vi.img);
   document.getElementById('sName').textContent = vi.name;
   document.getElementById('sLoc').textContent = [vi.city, vi.s && vi.s.country].filter(Boolean).join(' · ');
   const stats = [];
@@ -964,8 +1000,7 @@ function openStadiumByIdx(i){ if(currentLive[i]) openStadium(currentLive[i]); }
 // venue info + any live game here + the fixtures we can resolve to this venue
 let lastMatches = [];
 function openStadiumVenue(s){
-  const img = document.getElementById('sImg');
-  img.style.backgroundImage = 'none'; img.classList.add('noimg');
+  setStadiumPhoto(s);
   document.getElementById('sName').textContent = s.n;
   document.getElementById('sLoc').textContent = [s.city, s.country].filter(Boolean).join(' · ');
   document.getElementById('sStats').innerHTML =

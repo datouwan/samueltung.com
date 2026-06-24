@@ -389,7 +389,8 @@ async function handleEvents(request, env, ctx) {
 async function handleWiki(request, env, ctx) {
   const u = new URL(request.url);
   const q = (u.searchParams.get("q") || "").trim();
-  const kind = u.searchParams.get("kind") === "team" ? "team" : "player";
+  const kindParam = u.searchParams.get("kind");
+  const kind = (kindParam === "team" || kindParam === "stadium") ? kindParam : "player";
   if (q.length < 2) return json({ results: [] }, 200, 0);
 
   const cache = caches.default;
@@ -397,8 +398,9 @@ async function handleWiki(request, env, ctx) {
   const hit = await cache.match(ckey);
   if (hit) return hit;
 
-  const suffix = kind === "team" ? " national football team" : " footballer";
-  const keep = kind === "team" ? /national.*football team|national team/i : /footballer/i;
+  const suffix = kind === "team" ? " national football team" : (kind === "stadium" ? "" : " footballer");
+  const keep = kind === "team" ? /national.*football team|national team/i
+             : (kind === "stadium" ? /stadium|arena|field|park|place|estadio|sports venue/i : /footballer/i);
   try {
     const api = "https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search" +
       `&gsrsearch=${encodeURIComponent(q + suffix)}&gsrlimit=6` +
