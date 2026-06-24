@@ -6,19 +6,27 @@ Personal site for **samueltung.com**, served by a Cloudflare Worker
 
 ```
 public/
-  index.html         Home
-  styles.css         Elegant light theme
-  404.html           Not-found page
-  worldcup2026.html  World Cup 2026 map + live group tables & scores
+  index.html           Home
+  styles.css           Elegant light theme
+  404.html             Not-found page
+  worldcup/
+    index.html         World Cup 2026 map + live group tables & scores  (served at /worldcup)
 src/
-  index.js           Worker: serves /api/wc (live World Cup data)
+  index.js             Worker entry: redirects + routing + static fallback
+  worldcup/
+    api.js             World Cup /api/* handlers (data sources proxied here)
 ```
 
+The World Cup is organised as a self-contained feature: its page lives in
+`public/worldcup/` and its API in `src/worldcup/`. The legacy `/worldcup2026`
+URL 301-redirects to `/worldcup`.
+
 ## World Cup 2026 live data
-`worldcup2026.html` shows an interactive map of the 48 qualified teams plus the 12
-group tables and the current live game/score. Live data comes from
+`public/worldcup/index.html` (served at `/worldcup`) shows an interactive map of
+the 48 qualified teams plus the 12 group tables, a fixtures schedule, a
+stadiums map view, and the current live game/score. Live data comes from
 [football-data.org](https://www.football-data.org/) (free tier includes the World
-Cup, competition `WC`), proxied by `src/index.js` so the API token stays
+Cup, competition `WC`), proxied by `src/worldcup/api.js` so the API token stays
 server-side. The page polls `/api/wc` every 30s.
 
 **Setup:** get a free token at football-data.org, then:

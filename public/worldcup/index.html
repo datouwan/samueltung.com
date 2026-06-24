@@ -96,6 +96,26 @@
   @keyframes spop{0%,100%{box-shadow:0 3px 10px rgba(0,0,0,.35),0 0 0 0 rgba(161,74,50,.5)}
     60%{box-shadow:0 3px 10px rgba(0,0,0,.35),0 0 0 12px rgba(161,74,50,0)}}
 
+  /* map view toggle (Teams / Stadiums) */
+  .viewtoggle{display:flex;overflow:hidden;border-radius:7px;box-shadow:0 1px 6px rgba(0,0,0,.32);border:1px solid var(--line)}
+  .viewtoggle .vt-btn{appearance:none;border:none;background:var(--card);color:var(--ink-soft);
+    font:700 12px var(--sans);padding:7px 13px;cursor:pointer;line-height:1.2;letter-spacing:.02em}
+  .viewtoggle .vt-btn+.vt-btn{border-left:1px solid var(--line)}
+  .viewtoggle .vt-btn:hover{background:var(--paper-2)}
+  .viewtoggle .vt-btn.active{background:var(--accent);color:#fff}
+
+  /* stadium-only view markers */
+  .smk{transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;cursor:pointer;width:max-content}
+  .smk-pin{width:28px;height:28px;display:grid;place-items:center;font-size:15px;background:#fff;
+    border:2px solid var(--accent);border-radius:50%;box-shadow:0 3px 8px rgba(0,0,0,.3);transition:transform .12s}
+  .smk-nm{margin-top:3px;font:700 10px var(--sans);color:var(--ink);background:var(--legend);
+    border:1px solid var(--line);border-radius:5px;padding:1px 5px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .smk:hover .smk-pin{transform:scale(1.14);border-color:var(--accent-ink)}
+  .live-stadium{z-index:1300!important}
+  .live-stadium .smk-pin{border-color:var(--live);
+    box-shadow:0 3px 8px rgba(0,0,0,.3),0 0 0 0 rgba(214,66,43,.6);animation:mpulse 1.4s infinite}
+  .live-stadium .smk-nm{border-color:var(--live);color:var(--live)}
+
   /* clickable player names */
   .plink{cursor:pointer;display:inline-flex;align-items:center;gap:9px;min-width:0}
   .ptable .plink:hover .pnm,.hpl:hover .hnm{color:var(--accent)}
@@ -170,6 +190,31 @@
   .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
   .tabs .upd{margin-left:auto;color:var(--muted);font-size:13px}
   .tabpane[hidden]{display:none}
+
+  /* schedule */
+  .sched{max-width:760px}
+  .sday{margin:0 0 8px;padding-top:18px;font-family:var(--serif);font-size:15px;font-weight:600;
+    color:var(--ink-soft);border-top:1px solid var(--line)}
+  .sday:first-child{padding-top:0;border-top:none}
+  .smatchlist{display:grid;gap:8px;margin-bottom:6px}
+  .srow{display:grid;grid-template-columns:54px 1fr auto 1fr 70px;align-items:center;gap:10px;
+    border:1px solid var(--line);border-radius:11px;background:var(--card);padding:9px 13px;
+    cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}
+  .srow:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 8px 22px rgba(28,27,25,.06)}
+  .srow.live{border-color:var(--live);box-shadow:0 4px 16px rgba(214,66,43,.14)}
+  .srow .stime{font-size:12px;font-weight:700;color:var(--muted);line-height:1.2}
+  .srow .stime .sgrp{display:block;font-size:10px;font-weight:600;color:var(--accent-ink);margin-top:2px}
+  .srow .sh{display:flex;align-items:center;gap:8px;min-width:0;justify-content:flex-end;text-align:right}
+  .srow .sa{display:flex;align-items:center;gap:8px;min-width:0}
+  .srow .sh .snm,.srow .sa .snm{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .srow img.screst{width:22px;height:16px;object-fit:contain;flex:0 0 auto}
+  .srow .sscore{font-family:var(--serif);font-weight:700;font-size:16px;text-align:center;white-space:nowrap;min-width:46px}
+  .srow .sscore .svs{color:var(--muted);font-family:var(--sans);font-weight:600;font-size:12px}
+  .srow .sstat{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;text-align:right;
+    color:var(--muted);white-space:nowrap}
+  .srow .sstat.lv{color:var(--live)}
+  @media(max-width:560px){.srow{grid-template-columns:46px 1fr auto 1fr;gap:7px;padding:8px 10px}
+    .srow .sstat{display:none}.srow .snm{font-size:12.5px}}
 
   /* news */
   .newslist{display:grid;gap:10px;max-width:760px}
@@ -386,6 +431,7 @@
 <section class="groups-wrap">
   <div class="tabs">
     <button class="tab active" data-tab="groups">Group stage</button>
+    <button class="tab" data-tab="schedule">Schedule</button>
     <button class="tab" data-tab="country">Country stats</button>
     <button class="tab" data-tab="stats">Player stats</button>
     <button class="tab" data-tab="news">News</button>
@@ -393,6 +439,9 @@
   </div>
   <div class="groups tabpane" id="groups" data-pane="groups">
     <div class="state-note">Loading group standings…</div>
+  </div>
+  <div class="tabpane" id="schedulePane" data-pane="schedule" hidden>
+    <div class="state-note">Loading match schedule…</div>
   </div>
   <div class="tabpane" id="countryPane" data-pane="country" hidden>
     <div class="state-note">Loading country stats…</div>
@@ -436,6 +485,7 @@
       <p class="sloc" id="sLoc"></p>
       <div class="sstats" id="sStats"></div>
       <p class="smatch" id="sMatch"></p>
+      <div class="sscorers" id="sSchedule"></div>
       <div class="sscorers" id="sScorers"></div>
     </div>
   </div>
@@ -496,6 +546,7 @@ function norm(s){
   return ALIAS[k] || k;
 }
 const markersByName = {}; // norm(name) -> { marker, iso, name }
+const teamLayer = L.layerGroup().addTo(map); // toggled off in "Stadiums" view
 
 TEAMS.forEach(([name,iso,lat,lng,conf])=>{
   const host = conf==='host';
@@ -506,7 +557,7 @@ TEAMS.forEach(([name,iso,lat,lng,conf])=>{
    .bindTooltip(name,{className:'team',direction:'top',offset:[0,-8]})
    .bindPopup(`<div class="pop"><img src="https://flagcdn.com/w160/${iso}.png" alt="${name} flag">`
      +`<div class="nm">${name}</div><div class="cf">${CONF[conf]}</div>`
-     +(host?'<div class="badge">HOST 2026</div>':'')+`</div>`).addTo(map);
+     +(host?'<div class="badge">HOST 2026</div>':'')+`</div>`).addTo(teamLayer);
   markersByName[norm(name)] = {marker:mk, iso, name};
 });
 
@@ -552,20 +603,85 @@ function venueInfo(v){
   const img = v.id ? `https://media.api-sports.io/football/venues/${v.id}.png` : '';
   return { s, img, name: v.name || (s&&s.n) || 'Stadium', city: v.city || (s&&s.city) || '' };
 }
+// resolve any match (live feed venue object, or feed venue string) to a host stadium
+function matchStadium(m){
+  if(!m || !m.venue) return null;
+  const vi = venueInfo(typeof m.venue==='string' ? {name:m.venue} : m.venue);
+  return (vi && vi.s) || null;
+}
+
+/* ───────── Stadiums-only map view ───────── */
+const stadiumLayer = L.layerGroup();   // shown only in "Stadiums" view
+const stadiumMarkers = {};             // norm(name) -> { marker, s }
+STADIUMS.forEach(s=>{
+  const icon = L.divIcon({className:'', iconSize:null,
+    html:`<div class="smk"><span class="smk-pin">🏟️</span><span class="smk-nm">${s.n}</span></div>`});
+  const mk = L.marker([s.lat,s.lng],{icon, title:s.n, zIndexOffset:500})
+    .on('click', ()=> openStadiumVenue(s));
+  stadiumMarkers[norm(s.n)] = {marker:mk, s};
+  stadiumLayer.addLayer(mk);
+});
+
+let mapView = 'teams';
+const viewCtl = L.control({position:'topleft'});
+viewCtl.onAdd = ()=>{
+  const d = L.DomUtil.create('div','viewtoggle');
+  d.innerHTML = `<button class="vt-btn active" data-v="teams">⚽ Teams</button>`
+              + `<button class="vt-btn" data-v="stadiums">🏟️ Stadiums</button>`;
+  L.DomEvent.disableClickPropagation(d);
+  d.querySelectorAll('.vt-btn').forEach(b=> b.onclick = ()=> setMapView(b.dataset.v));
+  return d;
+};
+viewCtl.addTo(map);
+
+function setMapView(v){
+  if(v===mapView) return;
+  mapView = v;
+  document.querySelectorAll('.vt-btn').forEach(b=> b.classList.toggle('active', b.dataset.v===v));
+  if(v==='stadiums'){
+    if(map.hasLayer(teamLayer)) map.removeLayer(teamLayer);
+    if(!map.hasLayer(stadiumLayer)) stadiumLayer.addTo(map);
+  }else{
+    if(map.hasLayer(stadiumLayer)) map.removeLayer(stadiumLayer);
+    if(!map.hasLayer(teamLayer)) teamLayer.addTo(map);
+  }
+  const lg = document.querySelector('.legend'); if(lg) lg.style.display = v==='stadiums' ? 'none' : '';
+  renderMapLive(currentLive); // redraw the live overlay for the active view
+}
 
 /* ───────── Live match overlay on the map ───────── */
 const liveLayer = L.layerGroup().addTo(map);
 let liveMarked = [];
+let liveStadiumEls = [];
 const flagUrl = iso => `https://flagcdn.com/w40/${iso}.png`;
 
 function clearMapLive(){
   liveLayer.clearLayers();
   liveMarked.forEach(el => el && el.classList.remove('live-marker'));
   liveMarked = [];
+  liveStadiumEls.forEach(el => el && el.classList.remove('live-stadium'));
+  liveStadiumEls = [];
+}
+
+// in "Stadiums" view, highlight the host stadium of each live game + show its score
+function renderStadiumLive(live){
+  (live||[]).forEach(m=>{
+    const s = matchStadium(m); if(!s) return;
+    const sm = stadiumMarkers[norm(s.n)]; if(!sm) return;
+    const el = sm.marker._icon; if(el){ el.classList.add('live-stadium'); liveStadiumEls.push(el); }
+    const goal = isFreshGoal(m);
+    const pill = L.divIcon({className:'', iconSize:null,
+      html:`<div class="pill-wrap"><div class="live-score-pill${goal?' goal':''}">`
+        +`<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
+        +`<span class="lv">${goal?'⚽ GOAL!':liveState(m)}</span></div></div>`});
+    L.marker([s.lat,s.lng],{icon:pill,zIndexOffset:1500})
+      .on('click', ()=> openStadiumVenue(s)).addTo(liveLayer);
+  });
 }
 
 function renderMapLive(live){
   clearMapLive();
+  if(mapView==='stadiums'){ renderStadiumLive(live); return; }
   (live||[]).forEach(m=>{
     const h = markersByName[norm(m.home.name)], a = markersByName[norm(m.away.name)];
     if(!h || !a) return;
@@ -753,6 +869,52 @@ function renderGroups(groups, live){
   }).join('');
 }
 
+const LIVE_ALL = ['LIVE','IN_PLAY','PAUSED'];
+function renderSchedule(matches){
+  const pane = panes.schedule;
+  const list = (matches||[]).filter(m=>m.utcDate).slice()
+    .sort((a,b)=> new Date(a.utcDate)-new Date(b.utcDate));
+  if(!list.length){
+    pane.innerHTML = `<div class="state-note">No fixtures published yet. They’ll appear here once the schedule is available from the data feed.</div>`;
+    return;
+  }
+  // bucket by local calendar day
+  const days = [];
+  let cur = null;
+  list.forEach(m=>{
+    const d = new Date(m.utcDate);
+    const key = d.toDateString();
+    if(!cur || cur.key!==key){ cur = {key, date:d, games:[]}; days.push(cur); }
+    cur.games.push(m);
+  });
+  const dayFmt = {weekday:'long', month:'long', day:'numeric'};
+  const timeFmt = {hour:'2-digit', minute:'2-digit'};
+  pane.innerHTML = `<div class="sched">` + days.map(day=>{
+    const rows = day.games.map(m=>{
+      const live = LIVE_ALL.includes(m.status);
+      const finished = m.status==='FINISHED';
+      const played = live || finished;
+      const time = new Date(m.utcDate).toLocaleTimeString([], timeFmt);
+      const score = played
+        ? `${fmtScore(m.home.score)}–${fmtScore(m.away.score)}`
+        : `<span class="svs">vs</span>`;
+      const stat = live ? `<span class="sstat lv">${m.minute!=null?esc(m.minute)+"'":'Live'}</span>`
+                 : (finished ? `<span class="sstat">FT</span>` : `<span class="sstat">${esc(time)}</span>`);
+      const hc = m.home.crest ? `<img class="screst" src="${esc(m.home.crest)}" alt="">` : '';
+      const ac = m.away.crest ? `<img class="screst" src="${esc(m.away.crest)}" alt="">` : '';
+      return `<div class="srow${live?' live':''}" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
+        + ` title="Show on map" onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
+        + `<span class="stime">${esc(time)}${m.group?`<span class="sgrp">Grp ${esc(m.group)}</span>`:''}</span>`
+        + `<span class="sh"><span class="snm">${esc(m.home.name)}</span>${hc}</span>`
+        + `<span class="sscore">${score}</span>`
+        + `<span class="sa">${ac}<span class="snm">${esc(m.away.name)}</span></span>`
+        + stat + `</div>`;
+    }).join('');
+    return `<h3 class="sday">${day.date.toLocaleDateString([], dayFmt)}</h3>`
+      + `<div class="smatchlist">${rows}</div>`;
+  }).join('') + `</div>`;
+}
+
 /* ───────── Stadium floating window ───────── */
 const sModal = document.getElementById('stadiumModal');
 function openStadium(m){
@@ -767,8 +929,11 @@ function openStadium(m){
     stats.push(`<span class="stat"><b>WC 2026</b>host venue</span>`);
   }
   document.getElementById('sStats').innerHTML = stats.join('');
-  document.getElementById('sMatch').innerHTML = `<span class="ld">●</span> ${esc(m.home.name)} `
+  const mEl = document.getElementById('sMatch');
+  mEl.style.display = '';
+  mEl.innerHTML = `<span class="ld">●</span> ${esc(m.home.name)} `
     + `<b>${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</b> ${esc(m.away.name)} · ${liveState(m)}`;
+  if(vi.s) renderStadiumSchedule(vi.s); else document.getElementById('sSchedule').innerHTML = '';
   sModal.hidden = false;
   loadScorers(m);
 }
@@ -794,6 +959,50 @@ async function loadScorers(m){
   }catch(e){ box.innerHTML = ''; }
 }
 function openStadiumByIdx(i){ if(currentLive[i]) openStadium(currentLive[i]); }
+
+// open the stadium window from the Stadiums map view (no live match required):
+// venue info + any live game here + the fixtures we can resolve to this venue
+let lastMatches = [];
+function openStadiumVenue(s){
+  const img = document.getElementById('sImg');
+  img.style.backgroundImage = 'none'; img.classList.add('noimg');
+  document.getElementById('sName').textContent = s.n;
+  document.getElementById('sLoc').textContent = [s.city, s.country].filter(Boolean).join(' · ');
+  document.getElementById('sStats').innerHTML =
+      `<span class="stat"><b>${s.cap.toLocaleString()}</b>capacity</span>`
+    + `<span class="stat"><b>WC 2026</b>host venue</span>`;
+  const liveHere = (currentLive||[]).find(m=> matchStadium(m)===s);
+  const mEl = document.getElementById('sMatch');
+  if(liveHere){
+    mEl.style.display = '';
+    mEl.innerHTML = `<span class="ld">●</span> ${esc(liveHere.home.name)} `
+      + `<b>${fmtScore(liveHere.home.score)}–${fmtScore(liveHere.away.score)}</b> ${esc(liveHere.away.name)} · ${liveState(liveHere)}`;
+  }else{ mEl.style.display = 'none'; mEl.innerHTML = ''; }
+  document.getElementById('sScorers').innerHTML = '';
+  renderStadiumSchedule(s);
+  sModal.hidden = false;
+}
+function renderStadiumSchedule(s){
+  const box = document.getElementById('sSchedule');
+  const fixtures = (lastMatches||[]).filter(m=> matchStadium(m)===s)
+    .sort((a,b)=> new Date(a.utcDate)-new Date(b.utcDate));
+  if(!fixtures.length){
+    box.innerHTML = `<div class="schead">📅 Fixtures</div>`
+      + `<div class="scempty">No fixtures listed at this venue in the current feed window.</div>`;
+    return;
+  }
+  box.innerHTML = `<div class="schead">📅 Fixtures at this venue</div>` + fixtures.map(m=>{
+    const live = LIVE_ALL.includes(m.status), fin = m.status==='FINISHED';
+    const when = new Date(m.utcDate).toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const mid = (live||fin) ? `${fmtScore(m.home.score)}–${fmtScore(m.away.score)}` : 'vs';
+    const tag = live ? `<span class="sctag" style="color:var(--live)">LIVE</span>`
+              : (fin ? `<span class="sctag">FT</span>` : '');
+    return `<div class="scrow"><span class="scmin">${esc(when)}</span>`
+      + `<span class="scname" style="cursor:default">${esc(m.home.name)} ${mid} ${esc(m.away.name)}`
+      + (m.group?` · Grp ${esc(m.group)}`:'') + `</span> ${tag}</div>`;
+  }).join('');
+}
+window.openStadiumVenue = openStadiumVenue;
 function closeStadium(){ sModal.hidden = true; }
 sModal.addEventListener('click', e=>{ if(e.target===sModal) closeStadium(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeStadium(); });
@@ -815,6 +1024,7 @@ themeBtn.addEventListener('click', ()=>{
 /* ───────── Tabs: Group stage / News / Player stats ───────── */
 const panes = {
   groups: document.getElementById('groups'),
+  schedule: document.getElementById('schedulePane'),
   country: document.getElementById('countryPane'),
   stats: document.getElementById('statsPane'),
   news: document.getElementById('newsPane'),
@@ -828,9 +1038,9 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', (
   Object.entries(panes).forEach(([k,el])=>{ el.hidden = (k!==id); });
   if(id==='news' && !newsLoaded) loadNews();
 }));
-// deep-link a tab via #news / #stats / #groups / #country
+// deep-link a tab via #news / #stats / #groups / #schedule / #country
 const initialTab = (location.hash||'').replace('#','');
-if(['news','stats','groups','country'].includes(initialTab)){
+if(['news','stats','groups','schedule','country'].includes(initialTab)){
   const t = document.querySelector(`.tab[data-tab="${initialTab}"]`); if(t) t.click();
 }
 
@@ -1173,6 +1383,8 @@ async function refresh(){
     goalCheck(data.live||[]);
     renderLive(data.live||[], data.matches||[]);
     renderGroups(data.groups||[], data.live||[]);
+    lastMatches = data.matches||[];
+    renderSchedule(data.matches||[]);
     renderMapLive(data.live||[]);
     renderStats(data.scorers||[]);
     renderCountry(data.groups||[]);
