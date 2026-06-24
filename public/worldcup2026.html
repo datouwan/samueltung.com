@@ -17,10 +17,20 @@
   :root{
     --paper:#faf9f6; --paper-2:#f3f1ea; --ink:#1c1b19; --ink-soft:#3b3934; --muted:#807b72;
     --line:#e6e2d8; --accent:#a14a32; --accent-ink:#8a3d28; --live:#d6422b; --go:#1f9d6b;
+    --card:#fff; --legend:rgba(255,255,255,.96); --img-bg:#e9e6df; --map-bg:#eef0f2;
     --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     --c-host:#a14a32; --c-uefa:#2f6f9f; --c-conmebol:#1f9d6b;
     --c-caf:#c98a1e; --c-afc:#7a52a8; --c-concacaf:#c4543f; --c-ofc:#3aa0a8;
+    color-scheme:light;
+  }
+  html[data-theme="dark"]{
+    --paper:#15130f; --paper-2:#211d17; --ink:#f1ece3; --ink-soft:#cfc8bb; --muted:#928b80;
+    --line:#332e26; --accent:#cf7053; --accent-ink:#e29173; --live:#f0654d; --go:#39c08a;
+    --card:#1d1a15; --legend:rgba(29,26,21,.94); --img-bg:#2a251e; --map-bg:#0e0d0b;
+    --c-uefa:#5b97c4; --c-conmebol:#39c08a; --c-caf:#e0ad55; --c-afc:#a888d6;
+    --c-concacaf:#e07a64; --c-ofc:#5fc3cb;
+    color-scheme:dark;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
@@ -90,12 +100,12 @@
   .smodal{position:fixed;inset:0;z-index:2000;background:rgba(20,18,16,.55);
     display:grid;place-items:center;padding:20px;backdrop-filter:blur(2px)}
   .smodal[hidden]{display:none}
-  .sbox{position:relative;width:min(440px,100%);background:#fff;border-radius:16px;overflow:hidden;
+  .sbox{position:relative;width:min(440px,100%);background:var(--card);border-radius:16px;overflow:hidden;
     box-shadow:0 24px 70px rgba(0,0,0,.4);animation:pop .25s ease}
   .sclose{position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border:none;border-radius:50%;
     background:rgba(0,0,0,.5);color:#fff;font-size:20px;line-height:1;cursor:pointer}
   .sclose:hover{background:rgba(0,0,0,.75)}
-  .simg{height:200px;background:#e9e6df center/cover no-repeat}
+  .simg{height:200px;background:var(--img-bg) center/cover no-repeat}
   .simg.noimg{display:grid;place-items:center}
   .simg.noimg::after{content:'🏟️';font-size:54px;opacity:.5}
   .sbody{padding:16px 20px 20px}
@@ -109,7 +119,7 @@
   .smatch .ld{color:var(--live)}
   .smatch b{font-family:var(--serif)}
 
-  #map{height:54vh;min-height:340px;background:#eef0f2}
+  #map{height:54vh;min-height:340px;background:var(--map-bg)}
 
   /* groups */
   .groups-wrap{max-width:1180px;margin:0 auto;padding:28px 20px 48px}
@@ -118,7 +128,7 @@
   .groups-head .upd{color:var(--muted);font-size:13px}
   .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
 
-  .gcard{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;
+  .gcard{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden;
     box-shadow:0 4px 16px rgba(28,27,25,.04)}
   .gcard.haslive{border-color:var(--live);box-shadow:0 6px 22px rgba(214,66,43,.16)}
   .gcard .gh{display:flex;align-items:center;justify-content:space-between;
@@ -141,7 +151,7 @@
   table.std tr.adv .pos{color:var(--go);font-weight:700}
   .pos{display:inline-block;min-width:16px}
 
-  .state-note{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;background:#fff;
+  .state-note{grid-column:1/-1;border:1px dashed var(--line);border-radius:12px;background:var(--card);
     padding:18px 20px;color:var(--ink-soft);font-size:14px}
   .state-note code{font-family:'SFMono-Regular',ui-monospace,Consolas,monospace;font-size:.86em;
     background:var(--paper-2);padding:1px 5px;border-radius:4px}
@@ -182,20 +192,52 @@
   .pop .cf{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
   .pop .badge{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#fff;
     background:var(--accent);border-radius:20px;padding:2px 9px}
-  .legend{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:10px;
+  .legend{background:var(--legend);border:1px solid var(--line);border-radius:10px;
     padding:10px 12px;font-size:12.5px;line-height:1.5;box-shadow:0 6px 20px rgba(0,0,0,.10)}
   .legend b{font-family:var(--serif);font-size:13px;display:block;margin-bottom:6px}
   .legend .row{display:flex;align-items:center;gap:7px;white-space:nowrap}
   .legend .sw{width:13px;height:13px;border-radius:3px;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
   .legend .cnt{color:var(--muted)}
   .leaflet-control-attribution{font-size:10px}
-  @media(max-width:560px){header.bar h1{font-size:21px}header.bar h1 .sub{display:none}.legend{display:none}}
+
+  /* theme toggle button */
+  .topright{position:absolute;top:14px;right:18px;display:flex;align-items:center;gap:12px}
+  header.bar{position:relative}
+  #themeBtn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+    border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--ink-soft);
+    cursor:pointer;font-size:15px;line-height:1;transition:border-color .15s,color .15s}
+  #themeBtn:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* dark-mode: keep Leaflet popups & controls readable */
+  html[data-theme="dark"] .leaflet-popup-content-wrapper,
+  html[data-theme="dark"] .leaflet-popup-tip{background:var(--card);color:var(--ink)}
+  html[data-theme="dark"] .leaflet-bar a{background:var(--card);color:var(--ink);border-color:var(--line)}
+  html[data-theme="dark"] .leaflet-bar a:hover{background:var(--paper-2)}
+  html[data-theme="dark"] .leaflet-control-attribution{background:rgba(21,19,15,.75)!important;color:var(--muted)}
+  html[data-theme="dark"] .leaflet-control-attribution a{color:var(--accent-ink)}
+
+  @media(max-width:560px){header.bar h1{font-size:21px}header.bar h1 .sub{display:none}.legend{display:none}
+    .topright{top:12px;right:14px;gap:8px}}
 </style>
+<script>
+  // set theme before paint to avoid a flash
+  (function(){
+    try{
+      var q = new URLSearchParams(location.search).get('theme');
+      var t = q || localStorage.getItem('wc-theme')
+        || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+    }catch(e){}
+  })();
+</script>
 </head>
 <body>
 
 <header class="bar">
-  <a class="back" href="/">← samueltung.com</a>
+  <div class="topright">
+    <a class="back" href="/">← samueltung.com</a>
+    <button id="themeBtn" title="Toggle light / dark" aria-label="Toggle light or dark theme">🌙</button>
+  </div>
   <p class="role">FIFA World Cup 2026 · USA · Canada · Mexico</p>
   <h1>Map, Groups &amp; Live Scores<span class="sub">48 teams · 12 groups · live tables</span></h1>
 </header>
@@ -260,9 +302,15 @@ const TEAMS = [
 
 const map = L.map('map',{worldCopyJump:true,minZoom:2,maxZoom:6}).setView([24,5],2);
 map.setMaxBounds([[-85,-200],[85,200]]);
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{
-  attribution:'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors', maxZoom:6
-}).addTo(map);
+const ESRI_ATTR = 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors';
+const tileLight = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:ESRI_ATTR, maxZoom:6});
+const tileDark  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:ESRI_ATTR, maxZoom:6});
+function applyMapTiles(theme){
+  const on = theme==='dark' ? tileDark : tileLight, off = theme==='dark' ? tileLight : tileDark;
+  if(map.hasLayer(off)) map.removeLayer(off);
+  if(!map.hasLayer(on)) on.addTo(map);
+}
+applyMapTiles(document.documentElement.getAttribute('data-theme'));
 
 // normalize team names so API names (e.g. "Korea Republic") match map markers
 const ALIAS = {
@@ -538,6 +586,19 @@ function closeStadium(){ sModal.hidden = true; }
 sModal.addEventListener('click', e=>{ if(e.target===sModal) closeStadium(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeStadium(); });
 window.openStadium = openStadium; window.openStadiumByIdx = openStadiumByIdx; window.closeStadium = closeStadium;
+
+/* ───────── Light / dark theme toggle ───────── */
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(theme, persist){
+  document.documentElement.setAttribute('data-theme', theme);
+  themeBtn.textContent = theme==='dark' ? '☀️' : '🌙';
+  applyMapTiles(theme);
+  if(persist){ try{ localStorage.setItem('wc-theme', theme); }catch(e){} }
+}
+applyTheme(document.documentElement.getAttribute('data-theme') || 'light', false);
+themeBtn.addEventListener('click', ()=>{
+  applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark', true);
+});
 
 /* ───────── Manual update button ───────── */
 const refreshBtn = document.getElementById('refreshBtn');
