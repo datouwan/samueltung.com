@@ -869,7 +869,20 @@ pSearchInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ clearTimeout(
 document.getElementById('pSearchBtn').addEventListener('click', ()=>{ clearTimeout(searchTimer); doSearch(pSearchInput.value); });
 document.addEventListener('click', e=>{ if(!e.target.closest('.psearch') && !e.target.closest('#pSearchResults')) pSearchResults.hidden = true; });
 
-// country stats (static records + live 2026 from the standings)
+// all-time records scraped from Wikipedia (loaded once; falls back to curated)
+let wcRecords = null;
+const EXTRA_ISO = {germany:'de',westgermany:'de',italy:'it',hungary:'hu',england:'gb-eng',netherlands:'nl',
+  brazil:'br',argentina:'ar',france:'fr',uruguay:'uy',spain:'es',sweden:'se',poland:'pl',portugal:'pt',
+  czechia:'cz',czechrepublic:'cz',czechoslovakia:'cz',sovietunion:'ru',russia:'ru',belgium:'be',austria:'at',
+  switzerland:'ch',mexico:'mx',unitedstates:'us',usa:'us',chile:'cl',peru:'pe',colombia:'co',ghana:'gh',
+  cameroon:'cm',nigeria:'ng',senegal:'sn',morocco:'ma',croatia:'hr',denmark:'dk',norway:'no',
+  southkorea:'kr',korearepublic:'kr',japan:'jp',australia:'au',scotland:'gb-sct',wales:'gb-wls',
+  ireland:'ie',turkey:'tr',turkiye:'tr',ukraine:'ua',serbia:'rs',romania:'ro',bulgaria:'bg',
+  paraguay:'py',ecuador:'ec',costarica:'cr',cotedivoire:'ci',algeria:'dz',tunisia:'tn',egypt:'eg',
+  saudiarabia:'sa',iran:'ir',canada:'ca'};
+function recIso(name){ const k = norm(name); return isoByCountry[k] || EXTRA_ISO[k] || ''; }
+
+// country stats (live 2026 from the standings + Wikipedia all-time records)
 let lastGroups = [];
 const COUNTRY_RECORDS = [
   {title:'🏆 Most titles', unit:'titles', rows:[
@@ -891,13 +904,13 @@ function countryCard(title, unit, rows, opts){
                    : (r.crest ? `<img class="pf" src="${esc(r.crest)}" alt="">` : '');
         const sub = r.sub ? `<small>${esc(r.sub)}</small>` : '';
         return `<tr><td class="hrk">${i+1}</td>`
-          + `<td class="hpl"><span class="plink" data-country="${esc(r.name)}" onclick="focusCountry(this.dataset.country)">`
+          + `<td class="hpl"><span class="plink" data-country="${esc(r.name)}" onclick="openCountry(this.dataset.country)">`
           + `${flag}<span class="hnm">${esc(r.name)}${sub}</span></span></td>`
           + `<td class="hv">${r.val}<small>${esc(unit)}</small></td></tr>`;
       }).join('') + `</tbody></table></div>`;
 }
 function renderCountry(groups){
-  let html = `<p class="statnote">World Cup country records — the 2026 card updates live from the group stage; tap a country to find it on the map.</p><div class="histgrid">`;
+  let html = `<p class="statnote">World Cup country records — the 2026 card is live from the group stage; all-time records are from Wikipedia. Tap a country for its national-team card.</p><div class="histgrid">`;
   if(groups && groups.length){
     const teams = groups.flatMap(g=> g.table.map(t=>({name:t.name, crest:t.crest, gf:t.gf, gd:t.gd, pts:t.points, pl:t.played})));
     const topG = teams.filter(t=>t.gf!=null).sort((a,b)=> (b.gf-a.gf)||(b.gd-a.gd)).slice(0,8);
@@ -905,15 +918,50 @@ function renderCountry(groups){
       html += countryCard('🔥 Most goals — 2026 so far', 'goals',
         topG.map(t=>({name:t.name, crest:t.crest, val:t.gf, sub:`${t.pl} played · ${t.pts} pts`})), {live:true});
   }
-  COUNTRY_RECORDS.forEach(c=> html += countryCard(c.title, c.unit,
-    c.rows.map(([name,iso,val])=>({name,iso,val})), {tag:'as of 2022', note:c.note}));
+  const R = wcRecords;
+  if(R && R.titles && R.titles.length){
+    html += countryCard('🏆 Most titles', 'titles', R.titles.map(t=>({name:t.name, iso:recIso(t.name), val:t.gold})), {tag:'Wikipedia'});
+    if(R.teamGoals && R.teamGoals.length)
+      html += countryCard('⚽ Most goals all-time', 'goals', R.teamGoals.map(t=>({name:t.name, iso:recIso(t.name), val:t.val})), {tag:'Wikipedia'});
+    if(R.teamApps && R.teamApps.length)
+      html += countryCard('📅 Most appearances', 'tournaments', R.teamApps.map(t=>({name:t.name, iso:recIso(t.name), val:t.val})), {tag:'Wikipedia'});
+  } else {
+    COUNTRY_RECORDS.forEach(c=> html += countryCard(c.title, c.unit,
+      c.rows.map(([name,iso,val])=>({name,iso,val})), {tag:'as of 2022', note:c.note}));
+  }
   panes.country.innerHTML = html + `</div>`;
 }
-function focusCountry(name){
-  const m = markersByName[norm(name)];
-  if(m){ map.flyTo(m.marker.getLatLng(), 4); if(m.marker.openPopup) m.marker.openPopup(); }
+async function openCountry(name){
+  pModal.hidden = false; pModal.querySelector('.sbox').scrollTop = 0;
+  document.getElementById('pName').textContent = name;
+  document.getElementById('pMeta').textContent = 'National team · loading…';
+  pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
+  const clubsEl = document.getElementById('pClubs'); clubsEl.hidden = true; clubsEl.innerHTML = '';
+  const extractEl = document.getElementById('pExtract'); extractEl.textContent = '';
+  const wikiEl = document.getElementById('pWiki'); wikiEl.hidden = true; wikiEl.removeAttribute('href');
+  const chips = [];
+  if(wcRecords){
+    const f = arr => (arr||[]).find(x=> norm(x.name)===norm(name));
+    const t = f(wcRecords.titles); if(t && t.gold) chips.push(pstat(t.gold, 'titles'));
+    const g = f(wcRecords.teamGoals); if(g) chips.push(pstat(g.val, 'WC goals'));
+    const a = f(wcRecords.teamApps); if(a) chips.push(pstat(a.val, 'tournaments'));
+  }
+  document.getElementById('pStats').innerHTML = chips.join('');
+  try{
+    const wb = await fetch(`/api/wiki?q=${encodeURIComponent(name)}&kind=team`).then(r=>r.json());
+    if(pModal.hidden) return;
+    const wiki = (wb.results || [])[0];
+    if(wiki && wiki.thumbnail){ pPhoto.style.backgroundImage = `url('${wiki.thumbnail}')`; pPhoto.classList.remove('noimg'); }
+    document.getElementById('pMeta').textContent = (wiki && wiki.description) || 'National football team';
+    if(wiki){ if(wiki.extract) extractEl.textContent = wiki.extract; if(wiki.url){ wikiEl.hidden = false; wikiEl.href = wiki.url; } }
+  }catch(e){ document.getElementById('pMeta').textContent = 'National football team'; }
 }
-window.focusCountry = focusCountry; window.openPlayerName = openPlayerName;
+async function loadRecords(){
+  try{ const d = await fetch('/api/records').then(r=>r.json()); if(d && !d.error && d.topScorers) wcRecords = d; }
+  catch(e){}
+  drawStats(); renderCountry(lastGroups);
+}
+window.openCountry = openCountry; window.openPlayerName = openPlayerName;
 
 function timeAgo(d){
   if(!d) return '';
@@ -1028,7 +1076,14 @@ function renderHistorical(){
     g[k] = s.goals; g.__meta[k] = meta;
     if(s.assists!=null){ a[k] = s.assists; a.__meta[k] = meta; }
   });
-  const goalsRows = mergeLive(WC_GOALS_BASE, g).slice(0,12);
+  let goalsRows;
+  if(wcRecords && wcRecords.topScorers && wcRecords.topScorers.length){
+    const cur = {}; lastScorers.forEach(s=> cur[norm(s.name)] = s.goals);
+    goalsRows = wcRecords.topScorers.slice(0,12).map(s=>(
+      {name:s.player, iso:recIso(s.team), team:s.team, val:s.goals, last:s.last, delta: cur[norm(s.player)]||0}));
+  } else {
+    goalsRows = mergeLive(WC_GOALS_BASE, g).slice(0,12);
+  }
   const assistRows = mergeLive(WC_ASSISTS_BASE, a).slice(0,8);
 
   // single-tournament: historical tallies + each current 2026 scorer's running total
@@ -1134,6 +1189,7 @@ async function refresh(){
 }
 refresh();
 setInterval(refresh, 30000); // poll every 30s
+loadRecords(); // Wikipedia all-time records (once)
 </script>
 </body>
 </html>

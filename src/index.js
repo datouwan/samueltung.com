@@ -30,6 +30,7 @@ export default {
     if (url.pathname === "/api/player") return handlePlayer(request, env, ctx);
     if (url.pathname === "/api/events") return handleEvents(request, env, ctx);
     if (url.pathname === "/api/wiki") return handleWiki(request, env, ctx);
+    if (url.pathname === "/api/records") return handleRecords(request, env, ctx);
     if (env.ASSETS) return env.ASSETS.fetch(request);
     return new Response("Not found", { status: 404 });
   },
@@ -379,17 +380,21 @@ async function handleEvents(request, env, ctx) {
 // Fuzzy player lookup via Wikipedia (free, keyless, unlimited). Returns a list
 // of candidate footballers with photo + summary. Cached 24h per query.
 async function handleWiki(request, env, ctx) {
-  const q = (new URL(request.url).searchParams.get("q") || "").trim();
+  const u = new URL(request.url);
+  const q = (u.searchParams.get("q") || "").trim();
+  const kind = u.searchParams.get("kind") === "team" ? "team" : "player";
   if (q.length < 2) return json({ results: [] }, 200, 0);
 
   const cache = caches.default;
-  const ckey = new Request(`https://wc.cache/wiki-${q.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 40)}`);
+  const ckey = new Request(`https://wc.cache/wiki-${kind}-${q.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 40)}`);
   const hit = await cache.match(ckey);
   if (hit) return hit;
 
+  const suffix = kind === "team" ? " national football team" : " footballer";
+  const keep = kind === "team" ? /national.*football team|national team/i : /footballer/i;
   try {
     const api = "https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search" +
-      `&gsrsearch=${encodeURIComponent(q + " footballer")}&gsrlimit=6` +
+      `&gsrsearch=${encodeURIComponent(q + suffix)}&gsrlimit=6` +
       "&prop=pageimages%7Cextracts%7Cdescription&exintro=1&explaintext=1&exsentences=3" +
       "&piprop=thumbnail&pithumbsize=400&redirects=1";
     const r = await fetch(api, { headers: { "user-agent": "samueltung.com/1.0 (World Cup map)" } });
@@ -402,15 +407,100 @@ async function handleWiki(request, env, ctx) {
       thumbnail: p.thumbnail ? p.thumbnail.source : "",
       url: `https://en.wikipedia.org/wiki/${encodeURIComponent(p.title.replace(/ /g, "_"))}`,
     }));
-    // prefer actual footballer pages over "List of…"/rivalry pages
-    const players = all.filter((p) => /footballer/i.test(p.description));
-    const results = (players.length ? players : all).slice(0, 6);
+    const matched = all.filter((p) => keep.test(p.description) || keep.test(p.title));
+    const results = (matched.length ? matched : all).slice(0, 6);
     const res = json({ results }, 200, 86400);
     ctx.waitUntil(cache.put(ckey, res.clone()));
     return res;
   } catch (_) {
     return json({ results: [] }, 200, 0);
   }
+}
+
+// All-time records scraped from Wikipedia (free, unlimited). Player top
+// scorers already include 2026 (the article updates live). Cached 6h, with a
+// graceful empty payload on failure so the page falls back to curated values.
+async function handleRecords(request, env, ctx) {
+  const cache = caches.default;
+  const ckey = new Request("https://wc.cache/records-v1");
+  const hit = await cache.match(ckey);
+  if (hit) return hit;
+  try {
+    const [scHtml, recHtml] = await Promise.all([
+      wikiPageHtml("List_of_FIFA_World_Cup_top_goalscorers"),
+      wikiPageHtml("FIFA_World_Cup_records_and_statistics"),
+    ]);
+    const topScorers = parseTopScorers(scHtml);
+    const teams = parseTeamRecords(recHtml);
+    const data = { source: "wikipedia", updated: new Date().toISOString(), topScorers, ...teams };
+    const res = json(data, 200, 21600);
+    ctx.waitUntil(cache.put(ckey, res.clone()));
+    return res;
+  } catch (e) {
+    return json({ error: "records_failed", message: String(e) }, 200, 0);
+  }
+}
+async function wikiPageHtml(page) {
+  const r = await fetch(
+    `https://en.wikipedia.org/w/api.php?action=parse&format=json&page=${page}&prop=text&formatversion=2`,
+    { headers: { "user-agent": "samueltung.com/1.0 (World Cup map)" } }
+  );
+  if (!r.ok) throw new Error("wiki " + r.status);
+  const d = await r.json();
+  return (d.parse && d.parse.text) || "";
+}
+const WENT = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&nbsp;": " ", "&minus;": "-", "&ndash;": "–" };
+function wtidy(s) {
+  return s.replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/gi, (m) => WENT[m] || " ")
+    .replace(/\[[^\]]*\]/g, "").replace(/[♦†‡*]/g, "").replace(/\s+/g, " ").trim();
+}
+const wTables = (html) => html.match(/<table[^>]*wikitable[^>]*>[\s\S]*?<\/table>/g) || [];
+const wRows = (t) => t.match(/<tr>[\s\S]*?<\/tr>/g) || [];
+function wCells(r) { const o = []; const re = /<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/g; let m; while ((m = re.exec(r))) o.push(wtidy(m[1])); return o; }
+const findTable = (tables, ...keys) => tables.find((t) => { const h = wtidy(wRows(t)[0] || "").toLowerCase(); return keys.every((k) => h.includes(k)); });
+const cleanTeam = (s) => s.replace(/\s*\([^)]*\)/g, "").replace(/\s+note\s+\d+/gi, "").trim();
+
+function parseTopScorers(html) {
+  const t = findTable(wTables(html), "goals scored", "matches played", "goals per match");
+  if (!t) return [];
+  let lastRank = null, lastGoals = null;
+  const out = [];
+  for (const r of wRows(t).slice(1)) {
+    const c = wCells(r);
+    if (c.length < 3) continue;
+    let rank, player, team, goals, toff;
+    if (/^\d+$/.test(c[0])) { rank = +c[0]; player = c[1]; team = c[2]; goals = +c[3]; toff = 6; lastRank = rank; lastGoals = goals; }
+    else { rank = lastRank; player = c[0]; team = c[1]; goals = lastGoals; toff = 4; }
+    if (!player || !Number.isFinite(goals)) continue;
+    const yrs = (c[toff] || "").match(/\d{4}/g) || [];
+    out.push({ rank, player, team: cleanTeam(team), goals, last: yrs.length ? +yrs[yrs.length - 1] : null });
+    if (out.length >= 20) break;
+  }
+  return out;
+}
+function parseTeamRecords(html) {
+  const tables = wTables(html);
+  const titles = [];
+  const medal = findTable(tables, "gold", "silver", "bronze");
+  if (medal) for (const r of wRows(medal).slice(1)) {
+    const c = wCells(r);
+    if (c.length < 6 || !/^\d+$/.test(c[0])) continue;
+    titles.push({ name: cleanTeam(c[1]), gold: +c[2], silver: +c[3], bronze: +c[4] });
+    if (titles.length >= 8) break;
+  }
+  const recs = findTable(tables, "part", "gf", "ga", "pts");
+  let teamGoals = [], teamApps = [];
+  if (recs) {
+    const arr = [];
+    for (const r of wRows(recs).slice(1)) {
+      const c = wCells(r);
+      if (c.length < 11 || !/^\d+$/.test(c[0])) continue;
+      arr.push({ name: cleanTeam(c[1]), part: +c[2], gf: +c[7] });
+    }
+    teamGoals = [...arr].sort((a, b) => b.gf - a.gf).slice(0, 8).map((x) => ({ name: x.name, val: x.gf }));
+    teamApps = [...arr].sort((a, b) => b.part - a.part).slice(0, 8).map((x) => ({ name: x.name, val: x.part }));
+  }
+  return { titles, teamGoals, teamApps };
 }
 
 function decodeXml(s) {
