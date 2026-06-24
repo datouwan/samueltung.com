@@ -1184,7 +1184,7 @@ async function setStadiumPhoto(stadium, fallbackImg){
   const img = document.getElementById('sImg');
   const seq = ++stadiumPhotoSeq;
   const apply = url => {
-    if(seq !== stadiumPhotoSeq || sModal.hidden) return;
+    if(seq !== stadiumPhotoSeq) return; // a newer open superseded this one
     if(url){ img.style.backgroundImage = `url("${url}")`; img.classList.remove('noimg'); }
     else { img.style.backgroundImage = 'none'; img.classList.add('noimg'); }
   };
