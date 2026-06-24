@@ -76,6 +76,13 @@
   .livewrap{position:relative;display:flex;align-items:stretch}
   .livewrap #liveBar{flex:1;min-width:0}
 
+  /* finals strip: completed games, below the map and above the tabs */
+  #finalsBar{background:#1c1b19;color:#fff;border-top:1px solid #000;border-bottom:1px solid #000;
+    min-height:46px;display:flex;align-items:center;gap:14px;padding:8px 16px;overflow-x:auto;scrollbar-width:thin}
+  #finalsBar[hidden]{display:none}
+  #finalsBar .seg{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    color:#9c968c;white-space:nowrap}
+
   /* venue chip in the live bar */
   .vchip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#ffd9a8;
     background:#3a2f26;border:1px solid #574536;border-radius:8px;padding:3px 8px;cursor:pointer;white-space:nowrap}
@@ -425,6 +432,8 @@
 
 <div id="map"></div>
 
+<div id="finalsBar" hidden></div>
+
 <section class="groups-wrap">
   <div class="tabs">
     <button class="tab active" data-tab="groups">Group stage</button>
@@ -763,6 +772,7 @@ TEAMS.forEach(([name,iso])=> isoByCountry[norm(name)] = iso);
 function countryFlag(nat){ const iso = isoByCountry[norm(nat)]; return iso ? `https://flagcdn.com/w40/${iso}.png` : ''; }
 const esc = s => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const liveBar = document.getElementById('liveBar');
+const finalsBar = document.getElementById('finalsBar');
 const groupsEl = document.getElementById('groups');
 const updEl = document.getElementById('updated');
 
@@ -824,10 +834,11 @@ function finalCard(m){
 }
 function renderLive(live, matches){
   const finished = (matches||[]).filter(m => m.status==='FINISHED')
-    .sort((a,b)=> new Date(b.utcDate)-new Date(a.utcDate)).slice(0,4);
+    .sort((a,b)=> new Date(b.utcDate)-new Date(a.utcDate));
   const nextM = (matches||[]).filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
     .sort((a,b)=> new Date(a.utcDate)-new Date(b.utcDate))[0];
 
+  // Top bar: only the live game(s) and the next upcoming game.
   let html = '';
   if(live.length){
     liveBar.className = ''; currentLive = live;
@@ -837,9 +848,17 @@ function renderLive(live, matches){
     html += `<span class="tag">No match live</span>`;
   }
   if(nextM){ html += `<span class="seg">Next live</span>` + scheduledCard(nextM); }
-  if(finished.length){ html += `<span class="seg">Final</span>` + finished.map(finalCard).join(''); }
-  if(!live.length && !nextM && !finished.length){ html = `<span class="tag">No matches today</span>`; }
+  if(!live.length && !nextM){ html = `<span class="tag">No live or upcoming match</span>`; }
   liveBar.innerHTML = html;
+
+  // Completed games go in their own strip below the map.
+  if(finished.length){
+    finalsBar.hidden = false;
+    finalsBar.innerHTML = `<span class="seg">Final scores</span>` + finished.map(finalCard).join('');
+  } else {
+    finalsBar.hidden = true;
+    finalsBar.innerHTML = '';
+  }
 }
 
 function renderGroups(groups, live){
