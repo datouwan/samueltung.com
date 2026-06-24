@@ -169,8 +169,12 @@
 
   .histgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;max-width:1000px}
   .histcard{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:14px 16px}
-  .histcard h4{margin:0;font-family:var(--serif);font-size:16px}
+  .histcard h4{margin:0;font-family:var(--serif);font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .histcard .hn{margin:4px 0 0;color:var(--muted);font-size:11.5px}
+  .rtag{font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);
+    background:var(--paper-2);border-radius:8px;padding:2px 7px}
+  .rtag.live{color:#06351a;background:#7CFF9B}
+  .hv .dlt{color:var(--accent);font-size:11px;font-weight:700;margin-left:3px}
   .hlist{list-style:none;margin:8px 0 0;padding:0}
   .hlist li{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--paper-2)}
   .hlist li:last-child{border-bottom:none}
@@ -732,26 +736,31 @@ async function loadNews(){
     }).join('') + `</div>`;
   }catch(e){ panes.news.innerHTML = `<div class="state-note">Couldn’t load news.</div>`; newsLoaded = false; }
 }
-// All-time men's World Cup records (through the 2022 tournament). [name, iso, team, value]
-const HISTORICAL = [
-  {title:'⚽ All-time top scorers', unit:'goals', rows:[
-    ['Miroslav Klose','de','Germany',16],['Ronaldo','br','Brazil',15],['Gerd Müller','de','West Germany',14],
-    ['Just Fontaine','fr','France',13],['Lionel Messi','ar','Argentina',13],['Kylian Mbappé','fr','France',12],
-    ['Pelé','br','Brazil',12],['Sándor Kocsis','hu','Hungary',11]]},
-  {title:'🎯 Most goals, single tournament', unit:'goals', rows:[
-    ['Just Fontaine','fr','France · 1958',13],['Sándor Kocsis','hu','Hungary · 1954',11],
-    ['Gerd Müller','de','W. Germany · 1970',10],['Eusébio','pt','Portugal · 1966',9]]},
-  {title:'👟 Most assists', unit:'assists', note:'FIFA-credited; older assists are estimates', rows:[
-    ['Pelé','br','Brazil',10],['Diego Maradona','ar','Argentina',8],['Lionel Messi','ar','Argentina',8],
-    ['Thomas Müller','de','Germany',6]]},
+// Career World Cup totals THROUGH 2022 [name, iso, team, value]. The all-time
+// cards add live 2026 numbers from the feed on top of these bases.
+const WC_GOALS_BASE = [
+  ['Miroslav Klose','de','Germany',16],['Ronaldo','br','Brazil',15],['Gerd Müller','de','West Germany',14],
+  ['Just Fontaine','fr','France',13],['Lionel Messi','ar','Argentina',13],['Kylian Mbappé','fr','France',12],
+  ['Pelé','br','Brazil',12],['Sándor Kocsis','hu','Hungary',11],['Jürgen Klinsmann','de','Germany',11],
+  ['Thomas Müller','de','Germany',10],['Cristiano Ronaldo','pt','Portugal',8],['Neymar','br','Brazil',8],
+  ['Harry Kane','gb-eng','England',8],['Luis Suárez','uy','Uruguay',7],['Romelu Lukaku','be','Belgium',5],
+];
+const WC_ASSISTS_BASE = [
+  ['Pelé','br','Brazil',10],['Diego Maradona','ar','Argentina',8],['Lionel Messi','ar','Argentina',8],
+  ['Thomas Müller','de','Germany',6],['Kylian Mbappé','fr','France',5],
+];
+const WC_SINGLE_TOURN = [
+  ['Just Fontaine','fr','France 1958',13],['Sándor Kocsis','hu','Hungary 1954',11],
+  ['Gerd Müller','de','W. Germany 1970',10],['Eusébio','pt','Portugal 1966',9],
+];
+// Records with no live 2026 feed — shown as-of 2022.
+const WC_STATIC = [
   {title:'🧤 Most clean sheets (GK)', unit:'clean sheets', note:'goalkeeping shut-out record', rows:[
-    ['Peter Shilton','gb-eng','England',10],['Fabien Barthez','fr','France',10],
-    ['Iker Casillas','es','Spain',8]]},
+    ['Peter Shilton','gb-eng','England',10],['Fabien Barthez','fr','France',10],['Iker Casillas','es','Spain',8]]},
   {title:'🏟️ Most appearances', unit:'matches', rows:[
     ['Lionel Messi','ar','Argentina',26],['Lothar Matthäus','de','Germany',25],
     ['Miroslav Klose','de','Germany',24],['Paolo Maldini','it','Italy',23]]},
-  {title:'🏆 Most titles (player)', unit:'titles', rows:[
-    ['Pelé','br','Brazil',3]]},
+  {title:'🏆 Most titles (player)', unit:'titles', rows:[['Pelé','br','Brazil',3]]},
 ];
 
 let statsView = '2026', sortKey = 'goals', lastScorers = [];
@@ -770,7 +779,7 @@ function drawStats(){
 }
 function render2026(){
   if(!lastScorers.length) return `<div class="state-note">No 2026 player data yet — appears once goals are scored.</div>`;
-  const rows = [...lastScorers].sort((a,b)=> (b[sortKey]==null?-1:b[sortKey]) - (a[sortKey]==null?-1:a[sortKey]));
+  const rows = [...lastScorers].sort((a,b)=> (b[sortKey]==null?-1:b[sortKey]) - (a[sortKey]==null?-1:a[sortKey])).slice(0,30);
   const th = (k,l)=>`<th data-k="${k}" class="${sortKey===k?'on':''}">${l}</th>`;
   return `<p class="statnote">FIFA World Cup 2026 — tap a column to sort. Goals are complete; assists &amp; penalties are partially reported by the free feed.</p>`
     + `<table class="ptable"><thead><tr><th class="rkh">#</th><th class="plh">Player</th>${th('goals','G')}${th('assists','A')}${th('penalties','Pen')}</tr></thead><tbody>`
@@ -782,17 +791,52 @@ function render2026(){
           + cell('goals',s.goals) + cell('assists',s.assists) + cell('penalties',s.penalties) + `</tr>`;
       }).join('') + `</tbody></table>`;
 }
+function flagImg(iso){ return iso ? `<img class="pf" src="https://flagcdn.com/w40/${iso}.png" alt="">` : ''; }
+function recordCard(title, unit, rows, opts){
+  opts = opts || {};
+  const tag = opts.live ? `<span class="rtag live">● incl. 2026</span>`
+            : (opts.tag ? `<span class="rtag">${esc(opts.tag)}</span>` : '');
+  return `<div class="histcard"><h4>${title}${tag}</h4>` + (opts.note?`<p class="hn">${esc(opts.note)}</p>`:'')
+    + `<ol class="hlist">` + rows.map((r,i)=>
+        `<li><span class="hrk">${i+1}</span>${flagImg(r.iso)}`
+        + `<span class="hnm">${esc(r.name)}<small>${esc(r.team)}</small></span>`
+        + `<b class="hv">${r.val}${r.delta?`<span class="dlt">+${r.delta}</span>`:''}<small>${esc(unit)}</small></b></li>`
+      ).join('') + `</ol></div>`;
+}
+// merge a [name,iso,team,base] table with live 2026 numbers (added by player name)
+function mergeLive(base, live2026){
+  const map = {};
+  const rows = base.map(([name,iso,team,b])=>{ const p={name,iso,team,base:b,cur:0}; map[norm(name)]=p; return p; });
+  Object.entries(live2026).forEach(([k,v])=>{
+    if(map[k]) map[k].cur = v;
+    else { const meta = live2026.__meta && live2026.__meta[k]; if(meta){ const p={name:meta.name,iso:meta.iso,team:meta.team,base:0,cur:v}; rows.push(p); map[k]=p; } }
+  });
+  rows.forEach(p=>{ p.val = p.base + p.cur; p.delta = p.cur || 0; });
+  return rows.filter(p=>p.val>0).sort((a,b)=> b.val-a.val);
+}
 function renderHistorical(){
-  return `<p class="statnote">All-time men’s World Cup records (through the 2022 tournament — 2026 is in progress).</p>`
-    + `<div class="histgrid">` + HISTORICAL.map(c=>
-        `<div class="histcard"><h4>${c.title}</h4>` + (c.note?`<p class="hn">${esc(c.note)}</p>`:'')
-        + `<ol class="hlist">` + c.rows.map((r,i)=>{
-            const [name,iso,team,val]=r;
-            return `<li><span class="hrk">${i+1}</span><img class="pf" src="https://flagcdn.com/w40/${iso}.png" alt="">`
-              + `<span class="hnm">${esc(name)}<small>${esc(team)}</small></span>`
-              + `<b class="hv">${val}<small>${esc(c.unit)}</small></b></li>`;
-          }).join('') + `</ol></div>`
-      ).join('') + `</div>`;
+  // build 2026 lookups (with metadata so feed-only players can be added)
+  const g = {__meta:{}}, a = {__meta:{}};
+  lastScorers.forEach(s=>{
+    const k = norm(s.name), meta = {name:s.name, iso:isoByCountry[norm(s.nationality)]||'', team:s.team};
+    g[k] = s.goals; g.__meta[k] = meta;
+    if(s.assists!=null){ a[k] = s.assists; a.__meta[k] = meta; }
+  });
+  const goalsRows = mergeLive(WC_GOALS_BASE, g).slice(0,12);
+  const assistRows = mergeLive(WC_ASSISTS_BASE, a).slice(0,8);
+
+  // single-tournament: historical tallies + each current 2026 scorer's running total
+  const st = WC_SINGLE_TOURN.map(([name,iso,team,val])=>({name,iso,team,val}));
+  lastScorers.slice(0,8).forEach(s=> st.push({name:s.name, iso:isoByCountry[norm(s.nationality)]||'', team:s.team+' · 2026', val:s.goals}));
+  const stRows = st.sort((a,b)=> b.val-a.val).slice(0,6);
+
+  let html = `<p class="statnote">All-time men’s World Cup records — goals, assists and single-tournament tallies update live with the 2026 feed (look for <b>incl. 2026</b>). Appearances &amp; clean sheets are as of 2022.</p><div class="histgrid">`;
+  html += recordCard('⚽ All-time top scorers', 'goals', goalsRows, {live:true});
+  html += recordCard('🎯 Most goals, single tournament', 'goals', stRows, {live:true});
+  html += recordCard('👟 Most assists', 'assists', assistRows, {live:true, note:'FIFA-credited; older assists are estimates'});
+  WC_STATIC.forEach(c=> html += recordCard(c.title, c.unit,
+    c.rows.map(([name,iso,team,val])=>({name,iso,team,val})), {tag:'as of 2022', note:c.note}));
+  return html + `</div>`;
 }
 
 /* ───────── Manual update button ───────── */
