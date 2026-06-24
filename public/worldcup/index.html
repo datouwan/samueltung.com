@@ -197,7 +197,7 @@
   .cal-legend .cl{display:inline-flex;align-items:center;gap:5px}
   .cal-legend .cl::before{content:'';width:9px;height:9px;border-radius:3px;background:var(--line)}
   .cal-legend .cl.live::before{background:var(--live)}
-  .cal-legend .cl.next::before{background:var(--accent)}
+  .cal-legend .cl.next::before{background:var(--go)}
   .cal-legend .cl.fin::before{background:var(--muted)}
   .calhead{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
   .cal-wd{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:center;padding:2px 0}
@@ -212,10 +212,11 @@
     background:var(--paper-2);border-radius:6px;padding:3px 5px;color:var(--ink);font-family:var(--sans)}
   .cev:hover{outline:1px solid var(--accent)}
   .cev.live{background:rgba(214,66,43,.14);box-shadow:inset 0 0 0 1px var(--live)}
-  .cev.next{box-shadow:inset 0 0 0 1px var(--accent)}
+  .cev.next{background:rgba(31,157,107,.12);box-shadow:inset 0 0 0 1px var(--go)}
   .cev-top{display:flex;align-items:center;justify-content:space-between;gap:4px;font-size:9.5px;font-weight:800;
     letter-spacing:.03em;color:var(--muted)}
   .cev.live .cev-top{color:var(--live)}
+  .cev.next .cev-top{color:var(--go)}
   .cev-g{background:var(--card);border-radius:5px;padding:0 4px;color:var(--muted);font-weight:700}
   .cev-tm{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600}
   .cev-tm .cf{width:16px;height:12px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line);flex:0 0 auto}
