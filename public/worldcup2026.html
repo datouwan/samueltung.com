@@ -96,6 +96,24 @@
   @keyframes spop{0%,100%{box-shadow:0 3px 10px rgba(0,0,0,.35),0 0 0 0 rgba(161,74,50,.5)}
     60%{box-shadow:0 3px 10px rgba(0,0,0,.35),0 0 0 12px rgba(161,74,50,0)}}
 
+  /* clickable player names */
+  .plink{cursor:pointer;display:inline-flex;align-items:center;gap:9px;min-width:0}
+  .ptable .plink:hover .pnm,.hpl:hover .hnm{color:var(--accent)}
+  .plink:hover .pnm,.plink:hover .hnm{text-decoration:underline;text-decoration-color:var(--accent)}
+
+  /* player floating window */
+  .pbox{width:min(380px,100%)}
+  .pphoto{height:230px;background:var(--paper-2) center/contain no-repeat}
+  .pphoto.noimg{display:grid;place-items:center}
+  .pphoto.noimg::after{content:'👤';font-size:64px;opacity:.35}
+  .pinfo{padding:16px 20px 20px}
+  .pinfo h3{font-family:var(--serif);font-size:22px;margin:0 0 3px}
+  .ploc{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .pstats{display:flex;gap:10px;flex-wrap:wrap}
+  .pstat{flex:1;min-width:84px;background:var(--paper-2);border-radius:10px;padding:10px 12px;
+    display:flex;flex-direction:column;font-size:11px;color:var(--muted);line-height:1.3}
+  .pstat b{font-family:var(--serif);font-size:20px;color:var(--ink)}
+
   /* stadium floating window */
   .smodal{position:fixed;inset:0;z-index:2000;background:rgba(20,18,16,.55);
     display:grid;place-items:center;padding:20px;backdrop-filter:blur(2px)}
@@ -332,6 +350,19 @@
     <div class="state-note">Loading player stats…</div>
   </div>
 </section>
+
+<!-- floating player info window -->
+<div id="playerModal" class="smodal" hidden>
+  <div class="sbox pbox">
+    <button class="sclose" onclick="closePlayer()" aria-label="Close">×</button>
+    <div class="pphoto" id="pPhoto"></div>
+    <div class="pinfo">
+      <h3 id="pName"></h3>
+      <p class="ploc" id="pMeta">Loading…</p>
+      <div class="pstats" id="pStats"></div>
+    </div>
+  </div>
+</div>
 
 <!-- floating stadium info window -->
 <div id="stadiumModal" class="smodal" hidden>
@@ -736,31 +767,31 @@ async function loadNews(){
     }).join('') + `</div>`;
   }catch(e){ panes.news.innerHTML = `<div class="state-note">Couldn’t load news.</div>`; newsLoaded = false; }
 }
-// Career World Cup totals THROUGH 2022 [name, iso, team, value]. The all-time
-// cards add live 2026 numbers from the feed on top of these bases.
+// Career WC totals THROUGH 2022 [name, iso, country, value, lastWC]. The cards
+// add live 2026 numbers; anyone in the 2026 feed has their lastWC shown as 2026.
 const WC_GOALS_BASE = [
-  ['Miroslav Klose','de','Germany',16],['Ronaldo','br','Brazil',15],['Gerd Müller','de','West Germany',14],
-  ['Just Fontaine','fr','France',13],['Lionel Messi','ar','Argentina',13],['Kylian Mbappé','fr','France',12],
-  ['Pelé','br','Brazil',12],['Sándor Kocsis','hu','Hungary',11],['Jürgen Klinsmann','de','Germany',11],
-  ['Thomas Müller','de','Germany',10],['Cristiano Ronaldo','pt','Portugal',8],['Neymar','br','Brazil',8],
-  ['Harry Kane','gb-eng','England',8],['Luis Suárez','uy','Uruguay',7],['Romelu Lukaku','be','Belgium',5],
+  ['Miroslav Klose','de','Germany',16,2014],['Ronaldo','br','Brazil',15,2006],['Gerd Müller','de','West Germany',14,1974],
+  ['Just Fontaine','fr','France',13,1958],['Lionel Messi','ar','Argentina',13,2022],['Kylian Mbappé','fr','France',12,2022],
+  ['Pelé','br','Brazil',12,1970],['Sándor Kocsis','hu','Hungary',11,1954],['Jürgen Klinsmann','de','Germany',11,1998],
+  ['Thomas Müller','de','Germany',10,2022],['Cristiano Ronaldo','pt','Portugal',8,2022],['Neymar','br','Brazil',8,2022],
+  ['Harry Kane','gb-eng','England',8,2022],['Luis Suárez','uy','Uruguay',7,2022],['Romelu Lukaku','be','Belgium',5,2022],
 ];
 const WC_ASSISTS_BASE = [
-  ['Pelé','br','Brazil',10],['Diego Maradona','ar','Argentina',8],['Lionel Messi','ar','Argentina',8],
-  ['Thomas Müller','de','Germany',6],['Kylian Mbappé','fr','France',5],
+  ['Pelé','br','Brazil',10,1970],['Diego Maradona','ar','Argentina',8,1994],['Lionel Messi','ar','Argentina',8,2022],
+  ['Thomas Müller','de','Germany',6,2022],['Kylian Mbappé','fr','France',5,2022],
 ];
 const WC_SINGLE_TOURN = [
-  ['Just Fontaine','fr','France 1958',13],['Sándor Kocsis','hu','Hungary 1954',11],
-  ['Gerd Müller','de','W. Germany 1970',10],['Eusébio','pt','Portugal 1966',9],
+  ['Just Fontaine','fr','France',13,1958],['Sándor Kocsis','hu','Hungary',11,1954],
+  ['Gerd Müller','de','West Germany',10,1970],['Eusébio','pt','Portugal',9,1966],
 ];
 // Records with no live 2026 feed — shown as-of 2022.
 const WC_STATIC = [
   {title:'🧤 Most clean sheets (GK)', unit:'clean sheets', note:'goalkeeping shut-out record', rows:[
-    ['Peter Shilton','gb-eng','England',10],['Fabien Barthez','fr','France',10],['Iker Casillas','es','Spain',8]]},
+    ['Peter Shilton','gb-eng','England',10,1990],['Fabien Barthez','fr','France',10,2006],['Iker Casillas','es','Spain',8,2014]]},
   {title:'🏟️ Most appearances', unit:'matches', rows:[
-    ['Lionel Messi','ar','Argentina',26],['Lothar Matthäus','de','Germany',25],
-    ['Miroslav Klose','de','Germany',24],['Paolo Maldini','it','Italy',23]]},
-  {title:'🏆 Most titles (player)', unit:'titles', rows:[['Pelé','br','Brazil',3]]},
+    ['Lionel Messi','ar','Argentina',26,2022],['Lothar Matthäus','de','Germany',25,1998],
+    ['Miroslav Klose','de','Germany',24,2014],['Paolo Maldini','it','Italy',23,2002]]},
+  {title:'🏆 Most titles (player)', unit:'titles', rows:[['Pelé','br','Brazil',3,1970]]},
 ];
 
 let statsView = '2026', sortKey = 'goals', lastScorers = [];
@@ -787,29 +818,35 @@ function render2026(){
         const fl = countryFlag(s.nationality) || s.crest;
         const cell = (k,v)=>`<td class="${sortKey===k?'on':''}">${v==null?'–':v}</td>`;
         return `<tr class="${i===0&&sortKey==='goals'?'lead':''}"><td class="rk">${i+1}</td>`
-          + `<td class="pl">${fl?`<img class="pf" src="${esc(fl)}" alt="">`:''}<span class="pnm">${esc(s.name)}<small>${esc(s.team)}</small></span></td>`
+          + `<td class="pl"><span class="plink" data-name="${esc(s.name)}" data-nat="${esc(s.nationality||'')}" data-team="${esc(s.team)}" data-g="${s.goals}" data-a="${s.assists==null?'':s.assists}" onclick="openPlayer(this)">`
+          + `${fl?`<img class="pf" src="${esc(fl)}" alt="">`:''}<span class="pnm">${esc(s.name)}<small>${esc(s.team)}</small></span></span></td>`
           + cell('goals',s.goals) + cell('assists',s.assists) + cell('penalties',s.penalties) + `</tr>`;
       }).join('') + `</tbody></table>`;
 }
 function flagImg(iso){ return iso ? `<img class="pf" src="https://flagcdn.com/w40/${iso}.png" alt="">` : ''; }
+const is2026Active = name => lastScorers.some(s=> norm(s.name)===norm(name));
 function recordCard(title, unit, rows, opts){
   opts = opts || {};
   const tag = opts.live ? `<span class="rtag live">● incl. 2026</span>`
             : (opts.tag ? `<span class="rtag">${esc(opts.tag)}</span>` : '');
   return `<div class="histcard"><h4>${title}${tag}</h4>` + (opts.note?`<p class="hn">${esc(opts.note)}</p>`:'')
-    + `<ol class="hlist">` + rows.map((r,i)=>
-        `<li><span class="hrk">${i+1}</span>${flagImg(r.iso)}`
-        + `<span class="hnm">${esc(r.name)}<small>${esc(r.team)}</small></span>`
-        + `<b class="hv">${r.val}${r.delta?`<span class="dlt">+${r.delta}</span>`:''}<small>${esc(unit)}</small></b></li>`
-      ).join('') + `</ol></div>`;
+    + `<ol class="hlist">` + rows.map((r,i)=>{
+        const last = is2026Active(r.name) ? 2026 : r.last;
+        const sub = `${esc(r.team)}${last?` · WC ${last}`:''}`;
+        return `<li><span class="hrk">${i+1}</span>`
+        + `<span class="plink hpl" data-name="${esc(r.name)}" data-nat="${esc(r.team)}" data-val="${esc(String(r.val))}" data-unit="${esc(unit)}" onclick="openPlayer(this)">`
+        + `${flagImg(r.iso)}<span class="hnm">${esc(r.name)}<small>${sub}</small></span></span>`
+        + `<b class="hv">${r.val}${r.delta?`<span class="dlt">+${r.delta}</span>`:''}<small>${esc(unit)}</small></b></li>`;
+      }).join('') + `</ol></div>`;
 }
-// merge a [name,iso,team,base] table with live 2026 numbers (added by player name)
+// merge a [name,iso,country,base,lastWC] table with live 2026 numbers (by name)
 function mergeLive(base, live2026){
   const map = {};
-  const rows = base.map(([name,iso,team,b])=>{ const p={name,iso,team,base:b,cur:0}; map[norm(name)]=p; return p; });
+  const rows = base.map(([name,iso,team,b,last])=>{ const p={name,iso,team,base:b,cur:0,last}; map[norm(name)]=p; return p; });
   Object.entries(live2026).forEach(([k,v])=>{
+    if(k==='__meta') return;
     if(map[k]) map[k].cur = v;
-    else { const meta = live2026.__meta && live2026.__meta[k]; if(meta){ const p={name:meta.name,iso:meta.iso,team:meta.team,base:0,cur:v}; rows.push(p); map[k]=p; } }
+    else { const meta = live2026.__meta && live2026.__meta[k]; if(meta){ const p={name:meta.name,iso:meta.iso,team:meta.team,base:0,cur:v,last:2026}; rows.push(p); map[k]=p; } }
   });
   rows.forEach(p=>{ p.val = p.base + p.cur; p.delta = p.cur || 0; });
   return rows.filter(p=>p.val>0).sort((a,b)=> b.val-a.val);
@@ -826,18 +863,56 @@ function renderHistorical(){
   const assistRows = mergeLive(WC_ASSISTS_BASE, a).slice(0,8);
 
   // single-tournament: historical tallies + each current 2026 scorer's running total
-  const st = WC_SINGLE_TOURN.map(([name,iso,team,val])=>({name,iso,team,val}));
-  lastScorers.slice(0,8).forEach(s=> st.push({name:s.name, iso:isoByCountry[norm(s.nationality)]||'', team:s.team+' · 2026', val:s.goals}));
+  const st = WC_SINGLE_TOURN.map(([name,iso,team,val,year])=>({name,iso,team,val,last:year}));
+  lastScorers.slice(0,8).forEach(s=> st.push({name:s.name, iso:isoByCountry[norm(s.nationality)]||'', team:s.team, val:s.goals, last:2026}));
   const stRows = st.sort((a,b)=> b.val-a.val).slice(0,6);
 
-  let html = `<p class="statnote">All-time men’s World Cup records — goals, assists and single-tournament tallies update live with the 2026 feed (look for <b>incl. 2026</b>). Appearances &amp; clean sheets are as of 2022.</p><div class="histgrid">`;
+  let html = `<p class="statnote">All-time men’s World Cup records, with each player’s last World Cup. Goals, assists and single-tournament tallies update live with the 2026 feed (look for <b>incl. 2026</b>). Tap a name for the player card. Appearances &amp; clean sheets are as of 2022.</p><div class="histgrid">`;
   html += recordCard('⚽ All-time top scorers', 'goals', goalsRows, {live:true});
   html += recordCard('🎯 Most goals, single tournament', 'goals', stRows, {live:true});
   html += recordCard('👟 Most assists', 'assists', assistRows, {live:true, note:'FIFA-credited; older assists are estimates'});
   WC_STATIC.forEach(c=> html += recordCard(c.title, c.unit,
-    c.rows.map(([name,iso,team,val])=>({name,iso,team,val})), {tag:'as of 2022', note:c.note}));
+    c.rows.map(([name,iso,team,val,last])=>({name,iso,team,val,last})), {tag:'as of 2022', note:c.note}));
   return html + `</div>`;
 }
+
+/* ───────── Player floating window ───────── */
+const pModal = document.getElementById('playerModal');
+const pPhoto = document.getElementById('pPhoto');
+function pstat(v,l){ return `<span class="pstat"><b>${esc(String(v))}</b>${esc(l)}</span>`; }
+async function openPlayer(el){
+  const d = el.dataset;
+  pModal.hidden = false;
+  document.getElementById('pName').textContent = d.name;
+  document.getElementById('pMeta').textContent = (d.nat || d.team || '') + ' · loading…';
+  pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
+  const chips = [];
+  if(d.g!=null && d.g!=='') chips.push(pstat(d.g, '2026 goals'));
+  if(d.a!=null && d.a!=='' && d.a!=='null') chips.push(pstat(d.a, '2026 assists'));
+  if(d.alltime) chips.push(pstat(d.alltime, 'all-time WC goals'));
+  if(d.val && d.unit) chips.push(pstat(d.val, d.unit));
+  document.getElementById('pStats').innerHTML = chips.join('');
+  try{
+    const r = await fetch(`/api/player?name=${encodeURIComponent(d.name)}&nat=${encodeURIComponent(d.nat||d.team||'')}`);
+    const b = await r.json();
+    if(pModal.hidden) return; // closed meanwhile
+    if(b && !b.error){
+      if(b.photo){ pPhoto.style.backgroundImage = `url('${b.photo}')`; pPhoto.classList.remove('noimg'); }
+      const meta = [];
+      if(b.position) meta.push(b.position);
+      if(b.age!=null) meta.push(b.age + ' yrs');
+      if(b.height) meta.push(/^\d+$/.test(b.height) ? b.height+' cm' : b.height);
+      const nat = b.nationality || d.nat || d.team || '';
+      document.getElementById('pMeta').textContent = [nat, ...meta].filter(Boolean).join(' · ');
+    } else {
+      document.getElementById('pMeta').textContent = (d.nat || d.team || '') + (b && b.error==='rate_limited' ? ' · photo unavailable (quota)' : '');
+    }
+  }catch(e){ document.getElementById('pMeta').textContent = (d.nat || d.team || ''); }
+}
+function closePlayer(){ pModal.hidden = true; }
+pModal.addEventListener('click', e=>{ if(e.target===pModal) closePlayer(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closePlayer(); });
+window.openPlayer = openPlayer; window.closePlayer = closePlayer;
 
 /* ───────── Manual update button ───────── */
 const refreshBtn = document.getElementById('refreshBtn');

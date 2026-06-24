@@ -27,6 +27,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/api/wc") return handleWC(request, env, ctx);
     if (url.pathname === "/api/news") return handleNews(request, env, ctx);
+    if (url.pathname === "/api/player") return handlePlayer(request, env, ctx);
     if (env.ASSETS) return env.ASSETS.fetch(request);
     return new Response("Not found", { status: 404 });
   },
@@ -228,6 +229,67 @@ function parseRss(xml, feed) {
     items.push({ title, source: feed.source, link, pubDate });
   }
   return items;
+}
+
+// Player bio + photo from api-football's profiles endpoint (free plan allows it,
+// no season filter). Cached 24h per surname — bios are static, so this barely
+// touches the daily quota. Returns 200 with {error} on failure so the page can
+// still show the stats it already has.
+async function handlePlayer(request, env, ctx) {
+  const url = new URL(request.url);
+  const name = (url.searchParams.get("name") || "").trim();
+  const nat = (url.searchParams.get("nat") || "").trim();
+  if (!name) return json({ error: "no_name" }, 400, 0);
+  if (!env.APIFOOTBALL_KEY) return json({ error: "no_key" }, 200, 0);
+
+  const last = name.split(/\s+/).pop().toLowerCase();
+  if (last.length < 3) return json({ error: "short" }, 200, 0);
+
+  // cache the final (small) result per surname+nationality; never cache errors
+  const cache = caches.default;
+  const ckey = new Request(`https://wc.cache/player-${last}-${norm(nat)}`);
+  const cached = await cache.match(ckey);
+  if (cached) return cached;
+
+  try {
+    const r = await fetch(`${AF}/players/profiles?search=${encodeURIComponent(last)}`, {
+      headers: { "x-apisports-key": env.APIFOOTBALL_KEY },
+    });
+    if (!r.ok) return json({ error: "upstream" }, 200, 0);
+    const data = await r.json();
+    const errs = data && data.errors;
+    if (Array.isArray(errs) ? errs.length : errs && Object.keys(errs).length)
+      return json({ error: "rate_limited" }, 200, 0);
+
+    // token-based match: api-football names can be compound (e.g. lastname
+    // "Messi Cuccittini"), so build a haystack and count how many of our name
+    // tokens appear in it. Surname must be present; nationality breaks ties.
+    const tokens = name.toLowerCase().split(/\s+/).map(norm).filter((t) => t.length >= 2);
+    const surname = norm(last);
+    let best = null, bestScore = 0;
+    for (const r of data.response || []) {
+      const p = r.player; if (!p) continue;
+      const hay = norm(`${p.firstname || ""} ${p.lastname || ""} ${p.name || ""}`);
+      if (!hay.includes(surname)) continue; // surname is mandatory
+      let score = tokens.reduce((n, t) => n + (hay.includes(t) ? 2 : 0), 0);
+      if (nat && norm(p.nationality) === norm(nat)) score += 3;
+      if (score > bestScore) { bestScore = score; best = p; }
+    }
+    if (!best) return json({ error: "not_found" }, 200, 0);
+
+    const res = json({
+      name: best.name, firstname: best.firstname, lastname: best.lastname,
+      photo: best.photo || "", nationality: best.nationality || "",
+      birthDate: (best.birth && best.birth.date) || "", birthPlace: (best.birth && best.birth.place) || "",
+      birthCountry: (best.birth && best.birth.country) || "",
+      age: best.age ?? null, height: best.height || "", weight: best.weight || "",
+      position: best.position || "", number: best.number ?? null,
+    }, 200, 86400);
+    ctx.waitUntil(cache.put(ckey, res.clone()));
+    return res;
+  } catch (_) {
+    return json({ error: "failed" }, 200, 0);
+  }
 }
 
 function decodeXml(s) {
