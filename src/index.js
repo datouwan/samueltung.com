@@ -263,7 +263,7 @@ async function handlePlayer(request, env, ctx) {
 
   // cache the final (small) result per surname+nationality; never cache errors
   const cache = caches.default;
-  const ckey = new Request(`https://wc.cache/player2-${term}-${norm(nat)}`);
+  const ckey = new Request(`https://wc.cache/player3-${term}-${norm(nat)}`);
   const cached = await cache.match(ckey);
   if (cached) return cached;
 
@@ -282,13 +282,18 @@ async function handlePlayer(request, env, ctx) {
     // tokens appear in it. Surname must be present; nationality breaks ties.
     const tokens = name.toLowerCase().split(/\s+/).map(norm).filter((t) => t.length >= 2);
     const surname = norm(last);
+    const first = tokens[0] || "";
     let best = null, bestScore = 0;
     for (const r of data.response || []) {
       const p = r.player; if (!p) continue;
       const hay = norm(`${p.firstname || ""} ${p.lastname || ""} ${p.name || ""}`);
       if (!hay.includes(surname)) continue; // surname is mandatory
+      const natMatch = nat && norm(p.nationality) === norm(nat);
+      // for multi-word names, the first name (or nationality) must also match,
+      // so "Gerd Müller" can't silently fall back to "Thomas Müller"
+      if (tokens.length > 1 && first && !hay.includes(first) && !natMatch) continue;
       let score = tokens.reduce((n, t) => n + (hay.includes(t) ? 2 : 0), 0);
-      if (nat && norm(p.nationality) === norm(nat)) score += 3;
+      if (natMatch) score += 3;
       if (score > bestScore) { bestScore = score; best = p; }
     }
     if (!best) return json({ error: "not_found" }, 200, 0);
