@@ -51,6 +51,14 @@
   .lgame .sc{font-family:var(--serif);font-weight:700;font-size:16px;padding:0 2px;letter-spacing:.02em}
   .lgame .min{color:#ffb3a6;font-size:11px;font-weight:700;margin-left:2px}
   .lgame .grp{color:#9c968c;font-size:11px;margin-left:2px}
+  .goalbadge{font-size:11px;font-weight:800;letter-spacing:.04em;color:#06351a;background:#7CFF9B;
+    border-radius:10px;padding:2px 8px;margin-left:2px;animation:pop .35s ease}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+  .lgame.goal .sc{animation:scoreflash .9s ease-in-out 3}
+  @keyframes scoreflash{0%,100%{color:#fff;transform:scale(1)}50%{color:#7CFF9B;transform:scale(1.18)}}
+  .live-score-pill.goal{animation:pillflash .9s ease-in-out 3}
+  @keyframes pillflash{0%,100%{border-color:var(--live);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+    50%{border-color:#7CFF9B;box-shadow:0 0 0 4px rgba(124,255,155,.55)}}
   #liveBar.idle{background:var(--paper-2);color:var(--ink-soft);border-bottom:1px solid var(--line)}
   #liveBar.idle .tag{color:var(--muted)}
 
@@ -241,9 +249,9 @@ function clearMapLive(){
   liveMarked = [];
 }
 
-function renderMapLive(matches){
+function renderMapLive(live){
   clearMapLive();
-  (matches||[]).filter(m => LIVE_STATUSES.includes(m.status)).forEach(m=>{
+  (live||[]).forEach(m=>{
     const h = markersByName[norm(m.home.name)], a = markersByName[norm(m.away.name)];
     if(!h || !a) return;
     const hp = h.marker.getLatLng(), ap = a.marker.getLatLng();
@@ -256,11 +264,12 @@ function renderMapLive(matches){
 
     // live score pill at the midpoint
     const mid = [(hp.lat+ap.lat)/2, (hp.lng+ap.lng)/2];
-    const state = m.status==='PAUSED' ? 'HT' : (m.minute ? `${m.minute}'` : 'LIVE');
+    const goal = isFreshGoal(m);
+    const lv = goal ? '⚽ GOAL!' : liveState(m);
     const pill = L.divIcon({className:'', iconSize:null,
-      html:`<div class="pill-wrap"><div class="live-score-pill">`
+      html:`<div class="pill-wrap"><div class="live-score-pill${goal?' goal':''}">`
         +`<img src="${flagUrl(h.iso)}" alt=""><span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
-        +`<img src="${flagUrl(a.iso)}" alt=""><span class="lv">${state}</span></div></div>`});
+        +`<img src="${flagUrl(a.iso)}" alt=""><span class="lv">${lv}</span></div></div>`});
     L.marker(mid,{icon:pill,zIndexOffset:1000})
       .on('click',()=>map.flyToBounds(L.latLngBounds([hp,ap]).pad(0.6),{maxZoom:5}))
       .addTo(liveLayer);
@@ -317,10 +326,34 @@ const updEl = document.getElementById('updated');
 
 function fmtScore(n){ return (n===null||n===undefined) ? '–' : n; }
 
-function renderLive(matches){
-  const live = matches.filter(m => LIVE_STATUSES.includes(m.status));
+// goal detection: flash when a live score increments between polls
+const prevScore = {}, goalAt = {};
+const gkey = m => norm(m.home.name)+'|'+norm(m.away.name);
+function goalCheck(live){
+  const now = Date.now();
+  (live||[]).forEach(m=>{
+    if(m.home.score==null || m.away.score==null) return;
+    const k = gkey(m), s = `${m.home.score}-${m.away.score}`;
+    if(prevScore[k]!==undefined && s!==prevScore[k]){
+      const [ph,pa] = prevScore[k].split('-').map(Number);
+      if((m.home.score+m.away.score) > (ph+pa)) goalAt[k] = now; // a goal went in
+    }
+    prevScore[k] = s;
+  });
+}
+const isFreshGoal = m => { const t = goalAt[gkey(m)]; return t && (Date.now()-t < 10000); };
+
+function liveState(m){
+  if(m.phase==='HT') return 'HT';
+  if(['FT','AET','PEN'].includes(m.phase)) return 'FT';
+  if(m.minute!=null) return `${esc(m.minute)}'`;
+  if(m.status==='PAUSED') return 'HT';
+  return 'LIVE';
+}
+
+function renderLive(live, matches){
   if(!live.length){
-    const next = matches.filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
+    const next = (matches||[]).filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
       .sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate))[0];
     liveBar.className = 'idle';
     if(next){
@@ -336,19 +369,19 @@ function renderLive(matches){
   }
   liveBar.className = '';
   liveBar.innerHTML = `<span class="tag"><span class="dot"></span>Live now</span>` + live.map(m=>{
-    const state = m.status==='PAUSED' ? 'HT' : (m.minute ? `${esc(m.minute)}'` : 'LIVE');
-    return `<span class="lgame tap" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
+    const goal = isFreshGoal(m);
+    return `<span class="lgame tap${goal?' goal':''}" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
       + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
       + teamCard(m.home,false)
       + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
       + teamCard(m.away,true)
-      + `<span class="min">${state}</span>`
+      + (goal?`<span class="goalbadge">⚽ GOAL!</span>`:`<span class="min">${liveState(m)}</span>`)
       + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + `</span>`;
   }).join('');
 }
 
-function renderGroups(groups, matches){
-  const liveByGroup = new Set(matches.filter(m=>LIVE_STATUSES.includes(m.status)).map(m=>m.group));
+function renderGroups(groups, live){
+  const liveByGroup = new Set((live||[]).map(m=>m.group).filter(Boolean));
   if(!groups.length){
     groupsEl.innerHTML = `<div class="state-note">No group tables published yet. They’ll appear here once the draw/standings are available from the data feed.</div>`;
     return;
@@ -385,12 +418,15 @@ async function refresh(){
         : `<div class="state-note">Couldn’t load standings right now (<code>${esc(data.error)}</code>). Will retry automatically.</div>`;
       return;
     }
-    renderLive(data.matches||[]);
-    renderGroups(data.groups||[], data.matches||[]);
-    renderMapLive(data.matches||[]);
+    goalCheck(data.live||[]);
+    renderLive(data.live||[], data.matches||[]);
+    renderGroups(data.groups||[], data.live||[]);
+    renderMapLive(data.live||[]);
     if(data.updated){
       const t = new Date(data.updated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      updEl.textContent = 'Updated ' + t + ' · auto-refreshes';
+      const src = data.source==='api-football' ? ' · live via api-football'
+                : (data.live&&data.live.length ? ' · live (delayed feed)' : '');
+      updEl.textContent = 'Updated ' + t + src + ' · auto-refreshes';
     }
   }catch(e){
     liveBar.className='idle';
