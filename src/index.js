@@ -138,11 +138,13 @@ async function handleWC(request, env, ctx) {
         .map((f) => {
           const hn = f.teams.home.name, an = f.teams.away.name;
           const short = f.fixture.status.short; // 1H,HT,2H,ET,BT,P,FT...
+          const v = f.fixture.venue || {};
           return {
             status: "LIVE",
             minute: f.fixture.status.elapsed,
             phase: short,
             group: groupByPair[pairKey(hn, an)] || groupByPair[pairKey(an, hn)] || "",
+            venue: { id: v.id || null, name: v.name || "", city: v.city || "" },
             home: { name: hn, crest: f.teams.home.logo || "", score: f.goals.home },
             away: { name: an, crest: f.teams.away.logo || "", score: f.goals.away },
           };

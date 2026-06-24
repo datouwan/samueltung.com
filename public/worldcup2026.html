@@ -62,6 +62,53 @@
   #liveBar.idle{background:var(--paper-2);color:var(--ink-soft);border-bottom:1px solid var(--line)}
   #liveBar.idle .tag{color:var(--muted)}
 
+  /* live bar + update button */
+  .livewrap{position:relative;display:flex;align-items:stretch}
+  .livewrap #liveBar{flex:1;min-width:0}
+  #refreshBtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;
+    background:#a14a32;color:#fff;font:700 12px/1 var(--sans);letter-spacing:.04em;text-transform:uppercase;
+    padding:0 16px;border-left:1px solid #000}
+  #refreshBtn:hover{background:#8a3d28}
+  #refreshBtn .ricon{font-size:16px;display:inline-block}
+  #refreshBtn.spin .ricon{animation:spin .6s linear}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:560px){#refreshBtn .rtxt{display:none}#refreshBtn{padding:0 13px}}
+
+  /* venue chip in the live bar */
+  .vchip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#ffd9a8;
+    background:#3a2f26;border:1px solid #574536;border-radius:8px;padding:3px 8px;cursor:pointer;white-space:nowrap}
+  .vchip:hover{border-color:#a14a32;color:#fff}
+
+  /* stadium marker on map */
+  .stadium-marker{width:30px;height:30px;display:grid;place-items:center;font-size:18px;cursor:pointer;
+    background:#fff;border:2px solid #a14a32;border-radius:50%;box-shadow:0 3px 10px rgba(0,0,0,.35);
+    animation:spop 1.6s ease-in-out infinite}
+  @keyframes spop{0%,100%{box-shadow:0 3px 10px rgba(0,0,0,.35),0 0 0 0 rgba(161,74,50,.5)}
+    60%{box-shadow:0 3px 10px rgba(0,0,0,.35),0 0 0 12px rgba(161,74,50,0)}}
+
+  /* stadium floating window */
+  .smodal{position:fixed;inset:0;z-index:2000;background:rgba(20,18,16,.55);
+    display:grid;place-items:center;padding:20px;backdrop-filter:blur(2px)}
+  .smodal[hidden]{display:none}
+  .sbox{position:relative;width:min(440px,100%);background:#fff;border-radius:16px;overflow:hidden;
+    box-shadow:0 24px 70px rgba(0,0,0,.4);animation:pop .25s ease}
+  .sclose{position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border:none;border-radius:50%;
+    background:rgba(0,0,0,.5);color:#fff;font-size:20px;line-height:1;cursor:pointer}
+  .sclose:hover{background:rgba(0,0,0,.75)}
+  .simg{height:200px;background:#e9e6df center/cover no-repeat}
+  .simg.noimg{display:grid;place-items:center}
+  .simg.noimg::after{content:'🏟️';font-size:54px;opacity:.5}
+  .sbody{padding:16px 20px 20px}
+  .sbody h3{font-family:var(--serif);font-size:22px;margin:0 0 2px}
+  .sloc{color:var(--muted);margin:0 0 14px;font-size:14px}
+  .sstats{display:flex;gap:10px;margin-bottom:12px}
+  .sstats .stat{flex:1;background:var(--paper-2);border-radius:10px;padding:10px 12px;
+    display:flex;flex-direction:column;font-size:12px;color:var(--muted)}
+  .sstats .stat b{font-family:var(--serif);font-size:18px;color:var(--ink)}
+  .smatch{margin:0;font-size:14px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:12px}
+  .smatch .ld{color:var(--live)}
+  .smatch b{font-family:var(--serif)}
+
   #map{height:54vh;min-height:340px;background:#eef0f2}
 
   /* groups */
@@ -153,7 +200,10 @@
   <h1>Map, Groups &amp; Live Scores<span class="sub">48 teams · 12 groups · live tables</span></h1>
 </header>
 
-<div id="liveBar" class="idle"><span class="tag"><span class="dot"></span>Loading live scores…</span></div>
+<div class="livewrap">
+  <div id="liveBar" class="idle"><span class="tag"><span class="dot"></span>Loading live scores…</span></div>
+  <button id="refreshBtn" title="Refresh now" aria-label="Refresh now"><span class="ricon">↻</span><span class="rtxt">Update</span></button>
+</div>
 
 <div id="map"></div>
 
@@ -166,6 +216,20 @@
     <div class="state-note">Loading group standings…</div>
   </div>
 </section>
+
+<!-- floating stadium info window -->
+<div id="stadiumModal" class="smodal" hidden>
+  <div class="sbox">
+    <button class="sclose" onclick="closeStadium()" aria-label="Close">×</button>
+    <div class="simg" id="sImg"></div>
+    <div class="sbody">
+      <h3 id="sName"></h3>
+      <p class="sloc" id="sLoc"></p>
+      <div class="sstats" id="sStats"></div>
+      <p class="smatch" id="sMatch"></p>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ───────── Map: 48 qualified teams ───────── */
@@ -238,6 +302,41 @@ legend.onAdd = () => { const d = L.DomUtil.create('div','legend');
   return d; };
 legend.addTo(map);
 
+/* ───────── World Cup 2026 host stadiums (for the live venue) ───────── */
+// api-football gives venue {id,name,city} but no coordinates, so we keep a
+// static table of the 16 host venues. Matched by stadium name, then city.
+const STADIUMS = [
+  {n:'MetLife Stadium', city:'East Rutherford', country:'USA', cap:82500, lat:40.8135, lng:-74.0745, alias:['new york new jersey stadium','new york stadium']},
+  {n:'AT&T Stadium', city:'Arlington', country:'USA', cap:80000, lat:32.7473, lng:-97.0945, alias:['dallas stadium','att stadium','cowboys stadium']},
+  {n:'NRG Stadium', city:'Houston', country:'USA', cap:72220, lat:29.6847, lng:-95.4107, alias:['houston stadium']},
+  {n:'Arrowhead Stadium', city:'Kansas City', country:'USA', cap:76416, lat:39.0489, lng:-94.4839, alias:['geha field at arrowhead stadium','kansas city stadium']},
+  {n:'Mercedes-Benz Stadium', city:'Atlanta', country:'USA', cap:71000, lat:33.7553, lng:-84.4006, alias:['atlanta stadium']},
+  {n:'Hard Rock Stadium', city:'Miami Gardens', country:'USA', cap:65326, lat:25.9580, lng:-80.2389, alias:['miami stadium']},
+  {n:'Lincoln Financial Field', city:'Philadelphia', country:'USA', cap:69176, lat:39.9008, lng:-75.1675, alias:['philadelphia stadium']},
+  {n:'Gillette Stadium', city:'Foxborough', country:'USA', cap:65878, lat:42.0909, lng:-71.2643, alias:['boston stadium','new england stadium']},
+  {n:'Lumen Field', city:'Seattle', country:'USA', cap:69000, lat:47.5952, lng:-122.3316, alias:['seattle stadium','centurylink field']},
+  {n:"Levi's Stadium", city:'Santa Clara', country:'USA', cap:68500, lat:37.4033, lng:-121.9694, alias:['san francisco bay area stadium','san francisco stadium','bay area stadium']},
+  {n:'SoFi Stadium', city:'Inglewood', country:'USA', cap:70240, lat:33.9535, lng:-118.3392, alias:['los angeles stadium']},
+  {n:'BMO Field', city:'Toronto', country:'Canada', cap:45000, lat:43.6332, lng:-79.4185, alias:['toronto stadium']},
+  {n:'BC Place', city:'Vancouver', country:'Canada', cap:54500, lat:49.2768, lng:-123.1119, alias:['vancouver stadium']},
+  {n:'Estadio Azteca', city:'Mexico City', country:'Mexico', cap:83264, lat:19.3029, lng:-99.1505, alias:['estadio banorte','mexico city stadium']},
+  {n:'Estadio Akron', city:'Guadalajara', country:'Mexico', cap:49850, lat:20.6817, lng:-103.4625, alias:['guadalajara stadium']},
+  {n:'Estadio BBVA', city:'Monterrey', country:'Mexico', cap:53500, lat:25.6693, lng:-100.2443, alias:['estadio bbva bancomer','monterrey stadium']},
+];
+const stadiumByName = {}, stadiumByCity = {};
+STADIUMS.forEach(s=>{
+  stadiumByName[norm(s.n)] = s;
+  (s.alias||[]).forEach(a=> stadiumByName[norm(a)] = s);
+  stadiumByCity[norm(s.city)] = s;
+});
+function venueInfo(v){
+  if(!v) return null;
+  let s = stadiumByName[norm(v.name)] || stadiumByCity[norm(v.city)]
+       || stadiumByCity[norm(String(v.city).split(',')[0])] || null;
+  const img = v.id ? `https://media.api-sports.io/football/venues/${v.id}.png` : '';
+  return { s, img, name: v.name || (s&&s.n) || 'Stadium', city: v.city || (s&&s.city) || '' };
+}
+
 /* ───────── Live match overlay on the map ───────── */
 const liveLayer = L.layerGroup().addTo(map);
 let liveMarked = [];
@@ -273,6 +372,15 @@ function renderMapLive(live){
     L.marker(mid,{icon:pill,zIndexOffset:1000})
       .on('click',()=>map.flyToBounds(L.latLngBounds([hp,ap]).pad(0.6),{maxZoom:5}))
       .addTo(liveLayer);
+
+    // stadium marker at the live venue (when we know its coordinates)
+    const vi = venueInfo(m.venue);
+    if(vi && vi.s){
+      const sicon = L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-30],
+        html:`<div class="stadium-marker" title="${esc(vi.name)} — click for info">🏟️</div>`});
+      L.marker([vi.s.lat, vi.s.lng],{icon:sicon, zIndexOffset:1400})
+        .on('click',()=>openStadium(m)).addTo(liveLayer);
+    }
   });
 }
 
@@ -327,6 +435,7 @@ const updEl = document.getElementById('updated');
 function fmtScore(n){ return (n===null||n===undefined) ? '–' : n; }
 
 // goal detection: flash when a live score increments between polls
+let currentLive = [];
 const prevScore = {}, goalAt = {};
 const gkey = m => norm(m.home.name)+'|'+norm(m.away.name);
 function goalCheck(live){
@@ -368,15 +477,18 @@ function renderLive(live, matches){
     return;
   }
   liveBar.className = '';
-  liveBar.innerHTML = `<span class="tag"><span class="dot"></span>Live now</span>` + live.map(m=>{
+  currentLive = live;
+  liveBar.innerHTML = `<span class="tag"><span class="dot"></span>Live now</span>` + live.map((m,i)=>{
     const goal = isFreshGoal(m);
+    const vi = venueInfo(m.venue);
+    const vchip = vi ? `<span class="vchip" title="Stadium info" onclick="event.stopPropagation();openStadiumByIdx(${i})">🏟️ ${esc(vi.name)}</span>` : '';
     return `<span class="lgame tap${goal?' goal':''}" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
       + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
       + teamCard(m.home,false)
       + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
       + teamCard(m.away,true)
       + (goal?`<span class="goalbadge">⚽ GOAL!</span>`:`<span class="min">${liveState(m)}</span>`)
-      + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + `</span>`;
+      + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + vchip + `</span>`;
   }).join('');
 }
 
@@ -402,6 +514,42 @@ function renderGroups(groups, live){
       + `<tbody>${rows}</tbody></table></div>`;
   }).join('');
 }
+
+/* ───────── Stadium floating window ───────── */
+const sModal = document.getElementById('stadiumModal');
+function openStadium(m){
+  const vi = venueInfo(m.venue); if(!vi) return;
+  document.getElementById('sImg').style.backgroundImage = vi.img ? `url('${vi.img}')` : 'none';
+  document.getElementById('sImg').classList.toggle('noimg', !vi.img);
+  document.getElementById('sName').textContent = vi.name;
+  document.getElementById('sLoc').textContent = [vi.city, vi.s && vi.s.country].filter(Boolean).join(' · ');
+  const stats = [];
+  if(vi.s){
+    stats.push(`<span class="stat"><b>${vi.s.cap.toLocaleString()}</b>capacity</span>`);
+    stats.push(`<span class="stat"><b>WC 2026</b>host venue</span>`);
+  }
+  document.getElementById('sStats').innerHTML = stats.join('');
+  document.getElementById('sMatch').innerHTML = `<span class="ld">●</span> ${esc(m.home.name)} `
+    + `<b>${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</b> ${esc(m.away.name)} · ${liveState(m)}`;
+  sModal.hidden = false;
+}
+function openStadiumByIdx(i){ if(currentLive[i]) openStadium(currentLive[i]); }
+function closeStadium(){ sModal.hidden = true; }
+sModal.addEventListener('click', e=>{ if(e.target===sModal) closeStadium(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeStadium(); });
+window.openStadium = openStadium; window.openStadiumByIdx = openStadiumByIdx; window.closeStadium = closeStadium;
+
+/* ───────── Manual update button ───────── */
+const refreshBtn = document.getElementById('refreshBtn');
+let refreshing = false;
+async function manualRefresh(){
+  if(refreshing) return;
+  refreshing = true; refreshBtn.classList.add('spin');
+  try { await refresh(); } finally {
+    setTimeout(()=>{ refreshBtn.classList.remove('spin'); refreshing = false; }, 600);
+  }
+}
+refreshBtn.addEventListener('click', manualRefresh);
 
 async function refresh(){
   try{
