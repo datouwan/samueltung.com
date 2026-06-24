@@ -94,6 +94,24 @@
   .flag-marker img{width:100%;height:100%;object-fit:cover;display:block}
   .flag-marker:hover{transform:scale(1.25);z-index:1000}
   .flag-marker.host{width:34px;height:24px;border-width:3px}
+  /* live highlight on the two countries currently playing */
+  .live-marker{z-index:1200!important}
+  .live-marker .flag-marker{transform:scale(1.4);border-color:var(--live);
+    box-shadow:0 0 0 3px rgba(214,66,43,.55),0 2px 8px rgba(0,0,0,.3);animation:mpulse 1.4s infinite}
+  @keyframes mpulse{
+    0%{box-shadow:0 0 0 3px rgba(214,66,43,.6),0 0 0 0 rgba(214,66,43,.5)}
+    70%{box-shadow:0 0 0 3px rgba(214,66,43,.6),0 0 0 16px rgba(214,66,43,0)}
+    100%{box-shadow:0 0 0 3px rgba(214,66,43,.6),0 0 0 0 rgba(214,66,43,0)}}
+  .pill-wrap{transform:translate(-50%,-50%)}
+  .live-score-pill{display:inline-flex;align-items:center;gap:5px;background:#1c1b19;color:#fff;
+    border:1.5px solid var(--live);border-radius:20px;padding:4px 9px;white-space:nowrap;cursor:pointer;
+    font:700 13px var(--sans);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+  .live-score-pill img{width:18px;height:13px;object-fit:cover;border-radius:2px}
+  .live-score-pill .sc{font-family:var(--serif);font-size:15px;letter-spacing:.02em}
+  .live-score-pill .lv{font-size:9px;color:#ffb3a6;letter-spacing:.06em;margin-left:1px}
+  .liveline{animation:dash 1s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-28}}
+  .lgame.tap{cursor:pointer} .lgame.tap:hover{border-color:var(--live)}
   .conf-host{--mk:var(--c-host)} .conf-uefa{--mk:var(--c-uefa)} .conf-conmebol{--mk:var(--c-conmebol)}
   .conf-caf{--mk:var(--c-caf)} .conf-afc{--mk:var(--c-afc)} .conf-concacaf{--mk:var(--c-concacaf)} .conf-ofc{--mk:var(--c-ofc)}
   .leaflet-tooltip.team{background:#1c1b19;color:#fff;border:none;border-radius:6px;
@@ -171,16 +189,34 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_L
   attribution:'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors', maxZoom:6
 }).addTo(map);
 
+// normalize team names so API names (e.g. "Korea Republic") match map markers
+const ALIAS = {
+  korearepublic:'southkorea', republicofkorea:'southkorea', koreasouth:'southkorea',
+  iriran:'iran',
+  caboverde:'capeverde',
+  congodr:'drcongo', congodrc:'drcongo', democraticrepublicofthecongo:'drcongo',
+  bosniaandherzegovina:'bosniaherzegovina',
+  turkey:'turkiye',
+  usa:'unitedstates', unitedstatesofamerica:'unitedstates', us:'unitedstates',
+};
+function norm(s){
+  const k = String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]/g,'');
+  return ALIAS[k] || k;
+}
+const markersByName = {}; // norm(name) -> { marker, iso, name }
+
 TEAMS.forEach(([name,iso,lat,lng,conf])=>{
   const host = conf==='host';
   const icon = L.divIcon({className:'',
     html:`<div class="flag-marker conf-${conf}${host?' host':''}"><img src="https://flagcdn.com/w40/${iso}.png" alt="${name} flag" loading="lazy"></div>`,
     iconSize: host?[34,24]:[30,21], iconAnchor: host?[17,12]:[15,10], popupAnchor:[0,-12]});
-  L.marker([lat,lng],{icon,title:name})
+  const mk = L.marker([lat,lng],{icon,title:name})
    .bindTooltip(name,{className:'team',direction:'top',offset:[0,-8]})
    .bindPopup(`<div class="pop"><img src="https://flagcdn.com/w160/${iso}.png" alt="${name} flag">`
      +`<div class="nm">${name}</div><div class="cf">${CONF[conf]}</div>`
      +(host?'<div class="badge">HOST 2026</div>':'')+`</div>`).addTo(map);
+  markersByName[norm(name)] = {marker:mk, iso, name};
 });
 
 const counts = TEAMS.reduce((a,[,,,,c])=>(a[c]=(a[c]||0)+1,a),{});
@@ -190,6 +226,49 @@ legend.onAdd = () => { const d = L.DomUtil.create('div','legend');
     `<div class="row"><span class="sw" style="background:var(--c-${c})"></span><span>${CONF[c]}</span> <span class="cnt">· ${counts[c]||0}</span></div>`).join('');
   return d; };
 legend.addTo(map);
+
+/* ───────── Live match overlay on the map ───────── */
+const liveLayer = L.layerGroup().addTo(map);
+let liveMarked = [];
+const flagUrl = iso => `https://flagcdn.com/w40/${iso}.png`;
+
+function clearMapLive(){
+  liveLayer.clearLayers();
+  liveMarked.forEach(el => el && el.classList.remove('live-marker'));
+  liveMarked = [];
+}
+
+function renderMapLive(matches){
+  clearMapLive();
+  (matches||[]).filter(m => LIVE_STATUSES.includes(m.status)).forEach(m=>{
+    const h = markersByName[norm(m.home.name)], a = markersByName[norm(m.away.name)];
+    if(!h || !a) return;
+    const hp = h.marker.getLatLng(), ap = a.marker.getLatLng();
+
+    // connecting line between the two countries
+    L.polyline([hp,ap],{color:'#d6422b',weight:2.5,opacity:.85,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
+
+    // highlight both country markers
+    [h,a].forEach(t=>{ const el=t.marker._icon; if(el){ el.classList.add('live-marker'); liveMarked.push(el); } });
+
+    // live score pill at the midpoint
+    const mid = [(hp.lat+ap.lat)/2, (hp.lng+ap.lng)/2];
+    const state = m.status==='PAUSED' ? 'HT' : (m.minute ? `${m.minute}'` : 'LIVE');
+    const pill = L.divIcon({className:'', iconSize:null,
+      html:`<div class="pill-wrap"><div class="live-score-pill">`
+        +`<img src="${flagUrl(h.iso)}" alt=""><span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
+        +`<img src="${flagUrl(a.iso)}" alt=""><span class="lv">${state}</span></div></div>`});
+    L.marker(mid,{icon:pill,zIndexOffset:1000})
+      .on('click',()=>map.flyToBounds(L.latLngBounds([hp,ap]).pad(0.6),{maxZoom:5}))
+      .addTo(liveLayer);
+  });
+}
+
+// click a game in the live bar to zoom the map to it
+window.focusLiveMatch = (hn,an)=>{
+  const h=markersByName[norm(hn)], a=markersByName[norm(an)];
+  if(h&&a) map.flyToBounds(L.latLngBounds([h.marker.getLatLng(),a.marker.getLatLng()]).pad(0.6),{maxZoom:5});
+};
 
 /* ───────── Live groups + scores (polls /api/wc) ───────── */
 const LIVE_STATUSES = ['IN_PLAY','PAUSED'];
@@ -219,7 +298,8 @@ function renderLive(matches){
   liveBar.className = '';
   liveBar.innerHTML = `<span class="tag"><span class="dot"></span>Live now</span>` + live.map(m=>{
     const min = m.minute ? `<span class="min">${esc(m.minute)}'</span>` : (m.status==='PAUSED'?'<span class="min">HT</span>':'');
-    return `<span class="lgame">`
+    return `<span class="lgame tap" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
+      + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
       + (m.home.crest?`<img src="${esc(m.home.crest)}" alt="">`:'') + `${esc(m.home.name)}`
       + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
       + `${esc(m.away.name)}` + (m.away.crest?`<img src="${esc(m.away.crest)}" alt="">`:'')
@@ -255,6 +335,7 @@ async function refresh(){
     const r = await fetch('/api/wc', {cache:'no-store'});
     const data = await r.json();
     if(data.error){
+      clearMapLive();
       liveBar.className='idle';
       liveBar.innerHTML = `<span class="tag">Live data unavailable</span>`;
       groupsEl.innerHTML = data.error==='missing_token'
@@ -266,6 +347,7 @@ async function refresh(){
     }
     renderLive(data.matches||[]);
     renderGroups(data.groups||[], data.matches||[]);
+    renderMapLive(data.matches||[]);
     if(data.updated){
       const t = new Date(data.updated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
       updEl.textContent = 'Updated ' + t + ' · auto-refreshes';
