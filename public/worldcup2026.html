@@ -180,6 +180,15 @@
   .narti .nm{color:var(--muted);font-size:12.5px;margin-top:5px}
   .narti .nm b{color:var(--accent-ink);font-weight:600}
 
+  /* player search */
+  .psearch{display:flex;gap:8px;margin:0 0 16px;max-width:520px}
+  .psearch input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;background:var(--card);
+    color:var(--ink);font:15px var(--sans);padding:10px 14px}
+  .psearch input:focus{outline:none;border-color:var(--accent)}
+  .psearch button{flex:0 0 auto;border:none;border-radius:10px;background:var(--accent);color:#fff;
+    font:600 14px var(--sans);padding:0 18px;cursor:pointer}
+  .psearch button:hover{background:var(--accent-ink)}
+
   /* player stats */
   .substabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
   .stab{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
@@ -360,18 +369,26 @@
 <section class="groups-wrap">
   <div class="tabs">
     <button class="tab active" data-tab="groups">Group stage</button>
-    <button class="tab" data-tab="news">News</button>
+    <button class="tab" data-tab="country">Country stats</button>
     <button class="tab" data-tab="stats">Player stats</button>
+    <button class="tab" data-tab="news">News</button>
     <span class="upd" id="updated"></span>
   </div>
   <div class="groups tabpane" id="groups" data-pane="groups">
     <div class="state-note">Loading group standings…</div>
   </div>
-  <div class="tabpane" id="newsPane" data-pane="news" hidden>
-    <div class="state-note">Loading World Cup news…</div>
+  <div class="tabpane" id="countryPane" data-pane="country" hidden>
+    <div class="state-note">Loading country stats…</div>
   </div>
   <div class="tabpane" id="statsPane" data-pane="stats" hidden>
-    <div class="state-note">Loading player stats…</div>
+    <div class="psearch">
+      <input id="pSearchInput" type="search" autocomplete="off" placeholder="🔍 Search any player — e.g. Vinícius Júnior, Harry Kane…">
+      <button id="pSearchBtn">Search</button>
+    </div>
+    <div id="statsContent"><div class="state-note">Loading player stats…</div></div>
+  </div>
+  <div class="tabpane" id="newsPane" data-pane="news" hidden>
+    <div class="state-note">Loading World Cup news…</div>
   </div>
 </section>
 
@@ -693,6 +710,7 @@ function renderLive(live, matches){
 }
 
 function renderGroups(groups, live){
+  lastGroups = groups || [];
   const liveByGroup = new Set((live||[]).map(m=>m.group).filter(Boolean));
   if(!groups.length){
     groupsEl.innerHTML = `<div class="state-note">No group tables published yet. They’ll appear here once the draw/standings are available from the data feed.</div>`;
@@ -777,9 +795,11 @@ themeBtn.addEventListener('click', ()=>{
 /* ───────── Tabs: Group stage / News / Player stats ───────── */
 const panes = {
   groups: document.getElementById('groups'),
-  news: document.getElementById('newsPane'),
+  country: document.getElementById('countryPane'),
   stats: document.getElementById('statsPane'),
+  news: document.getElementById('newsPane'),
 };
+const statsContent = document.getElementById('statsContent');
 let newsLoaded = false;
 document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', ()=>{
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -788,11 +808,66 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', (
   Object.entries(panes).forEach(([k,el])=>{ el.hidden = (k!==id); });
   if(id==='news' && !newsLoaded) loadNews();
 }));
-// deep-link a tab via #news / #stats / #groups
+// deep-link a tab via #news / #stats / #groups / #country
 const initialTab = (location.hash||'').replace('#','');
-if(['news','stats','groups'].includes(initialTab)){
+if(['news','stats','groups','country'].includes(initialTab)){
   const t = document.querySelector(`.tab[data-tab="${initialTab}"]`); if(t) t.click();
 }
+
+// player search
+function openPlayerName(name){
+  name = (name||'').trim(); if(name.length < 2) return;
+  openPlayer({ dataset: { name } });
+}
+const pSearchInput = document.getElementById('pSearchInput');
+document.getElementById('pSearchBtn').addEventListener('click', ()=> openPlayerName(pSearchInput.value));
+pSearchInput.addEventListener('keydown', e=>{ if(e.key==='Enter') openPlayerName(pSearchInput.value); });
+
+// country stats (static records + live 2026 from the standings)
+let lastGroups = [];
+const COUNTRY_RECORDS = [
+  {title:'🏆 Most titles', unit:'titles', rows:[
+    ['Brazil','br',5],['Germany','de',4],['Italy','it',4],['Argentina','ar',3],
+    ['France','fr',2],['Uruguay','uy',2],['England','gb-eng',1],['Spain','es',1]]},
+  {title:'📅 Most appearances', unit:'finals', note:'tournaments reached, through 2022', rows:[
+    ['Brazil','br',22],['Germany','de',20],['Italy','it',18],['Argentina','ar',18],
+    ['Mexico','mx',17],['England','gb-eng',16],['Spain','es',16],['France','fr',16]]},
+  {title:'⚽ Most goals all-time', unit:'goals', note:'through 2022', rows:[
+    ['Brazil','br',237],['Germany','de',232],['Argentina','ar',152],['France','fr',136],
+    ['Italy','it',128],['Spain','es',108]]},
+];
+function countryCard(title, unit, rows, opts){
+  opts = opts || {};
+  const tag = opts.live ? `<span class="rtag live">● 2026</span>` : (opts.tag?`<span class="rtag">${esc(opts.tag)}</span>`:'');
+  return `<div class="histcard"><h4>${title}${tag}</h4>` + (opts.note?`<p class="hn">${esc(opts.note)}</p>`:'')
+    + `<table class="rtable"><tbody>` + rows.map((r,i)=>{
+        const flag = r.iso ? `<img class="pf" src="https://flagcdn.com/w40/${r.iso}.png" alt="">`
+                   : (r.crest ? `<img class="pf" src="${esc(r.crest)}" alt="">` : '');
+        const sub = r.sub ? `<small>${esc(r.sub)}</small>` : '';
+        return `<tr><td class="hrk">${i+1}</td>`
+          + `<td class="hpl"><span class="plink" data-country="${esc(r.name)}" onclick="focusCountry(this.dataset.country)">`
+          + `${flag}<span class="hnm">${esc(r.name)}${sub}</span></span></td>`
+          + `<td class="hv">${r.val}<small>${esc(unit)}</small></td></tr>`;
+      }).join('') + `</tbody></table></div>`;
+}
+function renderCountry(groups){
+  let html = `<p class="statnote">World Cup country records — the 2026 card updates live from the group stage; tap a country to find it on the map.</p><div class="histgrid">`;
+  if(groups && groups.length){
+    const teams = groups.flatMap(g=> g.table.map(t=>({name:t.name, crest:t.crest, gf:t.gf, gd:t.gd, pts:t.points, pl:t.played})));
+    const topG = teams.filter(t=>t.gf!=null).sort((a,b)=> (b.gf-a.gf)||(b.gd-a.gd)).slice(0,8);
+    if(topG.length)
+      html += countryCard('🔥 Most goals — 2026 so far', 'goals',
+        topG.map(t=>({name:t.name, crest:t.crest, val:t.gf, sub:`${t.pl} played · ${t.pts} pts`})), {live:true});
+  }
+  COUNTRY_RECORDS.forEach(c=> html += countryCard(c.title, c.unit,
+    c.rows.map(([name,iso,val])=>({name,iso,val})), {tag:'as of 2022', note:c.note}));
+  panes.country.innerHTML = html + `</div>`;
+}
+function focusCountry(name){
+  const m = markersByName[norm(name)];
+  if(m){ map.flyTo(m.marker.getLatLng(), 4); if(m.marker.openPopup) m.marker.openPopup(); }
+}
+window.focusCountry = focusCountry; window.openPlayerName = openPlayerName;
 
 function timeAgo(d){
   if(!d) return '';
@@ -850,11 +925,11 @@ function renderStats(scorers){
 }
 function drawStats(){
   const tab = (v,label)=>`<button class="stab ${statsView===v?'active':''}" data-sv="${v}">${label}</button>`;
-  panes.stats.innerHTML = `<div class="substabs">${tab('2026','2026 Tournament')}${tab('alltime','All-time records')}</div>`
+  statsContent.innerHTML = `<div class="substabs">${tab('2026','2026 Tournament')}${tab('alltime','All-time records')}</div>`
     + (statsView==='2026' ? render2026() : renderHistorical());
-  panes.stats.querySelectorAll('.stab').forEach(b=> b.onclick = ()=>{ statsView=b.dataset.sv; drawStats(); });
+  statsContent.querySelectorAll('.stab').forEach(b=> b.onclick = ()=>{ statsView=b.dataset.sv; drawStats(); });
   if(statsView==='2026')
-    panes.stats.querySelectorAll('th[data-k]').forEach(th=> th.onclick = ()=>{ sortKey=th.dataset.k; drawStats(); });
+    statsContent.querySelectorAll('th[data-k]').forEach(th=> th.onclick = ()=>{ sortKey=th.dataset.k; drawStats(); });
 }
 function render2026(){
   if(!lastScorers.length) return `<div class="state-note">No 2026 player data yet — appears once goals are scored.</div>`;
@@ -1004,6 +1079,7 @@ async function refresh(){
     renderGroups(data.groups||[], data.live||[]);
     renderMapLive(data.live||[]);
     renderStats(data.scorers||[]);
+    renderCountry(data.groups||[]);
     if(data.updated){
       const t = new Date(data.updated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
       const src = data.source==='api-football' ? ' · live via api-football'

@@ -100,6 +100,7 @@ async function handleWC(request, env, ctx) {
         name: r.team?.shortName || r.team?.name || "—",
         crest: r.team?.crest || "",
         played: r.playedGames, won: r.won, draw: r.draw, lost: r.lost,
+        gf: r.goalsFor ?? null, ga: r.goalsAgainst ?? null,
         gd: r.goalDifference, points: r.points,
       })),
     }))
