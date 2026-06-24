@@ -188,6 +188,23 @@
   .psearch button{flex:0 0 auto;border:none;border-radius:10px;background:var(--accent);color:#fff;
     font:600 14px var(--sans);padding:0 18px;cursor:pointer}
   .psearch button:hover{background:var(--accent-ink)}
+  .psr{max-width:520px;margin:-8px 0 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);
+    overflow:hidden;box-shadow:0 10px 30px rgba(28,27,25,.10)}
+  .psr[hidden]{display:none}
+  .psr-msg{padding:12px 14px;color:var(--muted);font-size:13.5px}
+  .psr-item{display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:none;cursor:pointer;
+    background:none;padding:9px 13px;border-bottom:1px solid var(--paper-2);color:var(--ink)}
+  .psr-item:last-child{border-bottom:none}
+  .psr-item:hover{background:var(--paper-2)}
+  .psr-item img{width:38px;height:38px;object-fit:cover;border-radius:50%;background:var(--paper-2);flex:0 0 auto}
+  .psr-ph{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:var(--paper-2);flex:0 0 auto;font-size:18px}
+  .psr-txt{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+  .psr-txt b{font-weight:600;font-size:14.5px}
+  .psr-txt small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pextract{margin:14px 0 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pwiki{display:inline-block;margin-top:10px;font-size:13px;font-weight:600;color:var(--accent);text-decoration:none}
+  .pwiki[hidden]{display:none}
+  .pwiki:hover{text-decoration:underline}
 
   /* player stats */
   .substabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
@@ -382,9 +399,10 @@
   </div>
   <div class="tabpane" id="statsPane" data-pane="stats" hidden>
     <div class="psearch">
-      <input id="pSearchInput" type="search" autocomplete="off" placeholder="🔍 Search any player — e.g. Vinícius Júnior, Harry Kane…">
+      <input id="pSearchInput" type="search" autocomplete="off" placeholder="🔍 Search any player — e.g. Messi, Harry Kane, Vinícius…">
       <button id="pSearchBtn">Search</button>
     </div>
+    <div id="pSearchResults" class="psr" hidden></div>
     <div id="statsContent"><div class="state-note">Loading player stats…</div></div>
   </div>
   <div class="tabpane" id="newsPane" data-pane="news" hidden>
@@ -401,6 +419,8 @@
       <h3 id="pName"></h3>
       <p class="ploc" id="pMeta">Loading…</p>
       <div class="pstats" id="pStats"></div>
+      <p class="pextract" id="pExtract"></p>
+      <a class="pwiki" id="pWiki" target="_blank" rel="noopener noreferrer" hidden>Read more on Wikipedia ↗</a>
       <div class="pclubs" id="pClubs" hidden></div>
     </div>
   </div>
@@ -814,14 +834,40 @@ if(['news','stats','groups','country'].includes(initialTab)){
   const t = document.querySelector(`.tab[data-tab="${initialTab}"]`); if(t) t.click();
 }
 
-// player search
+// player search — fuzzy, via Wikipedia, with a results dropdown
+const pSearchInput = document.getElementById('pSearchInput');
+const pSearchResults = document.getElementById('pSearchResults');
+let searchHits = [], searchTimer = null;
 function openPlayerName(name){
   name = (name||'').trim(); if(name.length < 2) return;
+  pSearchResults.hidden = true;
   openPlayer({ dataset: { name } });
 }
-const pSearchInput = document.getElementById('pSearchInput');
-document.getElementById('pSearchBtn').addEventListener('click', ()=> openPlayerName(pSearchInput.value));
-pSearchInput.addEventListener('keydown', e=>{ if(e.key==='Enter') openPlayerName(pSearchInput.value); });
+async function doSearch(q){
+  q = (q||'').trim();
+  if(q.length < 2){ pSearchResults.hidden = true; pSearchResults.innerHTML = ''; return; }
+  pSearchResults.hidden = false;
+  pSearchResults.innerHTML = `<div class="psr-msg">Searching…</div>`;
+  try{
+    const r = await fetch(`/api/wiki?q=${encodeURIComponent(q)}`);
+    const d = await r.json();
+    searchHits = d.results || [];
+    if(!searchHits.length){ pSearchResults.innerHTML = `<div class="psr-msg">No players found for “${esc(q)}”.</div>`; return; }
+    pSearchResults.innerHTML = searchHits.map((p,i)=>
+      `<button class="psr-item" data-i="${i}">`
+      + (p.thumbnail ? `<img src="${esc(p.thumbnail)}" alt="">` : `<span class="psr-ph">👤</span>`)
+      + `<span class="psr-txt"><b>${esc(p.title)}</b><small>${esc(p.description||'')}</small></span></button>`
+    ).join('');
+    pSearchResults.querySelectorAll('.psr-item').forEach(b=> b.addEventListener('click', ()=>{
+      pSearchResults.hidden = true;
+      openPlayer({ dataset: { name: searchHits[+b.dataset.i].title } });
+    }));
+  }catch(e){ pSearchResults.innerHTML = `<div class="psr-msg">Search failed — try again.</div>`; }
+}
+pSearchInput.addEventListener('input', ()=>{ clearTimeout(searchTimer); searchTimer = setTimeout(()=> doSearch(pSearchInput.value), 350); });
+pSearchInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ clearTimeout(searchTimer); doSearch(pSearchInput.value); } });
+document.getElementById('pSearchBtn').addEventListener('click', ()=>{ clearTimeout(searchTimer); doSearch(pSearchInput.value); });
+document.addEventListener('click', e=>{ if(!e.target.closest('.psearch') && !e.target.closest('#pSearchResults')) pSearchResults.hidden = true; });
 
 // country stats (static records + live 2026 from the standings)
 let lastGroups = [];
@@ -1005,42 +1051,37 @@ const pPhoto = document.getElementById('pPhoto');
 function pstat(v,l){ return `<span class="pstat"><b>${esc(String(v))}</b>${esc(l)}</span>`; }
 async function openPlayer(el){
   const d = el.dataset;
+  const name = d.name;
   pModal.hidden = false;
-  document.getElementById('pName').textContent = d.name;
+  pModal.querySelector('.sbox').scrollTop = 0;
+  document.getElementById('pName').textContent = name;
   document.getElementById('pMeta').textContent = (d.nat || d.team || '') + ' · loading…';
   pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
   const clubsEl = document.getElementById('pClubs'); clubsEl.hidden = true; clubsEl.innerHTML = '';
+  const extractEl = document.getElementById('pExtract'); extractEl.textContent = '';
+  const wikiEl = document.getElementById('pWiki'); wikiEl.hidden = true; wikiEl.removeAttribute('href');
   const chips = [];
   if(d.g!=null && d.g!=='') chips.push(pstat(d.g, '2026 goals'));
   if(d.a!=null && d.a!=='' && d.a!=='null') chips.push(pstat(d.a, '2026 assists'));
   if(d.alltime) chips.push(pstat(d.alltime, 'all-time WC goals'));
   if(d.val && d.unit) chips.push(pstat(d.val, d.unit));
   document.getElementById('pStats').innerHTML = chips.join('');
+
+  // Wikipedia only — free & unlimited, so we save the api-football quota for
+  // live game info. (Photo, bio summary and link all come from Wikipedia.)
+  let wiki = null;
   try{
-    const r = await fetch(`/api/player?name=${encodeURIComponent(d.name)}&nat=${encodeURIComponent(d.nat||d.team||'')}`);
-    const b = await r.json();
+    const wb = await fetch(`/api/wiki?q=${encodeURIComponent(name)}`).then(r=>r.json());
     if(pModal.hidden) return; // closed meanwhile
-    if(b && !b.error){
-      if(b.photo){ pPhoto.style.backgroundImage = `url('${b.photo}')`; pPhoto.classList.remove('noimg'); }
-      const meta = [];
-      if(b.position) meta.push(b.position);
-      if(b.age!=null) meta.push(b.age + ' yrs');
-      if(b.height) meta.push(/^\d+$/.test(b.height) ? b.height+' cm' : b.height);
-      if(b.number) meta.push('#' + b.number);
-      const nat = b.nationality || d.nat || d.team || '';
-      document.getElementById('pMeta').textContent = [nat, ...meta].filter(Boolean).join(' · ');
-      if(b.clubs && b.clubs.length){
-        clubsEl.hidden = false;
-        clubsEl.innerHTML = `<div class="pchead">Career clubs</div>` + b.clubs.map(c=>{
-          const yr = c.from ? (c.from===c.to ? `${c.from}` : `${c.from}–${c.to}`) : '';
-          return `<div class="pcrow">${c.logo?`<img src="${esc(c.logo)}" alt="">`:'<span class="pcdot"></span>'}`
-            + `<span class="pcn">${esc(c.name)}</span><span class="pcy">${yr}</span></div>`;
-        }).join('');
-      }
-    } else {
-      document.getElementById('pMeta').textContent = (d.nat || d.team || '') + (b && b.error==='rate_limited' ? ' · photo unavailable (quota)' : '');
-    }
-  }catch(e){ document.getElementById('pMeta').textContent = (d.nat || d.team || ''); }
+    wiki = (wb.results || [])[0] || null;
+  }catch(e){ /* handled below */ }
+
+  if(wiki && wiki.thumbnail){ pPhoto.style.backgroundImage = `url('${wiki.thumbnail}')`; pPhoto.classList.remove('noimg'); }
+  document.getElementById('pMeta').textContent = (wiki && wiki.description) || d.nat || d.team || 'No Wikipedia profile found';
+  if(wiki){
+    if(wiki.extract) extractEl.textContent = wiki.extract;
+    if(wiki.url){ wikiEl.hidden = false; wikiEl.href = wiki.url; }
+  }
 }
 function closePlayer(){ pModal.hidden = true; }
 pModal.addEventListener('click', e=>{ if(e.target===pModal) closePlayer(); });

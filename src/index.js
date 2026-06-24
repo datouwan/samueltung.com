@@ -29,6 +29,7 @@ export default {
     if (url.pathname === "/api/news") return handleNews(request, env, ctx);
     if (url.pathname === "/api/player") return handlePlayer(request, env, ctx);
     if (url.pathname === "/api/events") return handleEvents(request, env, ctx);
+    if (url.pathname === "/api/wiki") return handleWiki(request, env, ctx);
     if (env.ASSETS) return env.ASSETS.fetch(request);
     return new Response("Not found", { status: 404 });
   },
@@ -372,6 +373,43 @@ async function handleEvents(request, env, ctx) {
     return res;
   } catch (_) {
     return json({ error: "failed" }, 200, 0);
+  }
+}
+
+// Fuzzy player lookup via Wikipedia (free, keyless, unlimited). Returns a list
+// of candidate footballers with photo + summary. Cached 24h per query.
+async function handleWiki(request, env, ctx) {
+  const q = (new URL(request.url).searchParams.get("q") || "").trim();
+  if (q.length < 2) return json({ results: [] }, 200, 0);
+
+  const cache = caches.default;
+  const ckey = new Request(`https://wc.cache/wiki-${q.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 40)}`);
+  const hit = await cache.match(ckey);
+  if (hit) return hit;
+
+  try {
+    const api = "https://en.wikipedia.org/w/api.php?action=query&format=json&generator=search" +
+      `&gsrsearch=${encodeURIComponent(q + " footballer")}&gsrlimit=6` +
+      "&prop=pageimages%7Cextracts%7Cdescription&exintro=1&explaintext=1&exsentences=3" +
+      "&piprop=thumbnail&pithumbsize=400&redirects=1";
+    const r = await fetch(api, { headers: { "user-agent": "samueltung.com/1.0 (World Cup map)" } });
+    if (!r.ok) return json({ results: [] }, 200, 0);
+    const d = await r.json();
+    const pages = Object.values((d.query && d.query.pages) || {});
+    pages.sort((a, b) => (a.index || 99) - (b.index || 99));
+    const all = pages.filter((p) => p.title).map((p) => ({
+      title: p.title, description: p.description || "", extract: p.extract || "",
+      thumbnail: p.thumbnail ? p.thumbnail.source : "",
+      url: `https://en.wikipedia.org/wiki/${encodeURIComponent(p.title.replace(/ /g, "_"))}`,
+    }));
+    // prefer actual footballer pages over "List of…"/rivalry pages
+    const players = all.filter((p) => /footballer/i.test(p.description));
+    const results = (players.length ? players : all).slice(0, 6);
+    const res = json({ results }, 200, 86400);
+    ctx.waitUntil(cache.put(ckey, res.clone()));
+    return res;
+  } catch (_) {
+    return json({ results: [] }, 200, 0);
   }
 }
 
