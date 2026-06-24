@@ -257,16 +257,18 @@ async function handlePlayer(request, env, ctx) {
   if (!env.APIFOOTBALL_KEY) return json({ error: "no_key" }, 200, 0);
 
   const last = name.split(/\s+/).pop().toLowerCase();
-  if (last.length < 3) return json({ error: "short" }, 200, 0);
+  // api-football's search expects ASCII, so strip accents (Mbappé -> mbappe)
+  const term = last.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  if (term.length < 3) return json({ error: "short" }, 200, 0);
 
   // cache the final (small) result per surname+nationality; never cache errors
   const cache = caches.default;
-  const ckey = new Request(`https://wc.cache/player2-${last}-${norm(nat)}`);
+  const ckey = new Request(`https://wc.cache/player2-${term}-${norm(nat)}`);
   const cached = await cache.match(ckey);
   if (cached) return cached;
 
   try {
-    const r = await fetch(`${AF}/players/profiles?search=${encodeURIComponent(last)}`, {
+    const r = await fetch(`${AF}/players/profiles?search=${encodeURIComponent(term)}`, {
       headers: { "x-apisports-key": env.APIFOOTBALL_KEY },
     });
     if (!r.ok) return json({ error: "upstream" }, 200, 0);
