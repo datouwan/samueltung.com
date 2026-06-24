@@ -72,17 +72,9 @@
   #liveBar.idle{background:var(--paper-2);color:var(--ink-soft);border-bottom:1px solid var(--line)}
   #liveBar.idle .tag{color:var(--muted)}
 
-  /* live bar + update button */
+  /* live bar */
   .livewrap{position:relative;display:flex;align-items:stretch}
   .livewrap #liveBar{flex:1;min-width:0}
-  #refreshBtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;
-    background:#a14a32;color:#fff;font:700 12px/1 var(--sans);letter-spacing:.04em;text-transform:uppercase;
-    padding:0 16px;border-left:1px solid #000}
-  #refreshBtn:hover{background:#8a3d28}
-  #refreshBtn .ricon{font-size:16px;display:inline-block}
-  #refreshBtn.spin .ricon{animation:spin .6s linear}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @media(max-width:560px){#refreshBtn .rtxt{display:none}#refreshBtn{padding:0 13px}}
 
   /* venue chip in the live bar */
   .vchip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#ffd9a8;
@@ -429,7 +421,6 @@
 
 <div class="livewrap">
   <div id="liveBar" class="idle"><span class="tag"><span class="dot"></span>Loading live scores…</span></div>
-  <button id="refreshBtn" title="Refresh now" aria-label="Refresh now"><span class="ricon">↻</span><span class="rtxt">Update</span></button>
 </div>
 
 <div id="map"></div>
@@ -1387,18 +1378,6 @@ function closePlayer(){ pModal.hidden = true; }
 pModal.addEventListener('click', e=>{ if(e.target===pModal) closePlayer(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closePlayer(); });
 window.openPlayer = openPlayer; window.closePlayer = closePlayer;
-
-/* ───────── Manual update button ───────── */
-const refreshBtn = document.getElementById('refreshBtn');
-let refreshing = false;
-async function manualRefresh(){
-  if(refreshing) return;
-  refreshing = true; refreshBtn.classList.add('spin');
-  try { await refresh(); } finally {
-    setTimeout(()=>{ refreshBtn.classList.remove('spin'); refreshing = false; }, 600);
-  }
-}
-refreshBtn.addEventListener('click', manualRefresh);
 
 async function refresh(){
   try{
