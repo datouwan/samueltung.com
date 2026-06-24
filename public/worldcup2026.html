@@ -108,10 +108,18 @@
   .pphoto.noimg::after{content:'👤';font-size:64px;opacity:.35}
   .pinfo{padding:16px 20px 20px}
   .pinfo h3{font-family:var(--serif);font-size:22px;margin:0 0 3px}
-  .ploc{color:var(--muted);font-size:13.5px;margin:0 0 6px}
-  .pclub{margin:0 0 14px;font-size:13.5px;font-weight:600;color:var(--ink-soft)}
-  .pclub[hidden]{display:none}
+  .ploc{color:var(--muted);font-size:13.5px;margin:0 0 14px}
   .pstats{display:flex;gap:10px;flex-wrap:wrap}
+  .pclubs{margin-top:14px}
+  .pclubs[hidden]{display:none}
+  .pchead{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+    margin-bottom:4px;border-top:1px solid var(--line);padding-top:12px}
+  .pcrow{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13.5px;border-bottom:1px solid var(--paper-2)}
+  .pcrow:last-child{border-bottom:none}
+  .pcrow img{width:18px;height:18px;object-fit:contain;flex:0 0 auto}
+  .pcdot{width:18px;height:18px;border-radius:50%;background:var(--paper-2);flex:0 0 auto}
+  .pcn{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pcy{color:var(--muted);font-size:12px;white-space:nowrap}
   .pstat{flex:1;min-width:84px;background:var(--paper-2);border-radius:10px;padding:10px 12px;
     display:flex;flex-direction:column;font-size:11px;color:var(--muted);line-height:1.3}
   .pstat b{font-family:var(--serif);font-size:20px;color:var(--ink)}
@@ -120,7 +128,7 @@
   .smodal{position:fixed;inset:0;z-index:2000;background:rgba(20,18,16,.55);
     display:grid;place-items:center;padding:20px;backdrop-filter:blur(2px)}
   .smodal[hidden]{display:none}
-  .sbox{position:relative;width:min(440px,100%);background:var(--card);border-radius:16px;overflow:hidden;
+  .sbox{position:relative;width:min(440px,100%);max-height:90vh;overflow:auto;background:var(--card);border-radius:16px;
     box-shadow:0 24px 70px rgba(0,0,0,.4);animation:pop .25s ease}
   .sclose{position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border:none;border-radius:50%;
     background:rgba(0,0,0,.5);color:#fff;font-size:20px;line-height:1;cursor:pointer}
@@ -375,8 +383,8 @@
     <div class="pinfo">
       <h3 id="pName"></h3>
       <p class="ploc" id="pMeta">Loading…</p>
-      <p class="pclub" id="pClub" hidden></p>
       <div class="pstats" id="pStats"></div>
+      <div class="pclubs" id="pClubs" hidden></div>
     </div>
   </div>
 </div>
@@ -926,7 +934,7 @@ async function openPlayer(el){
   document.getElementById('pName').textContent = d.name;
   document.getElementById('pMeta').textContent = (d.nat || d.team || '') + ' · loading…';
   pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
-  const clubEl = document.getElementById('pClub'); clubEl.hidden = true; clubEl.textContent = '';
+  const clubsEl = document.getElementById('pClubs'); clubsEl.hidden = true; clubsEl.innerHTML = '';
   const chips = [];
   if(d.g!=null && d.g!=='') chips.push(pstat(d.g, '2026 goals'));
   if(d.a!=null && d.a!=='' && d.a!=='null') chips.push(pstat(d.a, '2026 assists'));
@@ -943,9 +951,17 @@ async function openPlayer(el){
       if(b.position) meta.push(b.position);
       if(b.age!=null) meta.push(b.age + ' yrs');
       if(b.height) meta.push(/^\d+$/.test(b.height) ? b.height+' cm' : b.height);
+      if(b.number) meta.push('#' + b.number);
       const nat = b.nationality || d.nat || d.team || '';
       document.getElementById('pMeta').textContent = [nat, ...meta].filter(Boolean).join(' · ');
-      if(b.club){ clubEl.hidden = false; clubEl.innerHTML = `🏛️ ${esc(b.club)}${b.number?` · #${esc(String(b.number))}`:''}`; }
+      if(b.clubs && b.clubs.length){
+        clubsEl.hidden = false;
+        clubsEl.innerHTML = `<div class="pchead">Career clubs</div>` + b.clubs.map(c=>{
+          const yr = c.from ? (c.from===c.to ? `${c.from}` : `${c.from}–${c.to}`) : '';
+          return `<div class="pcrow">${c.logo?`<img src="${esc(c.logo)}" alt="">`:'<span class="pcdot"></span>'}`
+            + `<span class="pcn">${esc(c.name)}</span><span class="pcy">${yr}</span></div>`;
+        }).join('');
+      }
     } else {
       document.getElementById('pMeta').textContent = (d.nat || d.team || '') + (b && b.error==='rate_limited' ? ' · photo unavailable (quota)' : '');
     }

@@ -263,7 +263,7 @@ async function handlePlayer(request, env, ctx) {
 
   // cache the final (small) result per surname+nationality; never cache errors
   const cache = caches.default;
-  const ckey = new Request(`https://wc.cache/player3-${term}-${norm(nat)}`);
+  const ckey = new Request(`https://wc.cache/player4-${term}-${norm(nat)}`);
   const cached = await cache.match(ckey);
   if (cached) return cached;
 
@@ -298,27 +298,33 @@ async function handlePlayer(request, env, ctx) {
     }
     if (!best) return json({ error: "not_found" }, 200, 0);
 
-    // current/most-recent club from career teams (national team excluded)
-    let club = "";
+    // full club history from career teams (national team excluded), newest first
+    let clubs = [];
     try {
       const tr = await fetch(`${AF}/players/teams?player=${best.id}`, {
         headers: { "x-apisports-key": env.APIFOOTBALL_KEY },
       });
       if (tr.ok) {
         const td = await tr.json();
-        let bestYear = -1;
-        for (const x of td.response || []) {
-          const nm = x.team && x.team.name;
-          if (!nm || norm(nm) === norm(best.nationality)) continue; // skip national team
-          const y = (x.seasons || []).length ? Math.max(...x.seasons) : 0;
-          if (y > bestYear) { bestYear = y; club = nm; }
-        }
+        clubs = (td.response || [])
+          .filter((x) => x.team && norm(x.team.name) !== norm(best.nationality))
+          .map((x) => {
+            const seasons = (x.seasons || []).filter((s) => typeof s === "number");
+            return {
+              name: x.team.name, logo: x.team.logo || "",
+              from: seasons.length ? Math.min(...seasons) : null,
+              to: seasons.length ? Math.max(...seasons) : null,
+            };
+          })
+          .filter((c) => c.from != null)
+          .sort((a, b) => b.to - a.to || b.from - a.from);
       }
-    } catch (_) { /* club is optional */ }
+    } catch (_) { /* clubs are optional */ }
 
     const res = json({
       name: best.name, firstname: best.firstname, lastname: best.lastname,
-      photo: best.photo || "", nationality: best.nationality || "", club,
+      photo: best.photo || "", nationality: best.nationality || "",
+      club: clubs[0] ? clubs[0].name : "", clubs,
       birthDate: (best.birth && best.birth.date) || "", birthPlace: (best.birth && best.birth.place) || "",
       birthCountry: (best.birth && best.birth.country) || "",
       age: best.age ?? null, height: best.height || "", weight: best.weight || "",
