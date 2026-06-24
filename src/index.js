@@ -53,12 +53,17 @@ async function handleWC(request, env, ctx) {
   }
 
   const headers = { "X-Auth-Token": token };
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+  // Window of yesterday→tomorrow (UTC) so a match that kicked off before UTC
+  // midnight but is still in play (e.g. at halftime) isn't missed.
+  const DAY = 86400000;
+  const now = Date.now();
+  const from = new Date(now - DAY).toISOString().slice(0, 10);
+  const to = new Date(now + DAY).toISOString().slice(0, 10);
 
   try {
     const [standingsRes, matchesRes] = await Promise.all([
       fetch(`${API}/standings`, { headers }),
-      fetch(`${API}/matches?dateFrom=${today}&dateTo=${today}`, { headers }),
+      fetch(`${API}/matches?dateFrom=${from}&dateTo=${to}`, { headers }),
     ]);
 
     if (!standingsRes.ok || !matchesRes.ok) {

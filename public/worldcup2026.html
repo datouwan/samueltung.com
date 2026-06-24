@@ -42,12 +42,15 @@
   #liveBar .dot{width:9px;height:9px;border-radius:50%;background:var(--live);
     box-shadow:0 0 0 0 rgba(214,66,43,.7);animation:pulse 1.5s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(214,66,43,.7)}70%{box-shadow:0 0 0 9px rgba(214,66,43,0)}100%{box-shadow:0 0 0 0 rgba(214,66,43,0)}}
-  .lgame{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px;
-    background:#2a2826;border:1px solid #3a3733;border-radius:20px;padding:5px 12px}
-  .lgame img{width:20px;height:14px;object-fit:contain;border-radius:2px;background:#fff}
-  .lgame .sc{font-family:var(--serif);font-weight:700;font-size:16px;padding:0 4px;letter-spacing:.02em}
+  .lgame{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px}
+  .lgame .tcard{display:inline-flex;align-items:center;gap:6px;background:#2a2826;border:1px solid #3a3733;
+    border-radius:9px;padding:3px 9px;color:#fff;transition:border-color .15s}
+  .lgame .tcard img{width:20px;height:14px;object-fit:contain;border-radius:2px;background:#fff}
+  .lgame .tcard .cn{font-weight:600}
+  .kit{flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+  .lgame .sc{font-family:var(--serif);font-weight:700;font-size:16px;padding:0 2px;letter-spacing:.02em}
   .lgame .min{color:#ffb3a6;font-size:11px;font-weight:700;margin-left:2px}
-  .lgame .grp{color:#9c968c;font-size:11px;margin-left:4px}
+  .lgame .grp{color:#9c968c;font-size:11px;margin-left:2px}
   #liveBar.idle{background:var(--paper-2);color:var(--ink-soft);border-bottom:1px solid var(--line)}
   #liveBar.idle .tag{color:var(--muted)}
 
@@ -111,7 +114,7 @@
   .live-score-pill .lv{font-size:9px;color:#ffb3a6;letter-spacing:.06em;margin-left:1px}
   .liveline{animation:dash 1s linear infinite}
   @keyframes dash{to{stroke-dashoffset:-28}}
-  .lgame.tap{cursor:pointer} .lgame.tap:hover{border-color:var(--live)}
+  .lgame.tap{cursor:pointer} .lgame.tap:hover .tcard{border-color:var(--live)}
   .conf-host{--mk:var(--c-host)} .conf-uefa{--mk:var(--c-uefa)} .conf-conmebol{--mk:var(--c-conmebol)}
   .conf-caf{--mk:var(--c-caf)} .conf-afc{--mk:var(--c-afc)} .conf-concacaf{--mk:var(--c-concacaf)} .conf-ofc{--mk:var(--c-ofc)}
   .leaflet-tooltip.team{background:#1c1b19;color:#fff;border:none;border-radius:6px;
@@ -271,7 +274,42 @@ window.focusLiveMatch = (hn,an)=>{
 };
 
 /* ───────── Live groups + scores (polls /api/wc) ───────── */
-const LIVE_STATUSES = ['IN_PLAY','PAUSED'];
+// football-data.org reports "LIVE" on the free tier; IN_PLAY/PAUSED on paid.
+const LIVE_STATUSES = ['IN_PLAY','PAUSED','LIVE'];
+
+// Approximate iconic home-kit colors [shirt, accent], keyed by norm(name).
+const KIT = {
+  unitedstates:['#ffffff','#0a3161'], canada:['#d52b1e','#ffffff'], mexico:['#006847','#ffffff'],
+  austria:['#ED2939','#ffffff'], belgium:['#e30613','#fdda24'], bosniaherzegovina:['#002395','#ffd100'],
+  croatia:['#ff0000','#ffffff'], czechia:['#d7141a','#ffffff'], england:['#ffffff','#001489'],
+  france:['#002395','#ffffff'], germany:['#ffffff','#111111'], netherlands:['#f36c21','#ffffff'],
+  norway:['#ba0c2f','#00205b'], portugal:['#c8102e','#006847'], scotland:['#0c2074','#ffffff'],
+  spain:['#c60b1e','#ffd100'], sweden:['#fecb00','#006aa7'], switzerland:['#d52b1e','#ffffff'],
+  turkiye:['#e30a17','#ffffff'], argentina:['#75aadb','#ffffff'], brazil:['#ffdf00','#009639'],
+  colombia:['#fcd116','#003087'], ecuador:['#ffd100','#0072ce'], paraguay:['#da121a','#ffffff'],
+  uruguay:['#5cbfeb','#001489'], algeria:['#006233','#ffffff'], capeverde:['#003893','#ffffff'],
+  drcongo:['#007fff','#f7d618'], cotedivoire:['#ff8200','#ffffff'], egypt:['#cf0a2c','#ffffff'],
+  ghana:['#ffffff','#006b3f'], morocco:['#c1272d','#006233'], senegal:['#ffffff','#00853f'],
+  southafrica:['#fcb813','#007a4d'], tunisia:['#e70013','#ffffff'], australia:['#ffcd00','#00843d'],
+  iran:['#ffffff','#239f40'], iraq:['#007a3d','#ffffff'], japan:['#0033a0','#ffffff'],
+  jordan:['#ce1126','#ffffff'], southkorea:['#c8102e','#001489'], qatar:['#8a1538','#ffffff'],
+  saudiarabia:['#006c35','#ffffff'], uzbekistan:['#ffffff','#0099b5'], curacao:['#002b7f','#f9e814'],
+  haiti:['#00209f','#d21034'], panama:['#d21034','#005293'], newzealand:['#ffffff','#111111'],
+};
+function kitSvg(name){
+  const [k1,k2] = KIT[norm(name)] || ['#888','#bbb'];
+  return `<svg class="kit" viewBox="0 0 28 26" width="18" height="17" aria-hidden="true">`
+    +`<path d="M10 2 L4 5 L1.5 11 L5 13.5 L6.5 11.5 L6.5 24 L21.5 24 L21.5 11.5 L23 13.5 L26.5 11 L24 5 L18 2 L16 4.5 C14.5 6 13.5 6 12 4.5 Z" fill="${k1}" stroke="rgba(0,0,0,.55)" stroke-width="1" stroke-linejoin="round"/>`
+    +`<path d="M10 2 L12 4.5 C13.5 6 14.5 6 16 4.5 L18 2 L16.4 1.4 C14.8 3.6 13.2 3.6 11.6 1.4 Z" fill="${k2}"/>`
+    +`<path d="M4 5 L1.5 11 L5 13.5 L6.5 11.5 Z" fill="${k2}"/>`
+    +`<path d="M24 5 L26.5 11 L23 13.5 L21.5 11.5 Z" fill="${k2}"/></svg>`;
+}
+function teamCard(t, reversed){
+  const flag = t.crest ? `<img src="${esc(t.crest)}" alt="">` : '';
+  const name = `<span class="cn">${esc(t.name)}</span>`;
+  const kit = kitSvg(t.name);
+  return `<span class="tcard">` + (reversed ? (name + flag + kit) : (kit + flag + name)) + `</span>`;
+}
 const esc = s => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const liveBar = document.getElementById('liveBar');
 const groupsEl = document.getElementById('groups');
@@ -286,10 +324,11 @@ function renderLive(matches){
       .sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate))[0];
     liveBar.className = 'idle';
     if(next){
-      const t = new Date(next.utcDate).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      const t = new Date(next.utcDate).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit'});
       liveBar.innerHTML = `<span class="tag">No match live</span>`
-        + `<span class="lgame">Next today · ${esc(next.home.name)} v ${esc(next.away.name)} · ${t}`
-        + (next.group?` <span class="grp">Grp ${esc(next.group)}</span>`:'') + `</span>`;
+        + `<span class="lgame">` + teamCard(next.home,false)
+        + `<span class="sc">${esc(t)}</span>` + teamCard(next.away,true)
+        + `<span class="grp">Next up${next.group?` · Grp ${esc(next.group)}`:''}</span></span>`;
     } else {
       liveBar.innerHTML = `<span class="tag">No match live right now</span>`;
     }
@@ -297,13 +336,14 @@ function renderLive(matches){
   }
   liveBar.className = '';
   liveBar.innerHTML = `<span class="tag"><span class="dot"></span>Live now</span>` + live.map(m=>{
-    const min = m.minute ? `<span class="min">${esc(m.minute)}'</span>` : (m.status==='PAUSED'?'<span class="min">HT</span>':'');
+    const state = m.status==='PAUSED' ? 'HT' : (m.minute ? `${esc(m.minute)}'` : 'LIVE');
     return `<span class="lgame tap" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
       + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
-      + (m.home.crest?`<img src="${esc(m.home.crest)}" alt="">`:'') + `${esc(m.home.name)}`
+      + teamCard(m.home,false)
       + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
-      + `${esc(m.away.name)}` + (m.away.crest?`<img src="${esc(m.away.crest)}" alt="">`:'')
-      + min + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + `</span>`;
+      + teamCard(m.away,true)
+      + `<span class="min">${state}</span>`
+      + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + `</span>`;
   }).join('');
 }
 
