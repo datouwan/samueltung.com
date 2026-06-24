@@ -398,6 +398,10 @@
     border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--ink-soft);
     cursor:pointer;font-size:15px;line-height:1;transition:border-color .15s,color .15s}
   #themeBtn:hover{border-color:var(--accent);color:var(--accent)}
+  #langSel{height:34px;border:1px solid var(--line);border-radius:17px;background:var(--card);color:var(--ink-soft);
+    cursor:pointer;font:600 13px var(--sans);padding:0 10px;transition:border-color .15s,color .15s}
+  #langSel:hover{border-color:var(--accent);color:var(--accent)}
+  #langSel:focus{outline:none;border-color:var(--accent)}
 
   /* dark-mode: keep Leaflet popups & controls readable */
   html[data-theme="dark"] .leaflet-popup-content-wrapper,
@@ -426,14 +430,19 @@
 
 <header class="bar">
   <div class="topright">
+    <select id="langSel" aria-label="Language">
+      <option value="en">EN</option>
+      <option value="zh">中文</option>
+      <option value="es">ES</option>
+    </select>
     <button id="themeBtn" title="Toggle light / dark" aria-label="Toggle light or dark theme">🌙</button>
   </div>
-  <p class="role">FIFA World Cup 2026 · USA · Canada · Mexico</p>
-  <h1>Map, Groups &amp; Live Scores<span class="sub">48 teams · 12 groups · live tables</span></h1>
+  <p class="role" data-i18n="role">FIFA World Cup 2026 · USA · Canada · Mexico</p>
+  <h1><span data-i18n="title">Map, Groups &amp; Live Scores</span><span class="sub" data-i18n="sub">48 teams · 12 groups · live tables</span></h1>
 </header>
 
 <div class="livewrap">
-  <div id="liveBar" class="idle"><span class="tag"><span class="dot"></span>Loading live scores…</span></div>
+  <div id="liveBar" class="idle"><span class="tag"><span class="dot"></span><span data-i18n="loading_live">Loading live scores…</span></span></div>
 </div>
 
 <div id="map"></div>
@@ -442,32 +451,32 @@
 
 <section class="groups-wrap">
   <div class="tabs">
-    <button class="tab active" data-tab="groups">Group stage</button>
-    <button class="tab" data-tab="schedule">Schedule</button>
-    <button class="tab" data-tab="country">Country stats</button>
-    <button class="tab" data-tab="stats">Player stats</button>
-    <button class="tab" data-tab="news">News</button>
+    <button class="tab active" data-tab="groups" data-i18n="tab_groups">Group stage</button>
+    <button class="tab" data-tab="schedule" data-i18n="tab_schedule">Schedule</button>
+    <button class="tab" data-tab="country" data-i18n="tab_country">Country stats</button>
+    <button class="tab" data-tab="stats" data-i18n="tab_stats">Player stats</button>
+    <button class="tab" data-tab="news" data-i18n="tab_news">News</button>
     <span class="upd" id="updated"></span>
   </div>
   <div class="groups tabpane" id="groups" data-pane="groups">
-    <div class="state-note">Loading group standings…</div>
+    <div class="state-note" data-i18n="loading_groups">Loading group standings…</div>
   </div>
   <div class="tabpane" id="schedulePane" data-pane="schedule" hidden>
-    <div class="state-note">Loading match schedule…</div>
+    <div class="state-note" data-i18n="loading_sched">Loading match schedule…</div>
   </div>
   <div class="tabpane" id="countryPane" data-pane="country" hidden>
-    <div class="state-note">Loading country stats…</div>
+    <div class="state-note" data-i18n="loading_country">Loading country stats…</div>
   </div>
   <div class="tabpane" id="statsPane" data-pane="stats" hidden>
     <div class="psearch">
-      <input id="pSearchInput" type="search" autocomplete="off" placeholder="🔍 Search any player — e.g. Messi, Harry Kane, Vinícius…">
-      <button id="pSearchBtn">Search</button>
+      <input id="pSearchInput" type="search" autocomplete="off" data-i18n-ph="search_ph" placeholder="🔍 Search any player — e.g. Messi, Harry Kane, Vinícius…">
+      <button id="pSearchBtn" data-i18n="search_btn">Search</button>
     </div>
     <div id="pSearchResults" class="psr" hidden></div>
-    <div id="statsContent"><div class="state-note">Loading player stats…</div></div>
+    <div id="statsContent"><div class="state-note" data-i18n="loading_stats">Loading player stats…</div></div>
   </div>
   <div class="tabpane" id="newsPane" data-pane="news" hidden>
-    <div class="state-note">Loading World Cup news…</div>
+    <div class="state-note" data-i18n="loading_news">Loading World Cup news…</div>
   </div>
 </section>
 
@@ -481,7 +490,7 @@
       <p class="ploc" id="pMeta">Loading…</p>
       <div class="pstats" id="pStats"></div>
       <p class="pextract" id="pExtract"></p>
-      <a class="pwiki" id="pWiki" target="_blank" rel="noopener noreferrer" hidden>Read more on Wikipedia ↗</a>
+      <a class="pwiki" id="pWiki" target="_blank" rel="noopener noreferrer" data-i18n="read_wiki" hidden>Read more on Wikipedia ↗</a>
       <div class="pclubs" id="pClubs" hidden></div>
     </div>
   </div>
@@ -504,6 +513,106 @@
 </div>
 
 <script>
+/* ───────── i18n: English / 中文 / Español ───────── */
+const I18N = {
+  en:{
+    role:'FIFA World Cup 2026 · USA · Canada · Mexico', title:'Map, Groups & Live Scores', sub:'48 teams · 12 groups · live tables',
+    tab_groups:'Group stage', tab_schedule:'Schedule', tab_country:'Country stats', tab_stats:'Player stats', tab_news:'News',
+    loading_groups:'Loading group standings…', loading_sched:'Loading match schedule…', loading_country:'Loading country stats…',
+    loading_stats:'Loading player stats…', loading_news:'Loading World Cup news…', loading_live:'Loading live scores…',
+    search_ph:'🔍 Search any player — e.g. Messi, Harry Kane, Vinícius…', search_btn:'Search', search_ing:'Searching…',
+    search_none:'No players found for “{q}”.', search_fail:'Search failed — try again.', read_wiki:'Read more on Wikipedia ↗',
+    live_now:'Live now', no_live:'No match live', next_live:'Next live', final_scores:'Final scores', no_today:'No live or upcoming match',
+    cal_live:'Live', cal_next:'Next', cal_final:'Final',
+    col_team:'Team', groups_empty:'No group tables published yet. They’ll appear here once the draw/standings are available from the data feed.',
+    sub_2026:'2026 Tournament', sub_alltime:'All-time records', col_player:'Player',
+    stats_no2026:'No 2026 player data yet — appears once goals are scored.',
+    note_2026:'FIFA World Cup 2026 — tap a column to sort. Goals are complete; assists &amp; penalties are partially reported by the free feed.',
+    note_all:'All-time men’s World Cup records, with each player’s last World Cup. Goals, assists and single-tournament tallies update live with the 2026 feed (look for <b>incl. 2026</b>). Tap a name for the player card. Appearances &amp; clean sheets are as of 2022.',
+    country_note:'World Cup country records — the 2026 card is live from the group stage; all-time records are from Wikipedia. Tap a country for its national-team card.',
+    rec_topscorers:'⚽ All-time top scorers', rec_single:'🎯 Most goals, single tournament', rec_assists:'👟 Most assists',
+    rec_clean:'🧤 Most clean sheets (GK)', rec_apps:'🏟️ Most appearances', rec_titles_p:'🏆 Most titles (player)',
+    cc_goals2026:'🔥 Most goals — 2026 so far', cc_titles:'🏆 Most titles', cc_goals_all:'⚽ Most goals all-time', cc_apps:'📅 Most appearances',
+    u_goals:'goals', u_titles:'titles', u_tournaments:'tournaments', u_finals:'finals', u_assists:'assists', u_matches:'matches', u_clean:'clean sheets',
+    t_capacity:'capacity', host_venue:'host venue', fixtures_here:'📅 Fixtures at this venue', fixtures_hd:'📅 Fixtures',
+    no_fixtures:'No fixtures listed at this venue in the current feed window.', goals_hd:'⚽ Goals', goals_hd_tap:'⚽ Goals — tap a scorer for their card',
+    goals_none:'No goals yet.', goals_loading:'Loading…', loading_word:'loading…', natl_team:'National football team',
+    news_unavail:'News unavailable right now. Try again shortly.', news_fail:'Couldn’t load news.',
+  },
+  zh:{
+    role:'2026 国际足联世界杯 · 美国 · 加拿大 · 墨西哥',
+    title:'地图、小组与实时比分', sub:'48 支球队 · 12 个小组 · 实时积分',
+    tab_groups:'小组赛', tab_schedule:'赛程', tab_country:'国家统计', tab_stats:'球员统计', tab_news:'新闻',
+    loading_groups:'正在加载小组积分榜…', loading_sched:'正在加载赛程…', loading_country:'正在加载国家统计…',
+    loading_stats:'正在加载球员统计…', loading_news:'正在加载世界杯新闻…', loading_live:'正在加载实时比分…',
+    search_ph:'🔍 搜索任意球员 — 如 梅西、凯恩、维尼修斯…', search_btn:'搜索', search_ing:'搜索中…',
+    search_none:'未找到与“{q}”相关的球员。', search_fail:'搜索失败，请重试。', read_wiki:'在维基百科上阅读更多 ↗',
+    live_now:'正在直播', no_live:'暂无比赛进行', next_live:'下一场', final_scores:'最终比分', no_today:'暂无比赛',
+    cal_live:'直播', cal_next:'下一场', cal_final:'完场',
+    col_team:'球队', groups_empty:'尚未公布小组积分榜。一旦数据源提供抽签或积分，将显示在此处。',
+    sub_2026:'2026 赛事', sub_alltime:'历史纪录', col_player:'球员',
+    stats_no2026:'暂无 2026 球员数据 — 进球后显示。',
+    note_2026:'2026 国际足联世界杯 — 点击列标题排序。进球数据完整；助攻与点球由免费数据源部分提供。',
+    note_all:'男足世界杯历史纪录，并标注每位球员最后参加的世界杯。进球、助攻与单届进球随 2026 赛况实时更新（见“含 2026”）。点击姓名查看球员资料。出场与零封数据截至 2022 年。',
+    country_note:'世界杯国家纪录 — 2026 卡片为小组赛实时数据；历史纪录来自维基百科。点击国家查看其国家队资料。',
+    rec_topscorers:'⚽ 历史最佳射手', rec_single:'🎯 单届最多进球', rec_assists:'👟 最多助攻',
+    rec_clean:'🧤 最多零封（门将）', rec_apps:'🏟️ 最多出场', rec_titles_p:'🏆 最多冠军（球员）',
+    cc_goals2026:'🔥 最多进球 — 2026 至今', cc_titles:'🏆 最多冠军', cc_goals_all:'⚽ 历史最多进球', cc_apps:'📅 最多参赛',
+    u_goals:'球', u_titles:'冠军', u_tournaments:'届', u_assists:'助攻', u_matches:'场', u_clean:'零封', u_finals:'届',
+    t_capacity:'容量', host_venue:'主办场馆', fixtures_here:'📅 本场馆赛程', fixtures_hd:'📅 赛程',
+    no_fixtures:'当前数据窗口内本场馆暂无赛程。', goals_hd:'⚽ 进球', goals_hd_tap:'⚽ 进球 — 点击射手查看资料',
+    goals_none:'暂无进球。', goals_loading:'加载中…', loading_word:'加载中…', natl_team:'国家足球队',
+    news_unavail:'暂时无法加载新闻，请稍后重试。', news_fail:'无法加载新闻。',
+  },
+  es:{
+    role:'Copa Mundial FIFA 2026 · EE. UU. · Canadá · México',
+    title:'Mapa, grupos y marcadores', sub:'48 equipos · 12 grupos · tablas en vivo',
+    tab_groups:'Fase de grupos', tab_schedule:'Calendario', tab_country:'Países', tab_stats:'Jugadores', tab_news:'Noticias',
+    loading_groups:'Cargando clasificación de grupos…', loading_sched:'Cargando el calendario…', loading_country:'Cargando estadísticas por país…',
+    loading_stats:'Cargando estadísticas de jugadores…', loading_news:'Cargando noticias del Mundial…', loading_live:'Cargando marcadores en vivo…',
+    search_ph:'🔍 Busca cualquier jugador — p. ej. Messi, Kane, Vinícius…', search_btn:'Buscar', search_ing:'Buscando…',
+    search_none:'No se encontraron jugadores para «{q}».', search_fail:'La búsqueda falló — inténtalo de nuevo.', read_wiki:'Leer más en Wikipedia ↗',
+    live_now:'En vivo', no_live:'Sin partidos en vivo', next_live:'Próximo', final_scores:'Resultados finales', no_today:'Sin partidos en vivo ni próximos',
+    cal_live:'En vivo', cal_next:'Próximo', cal_final:'Final',
+    col_team:'Equipo', groups_empty:'Aún no hay tablas de grupos. Aparecerán aquí cuando el proveedor de datos publique el sorteo o la clasificación.',
+    sub_2026:'Torneo 2026', sub_alltime:'Récords históricos', col_player:'Jugador',
+    stats_no2026:'Aún no hay datos de jugadores de 2026 — aparecerán cuando se marquen goles.',
+    note_2026:'Copa Mundial FIFA 2026 — toca una columna para ordenar. Los goles están completos; las asistencias y los penaltis se reportan parcialmente.',
+    note_all:'Récords históricos del Mundial masculino, con el último Mundial de cada jugador. Goles, asistencias y goles por torneo se actualizan con 2026 (busca «incl. 2026»). Toca un nombre para ver su ficha. Partidos y porterías a cero hasta 2022.',
+    country_note:'Récords de países del Mundial — la tarjeta de 2026 es en vivo desde la fase de grupos; los récords históricos son de Wikipedia. Toca un país para ver la ficha de su selección.',
+    rec_topscorers:'⚽ Máximos goleadores históricos', rec_single:'🎯 Más goles en un torneo', rec_assists:'👟 Más asistencias',
+    rec_clean:'🧤 Más porterías a cero (POR)', rec_apps:'🏟️ Más partidos', rec_titles_p:'🏆 Más títulos (jugador)',
+    cc_goals2026:'🔥 Más goles — 2026', cc_titles:'🏆 Más títulos', cc_goals_all:'⚽ Más goles históricos', cc_apps:'📅 Más participaciones',
+    u_goals:'goles', u_titles:'títulos', u_tournaments:'torneos', u_assists:'asistencias', u_matches:'partidos', u_clean:'porterías', u_finals:'torneos',
+    t_capacity:'aforo', host_venue:'sede', fixtures_here:'📅 Partidos en esta sede', fixtures_hd:'📅 Partidos',
+    no_fixtures:'No hay partidos en esta sede dentro de la ventana de datos actual.', goals_hd:'⚽ Goles', goals_hd_tap:'⚽ Goles — toca a un goleador para ver su ficha',
+    goals_none:'Aún no hay goles.', goals_loading:'Cargando…', loading_word:'cargando…', natl_team:'Selección nacional de fútbol',
+    news_unavail:'Noticias no disponibles ahora. Inténtalo en breve.', news_fail:'No se pudieron cargar las noticias.',
+  },
+};
+let lang = (()=>{ try{ return new URLSearchParams(location.search).get('lang')
+  || localStorage.getItem('wc-lang') || (navigator.language||'en').slice(0,2); }catch(e){ return 'en'; } })();
+if(!I18N[lang]) lang = 'en';
+const EN_TEXT = {}; // captured from the markup so switching back to English works
+function t(k){ const v = I18N[lang] && I18N[lang][k]; return (v!=null ? v : (EN_TEXT[k]!=null ? EN_TEXT[k] : k)); }
+function locale(){ return ({en:'en',zh:'zh-CN',es:'es-ES'})[lang] || 'en'; }
+const UNIT_KEYS = {goals:'u_goals',titles:'u_titles',tournaments:'u_tournaments',finals:'u_finals',
+  assists:'u_assists',matches:'u_matches','clean sheets':'u_clean'};
+function tunit(u){ return UNIT_KEYS[u] ? t(UNIT_KEYS[u]) : u; }
+function applyStaticI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.getAttribute('data-i18n');
+    if(EN_TEXT[k]==null) EN_TEXT[k] = el.textContent;   // remember English original
+    el.textContent = t(k);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k = el.getAttribute('data-i18n-ph');
+    if(EN_TEXT[k]==null) EN_TEXT[k] = el.getAttribute('placeholder');
+    el.setAttribute('placeholder', t(k));
+  });
+}
+applyStaticI18n();
+
 /* ───────── Map: 48 qualified teams ───────── */
 const CONF = {
   host:'Host nation', uefa:'UEFA — Europe', conmebol:'CONMEBOL — S. America',
@@ -954,19 +1063,19 @@ function renderLive(live, matches){
   let html = '';
   if(live.length){
     liveBar.className = ''; currentLive = live;
-    html += `<span class="tag"><span class="dot"></span>Live now</span>` + live.map((m,i)=>liveCard(m,i)).join('');
+    html += `<span class="tag"><span class="dot"></span>${t('live_now')}</span>` + live.map((m,i)=>liveCard(m,i)).join('');
   } else {
     liveBar.className = 'idle'; currentLive = [];
-    html += `<span class="tag">No match live</span>`;
+    html += `<span class="tag">${t('no_live')}</span>`;
   }
-  if(nextM){ html += `<span class="seg">Next live</span>` + scheduledCard(nextM); }
-  if(!live.length && !nextM){ html = `<span class="tag">No live or upcoming match</span>`; }
+  if(nextM){ html += `<span class="seg">${t('next_live')}</span>` + scheduledCard(nextM); }
+  if(!live.length && !nextM){ html = `<span class="tag">${t('no_today')}</span>`; }
   liveBar.innerHTML = html;
 
   // Completed games go in their own strip below the map.
   if(finished.length){
     finalsBar.hidden = false;
-    finalsBar.innerHTML = `<span class="seg">Final scores</span>` + finished.map(finalCard).join('');
+    finalsBar.innerHTML = `<span class="seg">${t('final_scores')}</span>` + finished.map(finalCard).join('');
   } else {
     finalsBar.hidden = true;
     finalsBar.innerHTML = '';
@@ -977,7 +1086,7 @@ function renderGroups(groups, live){
   lastGroups = groups || [];
   const liveByGroup = new Set((live||[]).map(m=>m.group).filter(Boolean));
   if(!groups.length){
-    groupsEl.innerHTML = `<div class="state-note">No group tables published yet. They’ll appear here once the draw/standings are available from the data feed.</div>`;
+    groupsEl.innerHTML = `<div class="state-note">${t('groups_empty')}</div>`;
     return;
   }
   groupsEl.innerHTML = groups.map(g=>{
@@ -992,14 +1101,12 @@ function renderGroups(groups, live){
     return `<div class="gcard${live?' haslive':''}">`
       + `<div class="gh"><b>Group ${esc(g.letter)}</b>`
       + (live?`<span class="livechip"><span class="dot"></span>LIVE</span>`:'') + `</div>`
-      + `<table class="std"><thead><tr><th class="tm">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>`
+      + `<table class="std"><thead><tr><th class="tm">${t('col_team')}</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>`
       + `<tbody>${rows}</tbody></table></div>`;
   }).join('');
 }
 
 const LIVE_ALL = ['LIVE','IN_PLAY','PAUSED'];
-const CAL_WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const CAL_MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const dayKey = d => d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
 
 // Calendar Schedule: render the full static fixture list, overlaying live
@@ -1031,9 +1138,13 @@ function renderSchedule(matches){
   const start = new Date(first.getFullYear(), first.getMonth(), first.getDate()-first.getDay());
   const end   = new Date(last.getFullYear(),  last.getMonth(),  last.getDate()+(6-last.getDay()));
   const todayK = dayKey(new Date());
+  // locale-aware month title + weekday names
+  const monFmt = new Intl.DateTimeFormat(locale(), {year:'numeric', month:'long'});
+  const wdFmt = new Intl.DateTimeFormat(locale(), {weekday:'short'});
+  const WD = Array.from({length:7}, (_,i)=> wdFmt.format(new Date(2024,8,1+i))); // Sun..Sat
   const title = first.getMonth()===last.getMonth()
-    ? `${CAL_MON[first.getMonth()]} ${first.getFullYear()}`
-    : `${CAL_MON[first.getMonth()]}–${CAL_MON[last.getMonth()]} ${last.getFullYear()}`;
+    ? monFmt.format(first)
+    : `${new Intl.DateTimeFormat(locale(),{month:'long'}).format(first)}–${monFmt.format(last)}`;
 
   let cells = '';
   for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
@@ -1041,15 +1152,15 @@ function renderSchedule(matches){
     const games = byDay[k] || [];
     const evs = games.map(it=> calEvent(it, it===nextItem)).join('');
     cells += `<div class="cal-cell${games.length?'':' empty'}${k===todayK?' today':''}">`
-      + `<span class="cal-dn">${CAL_WD[d.getDay()]} ${d.getDate()}</span>${evs}</div>`;
+      + `<span class="cal-dn">${WD[d.getDay()]} ${d.getDate()}</span>${evs}</div>`;
   }
-  pane.innerHTML = `<div class="cal-top"><b>${title}</b>`
-    + `<span class="cal-legend"><span class="cl live">Live</span><span class="cl next">Next</span><span class="cl fin">Final</span></span></div>`
-    + `<div class="calhead">${CAL_WD.map(w=>`<div class="cal-wd">${w}</div>`).join('')}</div>`
+  pane.innerHTML = `<div class="cal-top"><b>${esc(title)}</b>`
+    + `<span class="cal-legend"><span class="cl live">${t('cal_live')}</span><span class="cl next">${t('cal_next')}</span><span class="cl fin">${t('cal_final')}</span></span></div>`
+    + `<div class="calhead">${WD.map(w=>`<div class="cal-wd">${esc(w)}</div>`).join('')}</div>`
     + `<div class="cal">${cells}</div>`;
 }
 function calEvent(it, isNext){
-  const time = new Date(it.t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  const time = new Date(it.t).toLocaleTimeString(locale(), {hour:'2-digit',minute:'2-digit'});
   const mid = (it.live||it.fin) ? `${fmtScore(it.hs)}–${fmtScore(it.as)}` : 'v';
   const tag = it.live ? (it.minute!=null?esc(it.minute)+"'":'LIVE') : (it.fin?'FT':esc(time));
   const fl = (iso,code)=>`<img class="cf" src="https://flagcdn.com/w20/${iso}.png" alt=""><span>${esc(code)}</span>`;
@@ -1095,8 +1206,8 @@ function openStadium(m){
   document.getElementById('sLoc').textContent = [vi.city, vi.s && vi.s.country].filter(Boolean).join(' · ');
   const stats = [];
   if(vi.s){
-    stats.push(`<span class="stat"><b>${vi.s.cap.toLocaleString()}</b>capacity</span>`);
-    stats.push(`<span class="stat"><b>WC 2026</b>host venue</span>`);
+    stats.push(`<span class="stat"><b>${vi.s.cap.toLocaleString()}</b>${t('t_capacity')}</span>`);
+    stats.push(`<span class="stat"><b>WC 2026</b>${t('host_venue')}</span>`);
   }
   document.getElementById('sStats').innerHTML = stats.join('');
   const mEl = document.getElementById('sMatch');
@@ -1111,14 +1222,14 @@ async function loadScorers(m){
   const box = document.getElementById('sScorers');
   box.innerHTML = '';
   if(!m || !m.fixtureId) return;
-  box.innerHTML = `<div class="schead">⚽ Goals</div><div class="scload">Loading…</div>`;
+  box.innerHTML = `<div class="schead">${t('goals_hd')}</div><div class="scload">${t('goals_loading')}</div>`;
   try{
     const r = await fetch(`/api/events?fixture=${m.fixtureId}`);
     const d = await r.json();
     if(sModal.hidden) return;
     if(d.error || !Array.isArray(d.goals)){ box.innerHTML = ''; return; }
-    if(!d.goals.length){ box.innerHTML = `<div class="schead">⚽ Goals</div><div class="scempty">No goals yet.</div>`; return; }
-    box.innerHTML = `<div class="schead">⚽ Goals — tap a scorer for their card</div>` + d.goals.map(g=>{
+    if(!d.goals.length){ box.innerHTML = `<div class="schead">${t('goals_hd')}</div><div class="scempty">${t('goals_none')}</div>`; return; }
+    box.innerHTML = `<div class="schead">${t('goals_hd_tap')}</div>` + d.goals.map(g=>{
       const tag = g.detail==='Own Goal' ? ` <span class="sctag">OG</span>`
                 : (g.detail==='Penalty' ? ` <span class="sctag">pen</span>` : '');
       const asst = g.assist ? ` <span class="scasst">↳ ${esc(g.assist)}</span>` : '';
@@ -1138,8 +1249,8 @@ function openStadiumVenue(s){
   document.getElementById('sName').textContent = s.n;
   document.getElementById('sLoc').textContent = [s.city, s.country].filter(Boolean).join(' · ');
   document.getElementById('sStats').innerHTML =
-      `<span class="stat"><b>${s.cap.toLocaleString()}</b>capacity</span>`
-    + `<span class="stat"><b>WC 2026</b>host venue</span>`;
+      `<span class="stat"><b>${s.cap.toLocaleString()}</b>${t('t_capacity')}</span>`
+    + `<span class="stat"><b>WC 2026</b>${t('host_venue')}</span>`;
   const liveHere = (currentLive||[]).find(m=> matchStadium(m)===s);
   const mEl = document.getElementById('sMatch');
   if(liveHere){
@@ -1156,11 +1267,11 @@ function renderStadiumSchedule(s){
   const fixtures = (lastMatches||[]).filter(m=> matchStadium(m)===s)
     .sort((a,b)=> new Date(a.utcDate)-new Date(b.utcDate));
   if(!fixtures.length){
-    box.innerHTML = `<div class="schead">📅 Fixtures</div>`
-      + `<div class="scempty">No fixtures listed at this venue in the current feed window.</div>`;
+    box.innerHTML = `<div class="schead">${t('fixtures_hd')}</div>`
+      + `<div class="scempty">${t('no_fixtures')}</div>`;
     return;
   }
-  box.innerHTML = `<div class="schead">📅 Fixtures at this venue</div>` + fixtures.map(m=>{
+  box.innerHTML = `<div class="schead">${t('fixtures_here')}</div>` + fixtures.map(m=>{
     const live = LIVE_ALL.includes(m.status), fin = m.status==='FINISHED';
     const when = new Date(m.utcDate).toLocaleString([], {weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
     const mid = (live||fin) ? `${fmtScore(m.home.score)}–${fmtScore(m.away.score)}` : 'vs';
@@ -1188,6 +1299,26 @@ function applyTheme(theme, persist){
 applyTheme(document.documentElement.getAttribute('data-theme') || 'light', false);
 themeBtn.addEventListener('click', ()=>{
   applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark', true);
+});
+
+/* ───────── Language switch ───────── */
+const langSel = document.getElementById('langSel');
+langSel.value = lang;
+function rerenderI18n(){
+  applyStaticI18n();
+  try{
+    renderLive(currentLive||[], lastMatches||[]);
+    renderGroups(lastGroups||[], currentLive||[]);
+    renderSchedule(lastMatches||[]);
+    drawStats();
+    renderCountry(lastGroups||[]);
+  }catch(e){}
+}
+langSel.addEventListener('change', ()=>{
+  lang = I18N[langSel.value] ? langSel.value : 'en';
+  try{ localStorage.setItem('wc-lang', lang); }catch(e){}
+  document.documentElement.setAttribute('lang', lang);
+  rerenderI18n();
 });
 
 /* ───────── Tabs: Group stage / News / Player stats ───────── */
@@ -1226,12 +1357,12 @@ async function doSearch(q){
   q = (q||'').trim();
   if(q.length < 2){ pSearchResults.hidden = true; pSearchResults.innerHTML = ''; return; }
   pSearchResults.hidden = false;
-  pSearchResults.innerHTML = `<div class="psr-msg">Searching…</div>`;
+  pSearchResults.innerHTML = `<div class="psr-msg">${t('search_ing')}</div>`;
   try{
     const r = await fetch(`/api/wiki?q=${encodeURIComponent(q)}`);
     const d = await r.json();
     searchHits = d.results || [];
-    if(!searchHits.length){ pSearchResults.innerHTML = `<div class="psr-msg">No players found for “${esc(q)}”.</div>`; return; }
+    if(!searchHits.length){ pSearchResults.innerHTML = `<div class="psr-msg">${esc(t('search_none').replace('{q}', q))}</div>`; return; }
     pSearchResults.innerHTML = searchHits.map((p,i)=>
       `<button class="psr-item" data-i="${i}">`
       + (p.thumbnail ? `<img src="${esc(p.thumbnail)}" alt="">` : `<span class="psr-ph">👤</span>`)
@@ -1241,7 +1372,7 @@ async function doSearch(q){
       pSearchResults.hidden = true;
       openPlayer({ dataset: { name: searchHits[+b.dataset.i].title } });
     }));
-  }catch(e){ pSearchResults.innerHTML = `<div class="psr-msg">Search failed — try again.</div>`; }
+  }catch(e){ pSearchResults.innerHTML = `<div class="psr-msg">${t('search_fail')}</div>`; }
 }
 pSearchInput.addEventListener('input', ()=>{ clearTimeout(searchTimer); searchTimer = setTimeout(()=> doSearch(pSearchInput.value), 350); });
 pSearchInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ clearTimeout(searchTimer); doSearch(pSearchInput.value); } });
@@ -1285,27 +1416,28 @@ function countryCard(title, unit, rows, opts){
         return `<tr><td class="hrk">${i+1}</td>`
           + `<td class="hpl"><span class="plink" data-country="${esc(r.name)}" onclick="openCountry(this.dataset.country)">`
           + `${flag}<span class="hnm">${esc(r.name)}${sub}</span></span></td>`
-          + `<td class="hv">${r.val}<small>${esc(unit)}</small></td></tr>`;
+          + `<td class="hv">${r.val}<small>${esc(tunit(unit))}</small></td></tr>`;
       }).join('') + `</tbody></table></div>`;
 }
 function renderCountry(groups){
-  let html = `<p class="statnote">World Cup country records — the 2026 card is live from the group stage; all-time records are from Wikipedia. Tap a country for its national-team card.</p><div class="histgrid">`;
+  let html = `<p class="statnote">${t('country_note')}</p><div class="histgrid">`;
   if(groups && groups.length){
-    const teams = groups.flatMap(g=> g.table.map(t=>({name:t.name, crest:t.crest, gf:t.gf, gd:t.gd, pts:t.points, pl:t.played})));
-    const topG = teams.filter(t=>t.gf!=null).sort((a,b)=> (b.gf-a.gf)||(b.gd-a.gd)).slice(0,8);
+    const teams = groups.flatMap(g=> g.table.map(x=>({name:x.name, crest:x.crest, gf:x.gf, gd:x.gd, pts:x.points, pl:x.played})));
+    const topG = teams.filter(x=>x.gf!=null).sort((a,b)=> (b.gf-a.gf)||(b.gd-a.gd)).slice(0,8);
     if(topG.length)
-      html += countryCard('🔥 Most goals — 2026 so far', 'goals',
-        topG.map(t=>({name:t.name, crest:t.crest, val:t.gf, sub:`${t.pl} played · ${t.pts} pts`})), {live:true});
+      html += countryCard(t('cc_goals2026'), 'goals',
+        topG.map(x=>({name:x.name, crest:x.crest, val:x.gf, sub:`${x.pl} · ${x.pts} pts`})), {live:true});
   }
   const R = wcRecords;
+  const CC_TITLE = {'🏆 Most titles':'cc_titles','📅 Most appearances':'cc_apps','⚽ Most goals all-time':'cc_goals_all'};
   if(R && R.titles && R.titles.length){
-    html += countryCard('🏆 Most titles', 'titles', R.titles.map(t=>({name:t.name, iso:recIso(t.name), val:t.gold})), {tag:'Wikipedia'});
+    html += countryCard(t('cc_titles'), 'titles', R.titles.map(x=>({name:x.name, iso:recIso(x.name), val:x.gold})), {tag:'Wikipedia'});
     if(R.teamGoals && R.teamGoals.length)
-      html += countryCard('⚽ Most goals all-time', 'goals', R.teamGoals.map(t=>({name:t.name, iso:recIso(t.name), val:t.val})), {tag:'Wikipedia'});
+      html += countryCard(t('cc_goals_all'), 'goals', R.teamGoals.map(x=>({name:x.name, iso:recIso(x.name), val:x.val})), {tag:'Wikipedia'});
     if(R.teamApps && R.teamApps.length)
-      html += countryCard('📅 Most appearances', 'tournaments', R.teamApps.map(t=>({name:t.name, iso:recIso(t.name), val:t.val})), {tag:'Wikipedia'});
+      html += countryCard(t('cc_apps'), 'tournaments', R.teamApps.map(x=>({name:x.name, iso:recIso(x.name), val:x.val})), {tag:'Wikipedia'});
   } else {
-    COUNTRY_RECORDS.forEach(c=> html += countryCard(c.title, c.unit,
+    COUNTRY_RECORDS.forEach(c=> html += countryCard(CC_TITLE[c.title]?t(CC_TITLE[c.title]):c.title, c.unit,
       c.rows.map(([name,iso,val])=>({name,iso,val})), {tag:'as of 2022', note:c.note}));
   }
   panes.country.innerHTML = html + `</div>`;
@@ -1313,7 +1445,7 @@ function renderCountry(groups){
 async function openCountry(name){
   pModal.hidden = false; pModal.querySelector('.sbox').scrollTop = 0;
   document.getElementById('pName').textContent = name;
-  document.getElementById('pMeta').textContent = 'National team · loading…';
+  document.getElementById('pMeta').textContent = t('natl_team') + ' · ' + t('loading_word');
   pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
   const clubsEl = document.getElementById('pClubs'); clubsEl.hidden = true; clubsEl.innerHTML = '';
   const extractEl = document.getElementById('pExtract'); extractEl.textContent = '';
@@ -1331,9 +1463,9 @@ async function openCountry(name){
     if(pModal.hidden) return;
     const wiki = (wb.results || [])[0];
     if(wiki && wiki.thumbnail){ pPhoto.style.backgroundImage = `url('${wiki.thumbnail}')`; pPhoto.classList.remove('noimg'); }
-    document.getElementById('pMeta').textContent = (wiki && wiki.description) || 'National football team';
+    document.getElementById('pMeta').textContent = (wiki && wiki.description) || t('natl_team');
     if(wiki){ if(wiki.extract) extractEl.textContent = wiki.extract; if(wiki.url){ wikiEl.hidden = false; wikiEl.href = wiki.url; } }
-  }catch(e){ document.getElementById('pMeta').textContent = 'National football team'; }
+  }catch(e){ document.getElementById('pMeta').textContent = t('natl_team'); }
 }
 async function loadRecords(){
   try{ const d = await fetch('/api/records').then(r=>r.json()); if(d && !d.error && d.topScorers) wcRecords = d; }
@@ -1354,14 +1486,14 @@ async function loadNews(){
   newsLoaded = true;
   try{
     const r = await fetch('/api/news'); const d = await r.json();
-    if(d.error || !(d.items||[]).length){ panes.news.innerHTML = `<div class="state-note">News unavailable right now. Try again shortly.</div>`; return; }
+    if(d.error || !(d.items||[]).length){ panes.news.innerHTML = `<div class="state-note">${t('news_unavail')}</div>`; return; }
     panes.news.innerHTML = `<div class="newslist">` + d.items.map(a=>{
       const ago = timeAgo(a.pubDate);
       return `<a class="narti" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer">`
         + `<div class="nt">${esc(a.title)}</div>`
         + `<div class="nm"><b>${esc(a.source||'News')}</b>${ago?` · ${ago}`:''}</div></a>`;
     }).join('') + `</div>`;
-  }catch(e){ panes.news.innerHTML = `<div class="state-note">Couldn’t load news.</div>`; newsLoaded = false; }
+  }catch(e){ panes.news.innerHTML = `<div class="state-note">${t('news_fail')}</div>`; newsLoaded = false; }
 }
 // Career WC totals THROUGH 2022 [name, iso, country, value, lastWC]. The cards
 // add live 2026 numbers; anyone in the 2026 feed has their lastWC shown as 2026.
@@ -1398,18 +1530,18 @@ function renderStats(scorers){
 }
 function drawStats(){
   const tab = (v,label)=>`<button class="stab ${statsView===v?'active':''}" data-sv="${v}">${label}</button>`;
-  statsContent.innerHTML = `<div class="substabs">${tab('2026','2026 Tournament')}${tab('alltime','All-time records')}</div>`
+  statsContent.innerHTML = `<div class="substabs">${tab('2026',t('sub_2026'))}${tab('alltime',t('sub_alltime'))}</div>`
     + (statsView==='2026' ? render2026() : renderHistorical());
   statsContent.querySelectorAll('.stab').forEach(b=> b.onclick = ()=>{ statsView=b.dataset.sv; drawStats(); });
   if(statsView==='2026')
     statsContent.querySelectorAll('th[data-k]').forEach(th=> th.onclick = ()=>{ sortKey=th.dataset.k; drawStats(); });
 }
 function render2026(){
-  if(!lastScorers.length) return `<div class="state-note">No 2026 player data yet — appears once goals are scored.</div>`;
+  if(!lastScorers.length) return `<div class="state-note">${t('stats_no2026')}</div>`;
   const rows = [...lastScorers].sort((a,b)=> (b[sortKey]==null?-1:b[sortKey]) - (a[sortKey]==null?-1:a[sortKey])).slice(0,30);
   const th = (k,l)=>`<th data-k="${k}" class="${sortKey===k?'on':''}">${l}</th>`;
-  return `<p class="statnote">FIFA World Cup 2026 — tap a column to sort. Goals are complete; assists &amp; penalties are partially reported by the free feed.</p>`
-    + `<table class="ptable"><thead><tr><th class="rkh">#</th><th class="plh">Player</th>${th('goals','G')}${th('assists','A')}${th('penalties','Pen')}</tr></thead><tbody>`
+  return `<p class="statnote">${t('note_2026')}</p>`
+    + `<table class="ptable"><thead><tr><th class="rkh">#</th><th class="plh">${t('col_player')}</th>${th('goals','G')}${th('assists','A')}${th('penalties','Pen')}</tr></thead><tbody>`
     + rows.map((s,i)=>{
         const fl = countryFlag(s.nationality) || s.crest;
         const cell = (k,v)=>`<td class="${sortKey===k?'on':''}">${v==null?'–':v}</td>`;
@@ -1432,7 +1564,7 @@ function recordCard(title, unit, rows, opts){
         return `<tr><td class="hrk">${i+1}</td>`
         + `<td class="hpl"><span class="plink" data-name="${esc(r.name)}" data-nat="${esc(r.team)}" data-val="${esc(String(r.val))}" data-unit="${esc(unit)}" onclick="openPlayer(this)">`
         + `${flagImg(r.iso)}<span class="hnm">${esc(r.name)}<small>${sub}</small></span></span></td>`
-        + `<td class="hv">${r.val}${r.delta?`<span class="dlt">+${r.delta}</span>`:''}<small>${esc(unit)}</small></td></tr>`;
+        + `<td class="hv">${r.val}${r.delta?`<span class="dlt">+${r.delta}</span>`:''}<small>${esc(tunit(unit))}</small></td></tr>`;
       }).join('') + `</tbody></table></div>`;
 }
 // merge a [name,iso,country,base,lastWC] table with live 2026 numbers (by name)
@@ -1470,11 +1602,12 @@ function renderHistorical(){
   lastScorers.slice(0,8).forEach(s=> st.push({name:s.name, iso:isoByCountry[norm(s.nationality)]||'', team:s.team, val:s.goals, last:2026}));
   const stRows = st.sort((a,b)=> b.val-a.val).slice(0,6);
 
-  let html = `<p class="statnote">All-time men’s World Cup records, with each player’s last World Cup. Goals, assists and single-tournament tallies update live with the 2026 feed (look for <b>incl. 2026</b>). Tap a name for the player card. Appearances &amp; clean sheets are as of 2022.</p><div class="histgrid">`;
-  html += recordCard('⚽ All-time top scorers', 'goals', goalsRows, {live:true});
-  html += recordCard('🎯 Most goals, single tournament', 'goals', stRows, {live:true});
-  html += recordCard('👟 Most assists', 'assists', assistRows, {live:true, note:'FIFA-credited; older assists are estimates'});
-  WC_STATIC.forEach(c=> html += recordCard(c.title, c.unit,
+  const STATIC_TITLE = {'🧤 Most clean sheets (GK)':'rec_clean','🏟️ Most appearances':'rec_apps','🏆 Most titles (player)':'rec_titles_p'};
+  let html = `<p class="statnote">${t('note_all')}</p><div class="histgrid">`;
+  html += recordCard(t('rec_topscorers'), 'goals', goalsRows, {live:true});
+  html += recordCard(t('rec_single'), 'goals', stRows, {live:true});
+  html += recordCard(t('rec_assists'), 'assists', assistRows, {live:true, note:'FIFA-credited; older assists are estimates'});
+  WC_STATIC.forEach(c=> html += recordCard(STATIC_TITLE[c.title]?t(STATIC_TITLE[c.title]):c.title, c.unit,
     c.rows.map(([name,iso,team,val,last])=>({name,iso,team,val,last})), {tag:'as of 2022', note:c.note}));
   return html + `</div>`;
 }
@@ -1489,7 +1622,7 @@ async function openPlayer(el){
   pModal.hidden = false;
   pModal.querySelector('.sbox').scrollTop = 0;
   document.getElementById('pName').textContent = name;
-  document.getElementById('pMeta').textContent = (d.nat || d.team || '') + ' · loading…';
+  document.getElementById('pMeta').textContent = (d.nat || d.team || '') + ' · ' + t('loading_word');
   pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
   const clubsEl = document.getElementById('pClubs'); clubsEl.hidden = true; clubsEl.innerHTML = '';
   const extractEl = document.getElementById('pExtract'); extractEl.textContent = '';
