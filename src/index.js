@@ -26,6 +26,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/api/wc") return handleWC(request, env, ctx);
+    if (url.pathname === "/api/news") return handleNews(request, env, ctx);
     if (env.ASSETS) return env.ASSETS.fetch(request);
     return new Response("Not found", { status: 404 });
   },
@@ -77,11 +78,12 @@ async function handleWC(request, env, ctx) {
   const from = new Date(now - DAY).toISOString().slice(0, 10);
   const to = new Date(now + DAY).toISOString().slice(0, 10);
 
-  let standings, matchesRaw;
+  let standings, matchesRaw, scorersRaw;
   try {
-    [standings, matchesRaw] = await Promise.all([
+    [standings, matchesRaw, scorersRaw] = await Promise.all([
       cachedJson(`${FD}/standings`, fdHeaders, FD_TTL, "fd-standings"),
       cachedJson(`${FD}/matches?dateFrom=${from}&dateTo=${to}`, fdHeaders, FD_TTL, `fd-matches-${from}`),
+      cachedJson(`${FD}/scorers?limit=20`, fdHeaders, 300, "fd-scorers").catch(() => null),
     ]);
   } catch (err) {
     return json({ error: "upstream", message: String(err) }, 502, 0);
@@ -163,7 +165,60 @@ async function handleWC(request, env, ctx) {
     }));
   }
 
-  return json({ updated: new Date().toISOString(), source, groups, matches, live });
+  const scorers = ((scorersRaw && scorersRaw.scorers) || []).map((s) => ({
+    name: s.player?.name || "—",
+    nationality: s.player?.nationality || "",
+    team: s.team?.name || "",
+    crest: s.team?.crest || "",
+    goals: s.goals ?? 0,
+    assists: s.assists ?? null,
+    penalties: s.penalties ?? null,
+  }));
+
+  return json({ updated: new Date().toISOString(), source, groups, matches, live, scorers });
+}
+
+// World Cup news via Google News RSS (free, keyless). Cached ~10 min.
+async function handleNews(request, env, ctx) {
+  const cache = caches.default;
+  const key = new Request("https://wc.cache/news");
+  const hit = await cache.match(key);
+  if (hit) return hit;
+
+  try {
+    const r = await fetch(
+      "https://news.google.com/rss/search?q=FIFA+World+Cup+2026&hl=en-US&gl=US&ceid=US:en",
+      { headers: { "user-agent": "Mozilla/5.0 (compatible; samueltung.com/1.0)" } }
+    );
+    if (!r.ok) return json({ error: "news_upstream", status: r.status }, 502, 0);
+    const xml = await r.text();
+    const items = [];
+    const re = /<item>([\s\S]*?)<\/item>/g;
+    let m;
+    while ((m = re.exec(xml)) && items.length < 20) {
+      const block = m[1];
+      const grab = (tag) => {
+        const t = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
+        return t ? decodeXml(t[1].replace(/<!\[CDATA\[|\]\]>/g, "").trim()) : "";
+      };
+      let title = grab("title");
+      const source = grab("source");
+      // Google News titles end with " - Source"; trim it when we have the source tag
+      if (source && title.endsWith(" - " + source)) title = title.slice(0, -(source.length + 3));
+      items.push({ title, source, link: grab("link"), pubDate: grab("pubDate") });
+    }
+    const res = json({ updated: new Date().toISOString(), items }, 200, 600);
+    ctx.waitUntil(cache.put(key, res.clone()));
+    return res;
+  } catch (err) {
+    return json({ error: "news_failed", message: String(err) }, 502, 0);
+  }
+}
+
+function decodeXml(s) {
+  return String(s)
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'").replace(/&apos;/g, "'").replace(/&amp;/g, "&");
 }
 
 function groupLetter(g) {

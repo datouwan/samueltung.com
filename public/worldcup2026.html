@@ -123,9 +123,46 @@
 
   /* groups */
   .groups-wrap{max-width:1180px;margin:0 auto;padding:28px 20px 48px}
-  .groups-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:0 0 16px}
-  .groups-head h2{font-family:var(--serif);font-weight:600;font-size:22px;margin:0}
-  .groups-head .upd{color:var(--muted);font-size:13px}
+  /* tabs */
+  .tabs{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:0 0 18px;border-bottom:1px solid var(--line)}
+  .tab{appearance:none;background:none;border:none;font:600 16px var(--sans);color:var(--muted);
+    padding:9px 2px;margin-right:22px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab:hover{color:var(--ink-soft)}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tabs .upd{margin-left:auto;color:var(--muted);font-size:13px}
+  .tabpane[hidden]{display:none}
+
+  /* news */
+  .newslist{display:grid;gap:10px;max-width:760px}
+  .narti{display:block;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:11px;
+    background:var(--card);padding:12px 15px;transition:border-color .15s,transform .15s,box-shadow .15s}
+  .narti:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 8px 22px rgba(28,27,25,.06)}
+  .narti .nt{font-weight:600;font-size:15.5px;line-height:1.35}
+  .narti .nm{color:var(--muted);font-size:12.5px;margin-top:5px}
+  .narti .nm b{color:var(--accent-ink);font-weight:600}
+
+  /* player stats */
+  .stathead{font-family:var(--serif);font-size:18px;margin:0 0 12px}
+  .scorers{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden;max-width:560px}
+  .scorer{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--paper-2)}
+  .scorer:last-child{border-bottom:none}
+  .scorer.lead{background:linear-gradient(90deg,rgba(161,74,50,.10),transparent)}
+  .scorer .rk{width:22px;text-align:center;font-weight:700;color:var(--muted)}
+  .scorer.lead .rk{color:var(--accent)}
+  .scorer .pf{width:28px;height:20px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
+  .scorer .pn{flex:1;font-weight:600;min-width:0}
+  .scorer .pn small{display:block;color:var(--muted);font-weight:400;font-size:12px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .scorer .gg{font-family:var(--serif);font-weight:700;font-size:20px;text-align:right}
+  .scorer .gg small{font-family:var(--sans);font-weight:600;font-size:11px;color:var(--muted);display:block}
+
+  /* live-bar segment labels + final/next chips */
+  #liveBar .seg{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    color:#9c968c;padding-left:6px;border-left:1px solid #3a3733;margin-left:2px}
+  #liveBar.idle .seg{color:var(--muted);border-left-color:var(--line)}
+  .finalbadge{font-size:10px;font-weight:800;letter-spacing:.05em;color:#cfc8bb;background:#3a3733;
+    border-radius:9px;padding:2px 7px;margin-left:2px}
+  #liveBar.idle .finalbadge{background:var(--paper-2);color:var(--muted)}
   .groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
 
   .gcard{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden;
@@ -250,12 +287,20 @@
 <div id="map"></div>
 
 <section class="groups-wrap">
-  <div class="groups-head">
-    <h2>Group stage</h2>
+  <div class="tabs">
+    <button class="tab active" data-tab="groups">Group stage</button>
+    <button class="tab" data-tab="news">News</button>
+    <button class="tab" data-tab="stats">Player stats</button>
     <span class="upd" id="updated"></span>
   </div>
-  <div class="groups" id="groups">
+  <div class="groups tabpane" id="groups" data-pane="groups">
     <div class="state-note">Loading group standings…</div>
+  </div>
+  <div class="tabpane" id="newsPane" data-pane="news" hidden>
+    <div class="state-note">Loading World Cup news…</div>
+  </div>
+  <div class="tabpane" id="statsPane" data-pane="stats" hidden>
+    <div class="state-note">Loading player stats…</div>
   </div>
 </section>
 
@@ -475,6 +520,11 @@ function teamCard(t, reversed){
   const kit = kitSvg(t.name);
   return `<span class="tcard">` + (reversed ? (name + flag + kit) : (kit + flag + name)) + `</span>`;
 }
+
+// nationality (from scorers feed) -> flag image, via the map's ISO codes
+const isoByCountry = {};
+TEAMS.forEach(([name,iso])=> isoByCountry[norm(name)] = iso);
+function countryFlag(nat){ const iso = isoByCountry[norm(nat)]; return iso ? `https://flagcdn.com/w40/${iso}.png` : ''; }
 const esc = s => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const liveBar = document.getElementById('liveBar');
 const groupsEl = document.getElementById('groups');
@@ -508,36 +558,52 @@ function liveState(m){
   return 'LIVE';
 }
 
+function liveCard(m,i){
+  const goal = isFreshGoal(m);
+  const vi = venueInfo(m.venue);
+  const vchip = vi ? `<span class="vchip" title="Stadium info" onclick="event.stopPropagation();openStadiumByIdx(${i})">🏟️ ${esc(vi.name)}</span>` : '';
+  return `<span class="lgame tap${goal?' goal':''}" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
+    + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
+    + teamCard(m.home,false)
+    + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
+    + teamCard(m.away,true)
+    + (goal?`<span class="goalbadge">⚽ GOAL!</span>`:`<span class="min">${liveState(m)}</span>`)
+    + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + vchip + `</span>`;
+}
+function scheduledCard(m){
+  const t = new Date(m.utcDate).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit'});
+  return `<span class="lgame tap" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
+    + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
+    + teamCard(m.home,false) + `<span class="sc">${esc(t)}</span>` + teamCard(m.away,true)
+    + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + `</span>`;
+}
+function finalCard(m){
+  return `<span class="lgame tap" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
+    + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
+    + teamCard(m.home,false)
+    + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
+    + teamCard(m.away,true)
+    + `<span class="finalbadge">FINAL</span>`
+    + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + `</span>`;
+}
 function renderLive(live, matches){
-  if(!live.length){
-    const next = (matches||[]).filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
-      .sort((a,b)=>new Date(a.utcDate)-new Date(b.utcDate))[0];
-    liveBar.className = 'idle';
-    if(next){
-      const t = new Date(next.utcDate).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit'});
-      liveBar.innerHTML = `<span class="tag">No match live</span>`
-        + `<span class="lgame">` + teamCard(next.home,false)
-        + `<span class="sc">${esc(t)}</span>` + teamCard(next.away,true)
-        + `<span class="grp">Next up${next.group?` · Grp ${esc(next.group)}`:''}</span></span>`;
-    } else {
-      liveBar.innerHTML = `<span class="tag">No match live right now</span>`;
-    }
-    return;
+  const finished = (matches||[]).filter(m => m.status==='FINISHED')
+    .sort((a,b)=> new Date(b.utcDate)-new Date(a.utcDate)).slice(0,4);
+  const nextM = (matches||[]).filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
+    .sort((a,b)=> new Date(a.utcDate)-new Date(b.utcDate))[0];
+
+  let html = '';
+  if(live.length){
+    liveBar.className = ''; currentLive = live;
+    html += `<span class="tag"><span class="dot"></span>Live now</span>` + live.map((m,i)=>liveCard(m,i)).join('');
+  } else {
+    liveBar.className = 'idle'; currentLive = [];
+    html += `<span class="tag">No match live</span>`;
   }
-  liveBar.className = '';
-  currentLive = live;
-  liveBar.innerHTML = `<span class="tag"><span class="dot"></span>Live now</span>` + live.map((m,i)=>{
-    const goal = isFreshGoal(m);
-    const vi = venueInfo(m.venue);
-    const vchip = vi ? `<span class="vchip" title="Stadium info" onclick="event.stopPropagation();openStadiumByIdx(${i})">🏟️ ${esc(vi.name)}</span>` : '';
-    return `<span class="lgame tap${goal?' goal':''}" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
-      + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
-      + teamCard(m.home,false)
-      + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
-      + teamCard(m.away,true)
-      + (goal?`<span class="goalbadge">⚽ GOAL!</span>`:`<span class="min">${liveState(m)}</span>`)
-      + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + vchip + `</span>`;
-  }).join('');
+  if(nextM){ html += `<span class="seg">Next live</span>` + scheduledCard(nextM); }
+  if(finished.length){ html += `<span class="seg">Final</span>` + finished.map(finalCard).join(''); }
+  if(!live.length && !nextM && !finished.length){ html = `<span class="tag">No matches today</span>`; }
+  liveBar.innerHTML = html;
 }
 
 function renderGroups(groups, live){
@@ -600,6 +666,60 @@ themeBtn.addEventListener('click', ()=>{
   applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark', true);
 });
 
+/* ───────── Tabs: Group stage / News / Player stats ───────── */
+const panes = {
+  groups: document.getElementById('groups'),
+  news: document.getElementById('newsPane'),
+  stats: document.getElementById('statsPane'),
+};
+let newsLoaded = false;
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', ()=>{
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  const id = tab.dataset.tab;
+  Object.entries(panes).forEach(([k,el])=>{ el.hidden = (k!==id); });
+  if(id==='news' && !newsLoaded) loadNews();
+}));
+// deep-link a tab via #news / #stats / #groups
+const initialTab = (location.hash||'').replace('#','');
+if(['news','stats','groups'].includes(initialTab)){
+  const t = document.querySelector(`.tab[data-tab="${initialTab}"]`); if(t) t.click();
+}
+
+function timeAgo(d){
+  if(!d) return '';
+  const t = new Date(d).getTime(); if(isNaN(t)) return '';
+  const s = Math.max(0, (Date.now()-t)/1000);
+  if(s<3600) return Math.round(s/60)+'m ago';
+  if(s<86400) return Math.round(s/3600)+'h ago';
+  return Math.round(s/86400)+'d ago';
+}
+async function loadNews(){
+  newsLoaded = true;
+  try{
+    const r = await fetch('/api/news'); const d = await r.json();
+    if(d.error || !(d.items||[]).length){ panes.news.innerHTML = `<div class="state-note">News unavailable right now. Try again shortly.</div>`; return; }
+    panes.news.innerHTML = `<div class="newslist">` + d.items.map(a=>{
+      const ago = timeAgo(a.pubDate);
+      return `<a class="narti" href="${esc(a.link)}" target="_blank" rel="noopener noreferrer">`
+        + `<div class="nt">${esc(a.title)}</div>`
+        + `<div class="nm"><b>${esc(a.source||'News')}</b>${ago?` · ${ago}`:''}</div></a>`;
+    }).join('') + `</div>`;
+  }catch(e){ panes.news.innerHTML = `<div class="state-note">Couldn’t load news.</div>`; newsLoaded = false; }
+}
+function renderStats(scorers){
+  if(!(scorers||[]).length){ panes.stats.innerHTML = `<div class="state-note">Top-scorer data isn’t available yet.</div>`; return; }
+  panes.stats.innerHTML = `<h3 class="stathead">⚽ Golden Boot race — top scorers</h3><div class="scorers">`
+    + scorers.map((s,i)=>{
+      const fl = countryFlag(s.nationality) || s.crest;
+      const extra = (s.assists!=null ? ` · ${s.assists} ast` : '');
+      return `<div class="scorer${i===0?' lead':''}"><span class="rk">${i+1}</span>`
+        + (fl?`<img class="pf" src="${esc(fl)}" alt="">`:'')
+        + `<span class="pn">${esc(s.name)}<small>${esc(s.team)}</small></span>`
+        + `<span class="gg">${s.goals}<small>goals${extra}</small></span></div>`;
+    }).join('') + `</div>`;
+}
+
 /* ───────── Manual update button ───────── */
 const refreshBtn = document.getElementById('refreshBtn');
 let refreshing = false;
@@ -631,6 +751,7 @@ async function refresh(){
     renderLive(data.live||[], data.matches||[]);
     renderGroups(data.groups||[], data.live||[]);
     renderMapLive(data.live||[]);
+    renderStats(data.scorers||[]);
     if(data.updated){
       const t = new Date(data.updated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
       const src = data.source==='api-football' ? ' · live via api-football'
