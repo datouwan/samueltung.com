@@ -178,41 +178,56 @@ async function handleWC(request, env, ctx) {
   return json({ updated: new Date().toISOString(), source, groups, matches, live, scorers });
 }
 
-// World Cup news via Google News RSS (free, keyless). Cached ~10 min.
+// World Cup news from publisher RSS feeds (free, keyless). Cached ~10 min.
+// NOTE: Google News RSS blocks datacenter IPs (503 from Workers), so we use
+// publisher feeds that allow server-side fetches. Guardian has a WC-2026 feed;
+// BBC football is a filtered fallback.
+const NEWS_FEEDS = [
+  { url: "https://www.theguardian.com/football/world-cup-2026/rss", source: "The Guardian", filter: false },
+  { url: "https://feeds.bbci.co.uk/sport/football/rss.xml", source: "BBC Sport", filter: true },
+];
+
 async function handleNews(request, env, ctx) {
   const cache = caches.default;
   const key = new Request("https://wc.cache/news");
   const hit = await cache.match(key);
   if (hit) return hit;
 
-  try {
-    const r = await fetch(
-      "https://news.google.com/rss/search?q=FIFA+World+Cup+2026&hl=en-US&gl=US&ceid=US:en",
-      { headers: { "user-agent": "Mozilla/5.0 (compatible; samueltung.com/1.0)" } }
-    );
-    if (!r.ok) return json({ error: "news_upstream", status: r.status }, 502, 0);
-    const xml = await r.text();
-    const items = [];
-    const re = /<item>([\s\S]*?)<\/item>/g;
-    let m;
-    while ((m = re.exec(xml)) && items.length < 20) {
-      const block = m[1];
-      const grab = (tag) => {
-        const t = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
-        return t ? decodeXml(t[1].replace(/<!\[CDATA\[|\]\]>/g, "").trim()) : "";
-      };
-      let title = grab("title");
-      const source = grab("source");
-      // Google News titles end with " - Source"; trim it when we have the source tag
-      if (source && title.endsWith(" - " + source)) title = title.slice(0, -(source.length + 3));
-      items.push({ title, source, link: grab("link"), pubDate: grab("pubDate") });
+  for (const feed of NEWS_FEEDS) {
+    try {
+      const r = await fetch(feed.url, {
+        headers: { "user-agent": "Mozilla/5.0 (compatible; samueltung.com/1.0)" },
+      });
+      if (!r.ok) continue;
+      const items = parseRss(await r.text(), feed);
+      if (items.length) {
+        const res = json({ updated: new Date().toISOString(), source: feed.source, items }, 200, 600);
+        ctx.waitUntil(cache.put(key, res.clone()));
+        return res;
+      }
+    } catch (_) {
+      // try the next feed
     }
-    const res = json({ updated: new Date().toISOString(), items }, 200, 600);
-    ctx.waitUntil(cache.put(key, res.clone()));
-    return res;
-  } catch (err) {
-    return json({ error: "news_failed", message: String(err) }, 502, 0);
   }
+  return json({ error: "news_unavailable" }, 502, 0);
+}
+
+function parseRss(xml, feed) {
+  const items = [];
+  const re = /<item>([\s\S]*?)<\/item>/g;
+  let m;
+  while ((m = re.exec(xml)) && items.length < 20) {
+    const block = m[1];
+    const grab = (tag) => {
+      const t = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
+      return t ? decodeXml(t[1].replace(/<!\[CDATA\[|\]\]>/g, "").trim()) : "";
+    };
+    const title = grab("title"), link = grab("link"), pubDate = grab("pubDate");
+    if (!title || !link) continue;
+    if (feed.filter && !/world cup|2026/i.test(title)) continue;
+    items.push({ title, source: feed.source, link, pubDate });
+  }
+  return items;
 }
 
 function decodeXml(s) {
