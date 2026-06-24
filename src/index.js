@@ -28,6 +28,7 @@ export default {
     if (url.pathname === "/api/wc") return handleWC(request, env, ctx);
     if (url.pathname === "/api/news") return handleNews(request, env, ctx);
     if (url.pathname === "/api/player") return handlePlayer(request, env, ctx);
+    if (url.pathname === "/api/events") return handleEvents(request, env, ctx);
     if (env.ASSETS) return env.ASSETS.fetch(request);
     return new Response("Not found", { status: 404 });
   },
@@ -144,6 +145,7 @@ async function handleWC(request, env, ctx) {
           const v = f.fixture.venue || {};
           return {
             status: "LIVE",
+            fixtureId: f.fixture.id || null,
             minute: f.fixture.status.elapsed,
             phase: short,
             group: groupByPair[pairKey(hn, an)] || groupByPair[pairKey(an, hn)] || "",
@@ -186,6 +188,9 @@ async function handleWC(request, env, ctx) {
 const NEWS_FEEDS = [
   { url: "https://www.theguardian.com/football/world-cup-2026/rss", source: "The Guardian", filter: false },
   { url: "https://feeds.bbci.co.uk/sport/football/rss.xml", source: "BBC Sport", filter: true },
+  { url: "https://www.skysports.com/rss/12040", source: "Sky Sports", filter: true },
+  { url: "https://www.cbssports.com/rss/headlines/soccer/", source: "CBS Sports", filter: true },
+  { url: "https://talksport.com/football/feed/", source: "talkSPORT", filter: true },
 ];
 
 async function handleNews(request, env, ctx) {
@@ -194,23 +199,32 @@ async function handleNews(request, env, ctx) {
   const hit = await cache.match(key);
   if (hit) return hit;
 
-  for (const feed of NEWS_FEEDS) {
+  // fetch all feeds in parallel; a slow/dead feed just contributes nothing
+  const lists = await Promise.all(NEWS_FEEDS.map(async (feed) => {
     try {
       const r = await fetch(feed.url, {
         headers: { "user-agent": "Mozilla/5.0 (compatible; samueltung.com/1.0)" },
       });
-      if (!r.ok) continue;
-      const items = parseRss(await r.text(), feed);
-      if (items.length) {
-        const res = json({ updated: new Date().toISOString(), source: feed.source, items }, 200, 600);
-        ctx.waitUntil(cache.put(key, res.clone()));
-        return res;
-      }
+      if (!r.ok) return [];
+      return parseRss(await r.text(), feed);
     } catch (_) {
-      // try the next feed
+      return [];
     }
-  }
-  return json({ error: "news_unavailable" }, 502, 0);
+  }));
+
+  // merge, dedupe by title, sort newest first
+  const seen = new Set();
+  const items = lists.flat().filter((it) => {
+    const k = it.title.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 60);
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  }).sort((a, b) => (Date.parse(b.pubDate) || 0) - (Date.parse(a.pubDate) || 0)).slice(0, 24);
+
+  if (!items.length) return json({ error: "news_unavailable" }, 502, 0);
+  const res = json({ updated: new Date().toISOString(), items }, 200, 600);
+  ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
 }
 
 function parseRss(xml, feed) {
@@ -247,7 +261,7 @@ async function handlePlayer(request, env, ctx) {
 
   // cache the final (small) result per surname+nationality; never cache errors
   const cache = caches.default;
-  const ckey = new Request(`https://wc.cache/player-${last}-${norm(nat)}`);
+  const ckey = new Request(`https://wc.cache/player2-${last}-${norm(nat)}`);
   const cached = await cache.match(ckey);
   if (cached) return cached;
 
@@ -277,14 +291,69 @@ async function handlePlayer(request, env, ctx) {
     }
     if (!best) return json({ error: "not_found" }, 200, 0);
 
+    // current/most-recent club from career teams (national team excluded)
+    let club = "";
+    try {
+      const tr = await fetch(`${AF}/players/teams?player=${best.id}`, {
+        headers: { "x-apisports-key": env.APIFOOTBALL_KEY },
+      });
+      if (tr.ok) {
+        const td = await tr.json();
+        let bestYear = -1;
+        for (const x of td.response || []) {
+          const nm = x.team && x.team.name;
+          if (!nm || norm(nm) === norm(best.nationality)) continue; // skip national team
+          const y = (x.seasons || []).length ? Math.max(...x.seasons) : 0;
+          if (y > bestYear) { bestYear = y; club = nm; }
+        }
+      }
+    } catch (_) { /* club is optional */ }
+
     const res = json({
       name: best.name, firstname: best.firstname, lastname: best.lastname,
-      photo: best.photo || "", nationality: best.nationality || "",
+      photo: best.photo || "", nationality: best.nationality || "", club,
       birthDate: (best.birth && best.birth.date) || "", birthPlace: (best.birth && best.birth.place) || "",
       birthCountry: (best.birth && best.birth.country) || "",
       age: best.age ?? null, height: best.height || "", weight: best.weight || "",
       position: best.position || "", number: best.number ?? null,
     }, 200, 86400);
+    ctx.waitUntil(cache.put(ckey, res.clone()));
+    return res;
+  } catch (_) {
+    return json({ error: "failed" }, 200, 0);
+  }
+}
+
+// Goal events for one fixture (lazy — only when a live match card is opened).
+// Cached ~45s so repeated opens during a match don't burn quota.
+async function handleEvents(request, env, ctx) {
+  const url = new URL(request.url);
+  const fid = url.searchParams.get("fixture") || "";
+  if (!/^\d+$/.test(fid)) return json({ error: "bad_fixture" }, 400, 0);
+  if (!env.APIFOOTBALL_KEY) return json({ error: "no_key" }, 200, 0);
+
+  const cache = caches.default;
+  const ckey = new Request(`https://wc.cache/events-${fid}`);
+  const hit = await cache.match(ckey);
+  if (hit) return hit;
+
+  try {
+    const r = await fetch(`${AF}/fixtures/events?fixture=${fid}`, {
+      headers: { "x-apisports-key": env.APIFOOTBALL_KEY },
+    });
+    if (!r.ok) return json({ error: "upstream" }, 200, 0);
+    const d = await r.json();
+    const errs = d && d.errors;
+    if (Array.isArray(errs) ? errs.length : errs && Object.keys(errs).length)
+      return json({ error: "rate_limited" }, 200, 0);
+    const goals = (d.response || [])
+      .filter((e) => e.type === "Goal" && e.detail !== "Missed Penalty")
+      .map((e) => ({
+        minute: e.time.elapsed, extra: e.time.extra ?? null,
+        player: (e.player && e.player.name) || "", team: (e.team && e.team.name) || "",
+        detail: e.detail || "", assist: (e.assist && e.assist.name) || "",
+      }));
+    const res = json({ fixture: Number(fid), goals }, 200, 45);
     ctx.waitUntil(cache.put(ckey, res.clone()));
     return res;
   } catch (_) {

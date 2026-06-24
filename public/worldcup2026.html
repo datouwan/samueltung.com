@@ -108,7 +108,9 @@
   .pphoto.noimg::after{content:'👤';font-size:64px;opacity:.35}
   .pinfo{padding:16px 20px 20px}
   .pinfo h3{font-family:var(--serif);font-size:22px;margin:0 0 3px}
-  .ploc{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .ploc{color:var(--muted);font-size:13.5px;margin:0 0 6px}
+  .pclub{margin:0 0 14px;font-size:13.5px;font-weight:600;color:var(--ink-soft)}
+  .pclub[hidden]{display:none}
   .pstats{display:flex;gap:10px;flex-wrap:wrap}
   .pstat{flex:1;min-width:84px;background:var(--paper-2);border-radius:10px;padding:10px 12px;
     display:flex;flex-direction:column;font-size:11px;color:var(--muted);line-height:1.3}
@@ -136,6 +138,17 @@
   .smatch{margin:0;font-size:14px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:12px}
   .smatch .ld{color:var(--live)}
   .smatch b{font-family:var(--serif)}
+  .sscorers{margin-top:10px}
+  .schead{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+    margin:0 0 6px;border-top:1px solid var(--line);padding-top:12px}
+  .scrow{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13.5px;flex-wrap:wrap}
+  .scmin{color:var(--accent);font-weight:700;min-width:36px}
+  .scname{font-weight:600;cursor:pointer}
+  .scname:hover{color:var(--accent);text-decoration:underline}
+  .scteam{color:var(--muted);font-size:12px}
+  .sctag{font-size:9px;font-weight:800;background:var(--paper-2);border-radius:6px;padding:1px 5px;color:var(--muted)}
+  .scasst{color:var(--muted);font-size:11.5px}
+  .scempty,.scload{color:var(--muted);font-size:13px;padding:2px 0}
 
   #map{height:54vh;min-height:340px;background:var(--map-bg)}
 
@@ -193,15 +206,18 @@
     background:var(--paper-2);border-radius:8px;padding:2px 7px}
   .rtag.live{color:#06351a;background:#7CFF9B}
   .hv .dlt{color:var(--accent);font-size:11px;font-weight:700;margin-left:3px}
-  .hlist{list-style:none;margin:8px 0 0;padding:0}
-  .hlist li{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--paper-2)}
-  .hlist li:last-child{border-bottom:none}
-  .hlist .hrk{width:18px;text-align:center;color:var(--muted);font-weight:700;font-size:13px}
-  .hlist .pf{width:24px;height:17px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
-  .hlist .hnm{flex:1;font-weight:600;font-size:13.5px;display:flex;flex-direction:column;line-height:1.15;min-width:0}
-  .hlist .hnm small{color:var(--muted);font-weight:400;font-size:11px}
-  .hlist .hv{font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}
-  .hlist .hv small{font-family:var(--sans);font-weight:600;font-size:10px;color:var(--muted);display:block}
+  .rtable{width:100%;border-collapse:collapse;margin-top:8px;table-layout:fixed}
+  .rtable td{padding:6px 0;border-bottom:1px solid var(--paper-2);vertical-align:middle}
+  .rtable tr:last-child td{border-bottom:none}
+  .rtable td.hrk{width:20px;text-align:center;color:var(--muted);font-weight:700;font-size:13px}
+  .rtable td.hpl{padding-left:4px}
+  .rtable .plink{display:flex;align-items:center;gap:8px}
+  .rtable .pf{width:24px;height:17px;flex:0 0 auto;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
+  .rtable .hnm{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+  .rtable .hnm{font-weight:600;font-size:13.5px}
+  .rtable .hnm small{color:var(--muted);font-weight:400;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rtable td.hv{width:66px;text-align:right;font-family:var(--serif);font-size:17px;white-space:nowrap;line-height:1.05}
+  .rtable td.hv small{font-family:var(--sans);font-weight:600;font-size:10px;color:var(--muted);display:block}
 
   /* live-bar segment labels + final/next chips */
   #liveBar .seg{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
@@ -359,6 +375,7 @@
     <div class="pinfo">
       <h3 id="pName"></h3>
       <p class="ploc" id="pMeta">Loading…</p>
+      <p class="pclub" id="pClub" hidden></p>
       <div class="pstats" id="pStats"></div>
     </div>
   </div>
@@ -374,6 +391,7 @@
       <p class="sloc" id="sLoc"></p>
       <div class="sstats" id="sStats"></div>
       <p class="smatch" id="sMatch"></p>
+      <div class="sscorers" id="sScorers"></div>
     </div>
   </div>
 </div>
@@ -706,6 +724,28 @@ function openStadium(m){
   document.getElementById('sMatch').innerHTML = `<span class="ld">●</span> ${esc(m.home.name)} `
     + `<b>${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</b> ${esc(m.away.name)} · ${liveState(m)}`;
   sModal.hidden = false;
+  loadScorers(m);
+}
+async function loadScorers(m){
+  const box = document.getElementById('sScorers');
+  box.innerHTML = '';
+  if(!m || !m.fixtureId) return;
+  box.innerHTML = `<div class="schead">⚽ Goals</div><div class="scload">Loading…</div>`;
+  try{
+    const r = await fetch(`/api/events?fixture=${m.fixtureId}`);
+    const d = await r.json();
+    if(sModal.hidden) return;
+    if(d.error || !Array.isArray(d.goals)){ box.innerHTML = ''; return; }
+    if(!d.goals.length){ box.innerHTML = `<div class="schead">⚽ Goals</div><div class="scempty">No goals yet.</div>`; return; }
+    box.innerHTML = `<div class="schead">⚽ Goals — tap a scorer for their card</div>` + d.goals.map(g=>{
+      const tag = g.detail==='Own Goal' ? ` <span class="sctag">OG</span>`
+                : (g.detail==='Penalty' ? ` <span class="sctag">pen</span>` : '');
+      const asst = g.assist ? ` <span class="scasst">↳ ${esc(g.assist)}</span>` : '';
+      return `<div class="scrow"><span class="scmin">${g.minute}${g.extra?`+${g.extra}`:''}'</span>`
+        + `<span class="plink scname" data-name="${esc(g.player)}" data-nat="${esc(g.team)}" onclick="openPlayer(this)">${esc(g.player)}</span>${tag}`
+        + `<span class="scteam">${esc(g.team)}</span>${asst}</div>`;
+    }).join('');
+  }catch(e){ box.innerHTML = ''; }
 }
 function openStadiumByIdx(i){ if(currentLive[i]) openStadium(currentLive[i]); }
 function closeStadium(){ sModal.hidden = true; }
@@ -830,14 +870,14 @@ function recordCard(title, unit, rows, opts){
   const tag = opts.live ? `<span class="rtag live">● incl. 2026</span>`
             : (opts.tag ? `<span class="rtag">${esc(opts.tag)}</span>` : '');
   return `<div class="histcard"><h4>${title}${tag}</h4>` + (opts.note?`<p class="hn">${esc(opts.note)}</p>`:'')
-    + `<ol class="hlist">` + rows.map((r,i)=>{
+    + `<table class="rtable"><tbody>` + rows.map((r,i)=>{
         const last = is2026Active(r.name) ? 2026 : r.last;
         const sub = `${esc(r.team)}${last?` · WC ${last}`:''}`;
-        return `<li><span class="hrk">${i+1}</span>`
-        + `<span class="plink hpl" data-name="${esc(r.name)}" data-nat="${esc(r.team)}" data-val="${esc(String(r.val))}" data-unit="${esc(unit)}" onclick="openPlayer(this)">`
-        + `${flagImg(r.iso)}<span class="hnm">${esc(r.name)}<small>${sub}</small></span></span>`
-        + `<b class="hv">${r.val}${r.delta?`<span class="dlt">+${r.delta}</span>`:''}<small>${esc(unit)}</small></b></li>`;
-      }).join('') + `</ol></div>`;
+        return `<tr><td class="hrk">${i+1}</td>`
+        + `<td class="hpl"><span class="plink" data-name="${esc(r.name)}" data-nat="${esc(r.team)}" data-val="${esc(String(r.val))}" data-unit="${esc(unit)}" onclick="openPlayer(this)">`
+        + `${flagImg(r.iso)}<span class="hnm">${esc(r.name)}<small>${sub}</small></span></span></td>`
+        + `<td class="hv">${r.val}${r.delta?`<span class="dlt">+${r.delta}</span>`:''}<small>${esc(unit)}</small></td></tr>`;
+      }).join('') + `</tbody></table></div>`;
 }
 // merge a [name,iso,country,base,lastWC] table with live 2026 numbers (by name)
 function mergeLive(base, live2026){
@@ -886,6 +926,7 @@ async function openPlayer(el){
   document.getElementById('pName').textContent = d.name;
   document.getElementById('pMeta').textContent = (d.nat || d.team || '') + ' · loading…';
   pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
+  const clubEl = document.getElementById('pClub'); clubEl.hidden = true; clubEl.textContent = '';
   const chips = [];
   if(d.g!=null && d.g!=='') chips.push(pstat(d.g, '2026 goals'));
   if(d.a!=null && d.a!=='' && d.a!=='null') chips.push(pstat(d.a, '2026 assists'));
@@ -904,6 +945,7 @@ async function openPlayer(el){
       if(b.height) meta.push(/^\d+$/.test(b.height) ? b.height+' cm' : b.height);
       const nat = b.nationality || d.nat || d.team || '';
       document.getElementById('pMeta').textContent = [nat, ...meta].filter(Boolean).join(' · ');
+      if(b.club){ clubEl.hidden = false; clubEl.innerHTML = `🏛️ ${esc(b.club)}${b.number?` · #${esc(String(b.number))}`:''}`; }
     } else {
       document.getElementById('pMeta').textContent = (d.nat || d.team || '') + (b && b.error==='rate_limited' ? ' · photo unavailable (quota)' : '');
     }
