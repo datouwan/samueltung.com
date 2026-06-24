@@ -273,6 +273,9 @@
   .bettable td.betc b{position:relative;z-index:1;font-family:var(--serif);font-size:15px}
   .bettable tr.lead td.betc b{color:var(--accent)}
   .bettable td.betc .betfill{transition:width .55s cubic-bezier(.2,.8,.2,1)}
+  .bettable-wrap{overflow-x:auto;max-width:620px}
+  .bettable td.bspark{width:62px;padding:4px 6px}
+  .bspark .spark{display:block;vertical-align:middle}
   /* mode toggle */
   .betmodes{display:flex;gap:8px;margin:0 0 14px}
   .bmode{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
@@ -628,7 +631,7 @@ const I18N = {
     w_group:'Winner Group {g}', ru_group:'Runner-up Group {g}', third_group:'3rd Group {g}', w_match:'Winner Match {n}', l_match:'Loser Match {n}',
     tab_bet:'Bet', bet_rerun:'Re-run', bet_simulating:'Simulating…', bet_champ:'Champion', bet_final:'Final', bet_semi:'Semifinal',
     bet_note:'A playground, not real betting odds. Predict mode runs a Monte Carlo (each team has a strength rating; the rest of the tournament is played out thousands of times). Dice mode just rolls one random tournament for fun. Boosts apply to both.',
-    bet_mode_predict:'Predict', bet_mode_dice:'Dice', bet_boost:'Boost', bet_host:'Host boost', bet_chaos:'Chaos', bet_reset:'Reset',
+    bet_mode_predict:'Predict', bet_mode_dice:'Dice', bet_boost:'Boost', bet_trend:'Trend', bet_host:'Host boost', bet_chaos:'Chaos', bet_reset:'Reset',
     bet_boost_hint:'Tap −/+ to boost or nerf a team and watch the odds shift live. Try the presets!',
     dice_hint:'Forget the math — roll the soccer dice to play out one random tournament. Your boosts still tilt the luck.',
     dice_roll:'Roll the dice', dice_champ:'are your champions!', dice_road:'Road to the title', dice_retry:'Couldn’t roll — try again.',
@@ -663,7 +666,7 @@ const I18N = {
     w_group:'{g}组第一', ru_group:'{g}组第二', third_group:'{g}组第三', w_match:'第{n}场胜者', l_match:'第{n}场负者',
     tab_bet:'夺冠预测', bet_rerun:'重新模拟', bet_simulating:'模拟中…', bet_champ:'夺冠', bet_final:'进决赛', bet_semi:'进四强',
     bet_note:'娱乐玩法，并非真实博彩赔率。预测模式运行蒙特卡洛模拟（每队设有实力评分，将余下赛程模拟数千次）；骰子模式则随机掷出一届赛果。加权对两种模式都生效。',
-    bet_mode_predict:'预测', bet_mode_dice:'骰子', bet_boost:'加权', bet_host:'东道主加成', bet_chaos:'混乱', bet_reset:'重置',
+    bet_mode_predict:'预测', bet_mode_dice:'骰子', bet_boost:'加权', bet_trend:'走势', bet_host:'东道主加成', bet_chaos:'混乱', bet_reset:'重置',
     bet_boost_hint:'点击 −/+ 为球队加成或削弱，实时观察赔率变化。试试预设按钮！',
     dice_hint:'抛开计算 — 掷出足球骰子，随机打完一届世界杯。你的加权依然会影响运气。',
     dice_roll:'掷骰子', dice_champ:'夺冠！', dice_road:'夺冠之路', dice_retry:'掷骰失败，请重试。',
@@ -698,7 +701,7 @@ const I18N = {
     w_group:'1.º Grupo {g}', ru_group:'2.º Grupo {g}', third_group:'3.º Grupo {g}', w_match:'Ganador partido {n}', l_match:'Perdedor partido {n}',
     tab_bet:'Pronóstico', bet_rerun:'Repetir', bet_simulating:'Simulando…', bet_champ:'Campeón', bet_final:'Final', bet_semi:'Semifinal',
     bet_note:'Un juego, no cuotas reales. El modo Pronóstico corre un Monte Carlo (cada equipo tiene una valoración; se juega el resto del torneo miles de veces). El modo Dados lanza un torneo aleatorio por diversión. Los ajustes valen para ambos.',
-    bet_mode_predict:'Pronóstico', bet_mode_dice:'Dados', bet_boost:'Ajuste', bet_host:'Ventaja local', bet_chaos:'Caos', bet_reset:'Reiniciar',
+    bet_mode_predict:'Pronóstico', bet_mode_dice:'Dados', bet_boost:'Ajuste', bet_trend:'Tendencia', bet_host:'Ventaja local', bet_chaos:'Caos', bet_reset:'Reiniciar',
     bet_boost_hint:'Pulsa −/+ para reforzar o debilitar a un equipo y mira cómo cambian las cuotas. ¡Prueba los presets!',
     dice_hint:'Olvida los cálculos — lanza los dados para jugar un torneo al azar. Tus ajustes inclinan la suerte.',
     dice_roll:'Lanzar los dados', dice_champ:'¡son tus campeones!', dice_road:'Camino al título', dice_retry:'No se pudo lanzar — inténtalo de nuevo.',
@@ -1745,8 +1748,21 @@ function simOnce(groups, base, rem, tally){
   [24,25,26,27].forEach(q=> tally(win[q],'sf'));
   return true;
 }
-let betLoaded=false, betRunning=false, betRows=null, betPrev={}, betRunTimer=null, lastLeader=null;
+let betLoaded=false, betRunning=false, betRows=null, betPrev={}, betHist={}, betRunTimer=null, lastLeader=null;
 const BET_SIMS=14000;
+// tiny inline sparkline of a team's champion-odds history (last ~24 runs)
+function sparkSVG(hist){
+  if(!hist || hist.length<2) return '';
+  const w=58,h=18,pad=2, n=hist.length;
+  const min=Math.min(...hist), max=Math.max(...hist), rng=Math.max(max-min,0.02);
+  const xy=i=>[pad+(w-2*pad)*i/(n-1), pad+(h-2*pad)*(1-(hist[i]-min)/rng)];
+  const pts=hist.map((_,i)=> xy(i).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const col = hist[n-1]>=hist[0] ? 'var(--go)' : 'var(--live)';
+  const [lx,ly]=xy(n-1);
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">`
+    + `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`
+    + `<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="1.9" fill="${col}"/></svg>`;
+}
 const betTeams = ()=> Object.keys(RATINGS);
 const betBase = ()=>{ const b={}; (lastGroups||[]).forEach(gr=> (gr.table||[]).forEach(r=> b[canonTeam(r.name)]={pts:r.points||0,gd:r.gd||0,gf:r.gf||0})); return b; };
 const betRemaining = ()=>{ const now=Date.now(); return WC_SCHEDULE.filter(s=> new Date(s.iso).getTime()>now).map(s=>({g:s.g,a:canonTeam(s.hn),b:canonTeam(s.an)})); };
@@ -1767,6 +1783,7 @@ function runBet(){
     const p=document.getElementById('betProg'); if(p) p.textContent=`${t('bet_simulating')} ${Math.round(done/total*100)}%`;
     if(done<total){ setTimeout(step,0); return; }
     betRows = betTeams().map(tm=>{ const c=counts[tm]||{champ:0,final:0,sf:0}; return {tm,champ:c.champ/(valid||1),final:c.final/(valid||1),sf:c.sf/(valid||1)}; }).sort((a,b)=> b.champ-a.champ);
+    betRows.forEach(r=>{ const h=(betHist[r.tm]=betHist[r.tm]||[]); h.push(r.champ); if(h.length>24) h.shift(); });
     betRunning=false; setBetBusy(false); updateBetTable();
   };
   step();
@@ -1789,6 +1806,7 @@ function updateBetTable(){
     tr.querySelector('.brk').textContent=i+1; tr.classList.toggle('lead', i===0);
     tr.querySelector('.betfill').style.width=Math.round(r.champ/max*100)+'%';
     tr.querySelector('.bpct').textContent=pct(r.champ);
+    tr.querySelector('.bspark').innerHTML=sparkSVG(betHist[r.tm]);
     tr.querySelector('.bfin').textContent=pct(r.final); tr.querySelector('.bsem').textContent=pct(r.sf);
     const d=tr.querySelector('.bdelta'), prev=betPrev[r.tm];
     if(prev!=null){ const dd=(r.champ-prev)*100; if(Math.abs(dd)>=0.1){ d.textContent=(dd>0?'▲':'▼')+Math.abs(dd).toFixed(1); d.className='bdelta '+(dd>0?'up':'down'); } else { d.textContent=''; d.className='bdelta'; } }
@@ -1876,6 +1894,7 @@ function buildBetRows(){
       + `<td class="pl"><span class="betteam">${info.iso?`<img class="pf" src="https://flagcdn.com/w40/${esc(info.iso)}.png" alt="">`:''}<span>${esc(info.name)}</span></span></td>`
       + `<td class="bboost"><button class="bb" data-d="-20">−</button><span class="bbv">0</span><button class="bb" data-d="20">+</button></td>`
       + `<td class="betc"><span class="betfill"></span><b class="bpct">–</b><span class="bdelta"></span></td>`
+      + `<td class="bspark"></td>`
       + `<td class="bfin">–</td><td class="bsem">–</td></tr>`;
   }).join('');
   body.querySelectorAll('tr').forEach(r=>{ const tm=r.dataset.tm;
@@ -1892,9 +1911,9 @@ function renderBetShell(){
       + `<button class="bchip" data-a="reset">↺ ${t('bet_reset')}</button>`
       + `<span id="betProg" class="betprog"></span></div>`
       + `<p class="bethint">${t('bet_boost_hint')}</p>`
-      + `<table class="bettable"><thead><tr><th class="rkh">#</th><th class="plh">${t('col_team')}</th>`
-        + `<th>${t('bet_boost')}</th><th>${t('bet_champ')}</th><th>${t('bet_final')}</th><th>${t('bet_semi')}</th></tr></thead>`
-        + `<tbody id="betBody"></tbody></table></div>`
+      + `<div class="bettable-wrap"><table class="bettable"><thead><tr><th class="rkh">#</th><th class="plh">${t('col_team')}</th>`
+        + `<th>${t('bet_boost')}</th><th>${t('bet_champ')}</th><th>${t('bet_trend')}</th><th>${t('bet_final')}</th><th>${t('bet_semi')}</th></tr></thead>`
+        + `<tbody id="betBody"></tbody></table></div></div>`
     + `<div id="betDice" hidden></div>`;
   buildBetRows(); renderDice();
   panes.bet.querySelectorAll('.bmode').forEach(b=> b.onclick=()=> setBetMode(b.dataset.m));
