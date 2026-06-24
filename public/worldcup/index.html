@@ -251,6 +251,28 @@
   .b3p .bmatches{display:block}
   @media(max-width:560px){.bracket{gap:20px}.bround:not(:last-child) .bmatch::after{right:-20px;width:20px}}
 
+  /* bet / odds simulator */
+  .betbar{display:flex;align-items:center;gap:14px;margin:0 0 14px}
+  .betbtn{border:none;border-radius:10px;background:var(--accent);color:#fff;font:600 14px var(--sans);
+    padding:9px 18px;cursor:pointer}
+  .betbtn:hover{background:var(--accent-ink)} .betbtn:disabled{opacity:.55;cursor:default}
+  .betprog{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+  .bettable{width:100%;max-width:560px;border-collapse:collapse;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .bettable th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);
+    padding:10px 8px;text-align:center;border-bottom:1px solid var(--line)}
+  .bettable th.plh{text-align:left} .bettable th.rkh{width:30px}
+  .bettable td{padding:8px;text-align:center;border-bottom:1px solid var(--paper-2);font-weight:600;
+    font-variant-numeric:tabular-nums}
+  .bettable tr:last-child td{border-bottom:none}
+  .bettable td.rk{color:var(--muted)} .bettable td.pl{text-align:left}
+  .bettable .betteam{display:flex;align-items:center;gap:9px}
+  .bettable .betteam .pf{width:26px;height:19px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
+  .bettable td.betc{position:relative;text-align:right;padding-right:12px;min-width:96px}
+  .bettable td.betc .betfill{position:absolute;left:0;top:3px;bottom:3px;background:linear-gradient(90deg,rgba(161,74,50,.22),rgba(161,74,50,.08));border-radius:5px;z-index:0}
+  .bettable td.betc b{position:relative;z-index:1;font-family:var(--serif);font-size:15px}
+  .bettable tr.lead td.betc b{color:var(--accent)}
+
   /* news */
   .newslist{display:grid;gap:10px;max-width:760px}
   .narti{display:block;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:11px;
@@ -477,6 +499,7 @@
     <button class="tab active" data-tab="groups" data-i18n="tab_groups">Group stage</button>
     <button class="tab" data-tab="schedule" data-i18n="tab_schedule">Schedule</button>
     <button class="tab" data-tab="bracket" data-i18n="tab_bracket">Bracket</button>
+    <button class="tab" data-tab="bet" data-i18n="tab_bet">Bet</button>
     <button class="tab" data-tab="country" data-i18n="tab_country">Country stats</button>
     <button class="tab" data-tab="stats" data-i18n="tab_stats">Player stats</button>
     <button class="tab" data-tab="news" data-i18n="tab_news">News</button>
@@ -491,6 +514,7 @@
   <div class="tabpane" id="bracketPane" data-pane="bracket" hidden>
     <div class="state-note" data-i18n="loading_bracket">Loading knockout bracket…</div>
   </div>
+  <div class="tabpane" id="betPane" data-pane="bet" hidden></div>
   <div class="tabpane" id="countryPane" data-pane="country" hidden>
     <div class="state-note" data-i18n="loading_country">Loading country stats…</div>
   </div>
@@ -549,6 +573,8 @@ const I18N = {
     bracket_note:'Knockout bracket from Wikipedia — teams and scores fill in as the tournament progresses.',
     rnd_R32:'Round of 32', rnd_R16:'Round of 16', rnd_QF:'Quarter-finals', rnd_SF:'Semi-finals', rnd_F:'Final', rnd_3P:'Third place',
     w_group:'Winner Group {g}', ru_group:'Runner-up Group {g}', third_group:'3rd Group {g}', w_match:'Winner Match {n}', l_match:'Loser Match {n}',
+    tab_bet:'Bet', bet_rerun:'Re-run simulation', bet_simulating:'Simulating…', bet_champ:'Champion', bet_final:'Final', bet_semi:'Semifinal',
+    bet_note:'For-fun Monte Carlo: each team gets an approximate strength rating, then the rest of the tournament is played out 20,000 times. Results so far are kept; everything else is simulated. These are estimates, not real betting odds.',
     loading_groups:'Loading group standings…', loading_sched:'Loading match schedule…', loading_country:'Loading country stats…',
     loading_stats:'Loading player stats…', loading_news:'Loading World Cup news…', loading_live:'Loading live scores…',
     search_ph:'🔍 Search any player — e.g. Messi, Harry Kane, Vinícius…', search_btn:'Search', search_ing:'Searching…',
@@ -578,6 +604,8 @@ const I18N = {
     bracket_note:'淘汰赛对阵来自维基百科 — 随赛事进程逐步填入球队与比分。',
     rnd_R32:'32强', rnd_R16:'16强', rnd_QF:'八强', rnd_SF:'半决赛', rnd_F:'决赛', rnd_3P:'季军赛',
     w_group:'{g}组第一', ru_group:'{g}组第二', third_group:'{g}组第三', w_match:'第{n}场胜者', l_match:'第{n}场负者',
+    tab_bet:'夺冠预测', bet_rerun:'重新模拟', bet_simulating:'模拟中…', bet_champ:'夺冠', bet_final:'进决赛', bet_semi:'进四强',
+    bet_note:'趣味蒙特卡洛模拟：为每支球队设定一个大致实力评分，然后将余下赛程模拟 20,000 次。已赛结果保留，其余均为模拟。仅为估算，并非真实博彩赔率。',
     loading_groups:'正在加载小组积分榜…', loading_sched:'正在加载赛程…', loading_country:'正在加载国家统计…',
     loading_stats:'正在加载球员统计…', loading_news:'正在加载世界杯新闻…', loading_live:'正在加载实时比分…',
     search_ph:'🔍 搜索任意球员 — 如 梅西、凯恩、维尼修斯…', search_btn:'搜索', search_ing:'搜索中…',
@@ -607,6 +635,8 @@ const I18N = {
     bracket_note:'Cuadro eliminatorio de Wikipedia — equipos y resultados se completan según avanza el torneo.',
     rnd_R32:'Dieciseisavos', rnd_R16:'Octavos', rnd_QF:'Cuartos de final', rnd_SF:'Semifinales', rnd_F:'Final', rnd_3P:'Tercer puesto',
     w_group:'1.º Grupo {g}', ru_group:'2.º Grupo {g}', third_group:'3.º Grupo {g}', w_match:'Ganador partido {n}', l_match:'Perdedor partido {n}',
+    tab_bet:'Pronóstico', bet_rerun:'Volver a simular', bet_simulating:'Simulando…', bet_champ:'Campeón', bet_final:'Final', bet_semi:'Semifinal',
+    bet_note:'Monte Carlo por diversión: cada equipo recibe una valoración de fuerza aproximada y se juega el resto del torneo 20.000 veces. Los resultados ya jugados se mantienen; lo demás se simula. Son estimaciones, no cuotas reales de apuestas.',
     loading_groups:'Cargando clasificación de grupos…', loading_sched:'Cargando el calendario…', loading_country:'Cargando estadísticas por país…',
     loading_stats:'Cargando estadísticas de jugadores…', loading_news:'Cargando noticias del Mundial…', loading_live:'Cargando marcadores en vivo…',
     search_ph:'🔍 Busca cualquier jugador — p. ej. Messi, Kane, Vinícius…', search_btn:'Buscar', search_ing:'Buscando…',
@@ -1358,6 +1388,7 @@ function rerenderI18n(){
     drawStats();
     renderCountry(lastGroups||[]);
     if(bracketLoaded && lastBracket) renderBracket(lastBracket);
+    if(betLoaded){ renderBetShell(); renderBetResults(); }
   }catch(e){}
 }
 langSel.addEventListener('change', ()=>{
@@ -1372,6 +1403,7 @@ const panes = {
   groups: document.getElementById('groups'),
   schedule: document.getElementById('schedulePane'),
   bracket: document.getElementById('bracketPane'),
+  bet: document.getElementById('betPane'),
   country: document.getElementById('countryPane'),
   stats: document.getElementById('statsPane'),
   news: document.getElementById('newsPane'),
@@ -1385,10 +1417,11 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', (
   Object.entries(panes).forEach(([k,el])=>{ el.hidden = (k!==id); });
   if(id==='news' && !newsLoaded) loadNews();
   if(id==='bracket' && !bracketLoaded) loadBracket();
+  if(id==='bet' && !betLoaded) loadBet();
 }));
-// deep-link a tab via #news / #stats / #groups / #schedule / #bracket / #country
+// deep-link a tab via #news / #stats / #groups / #schedule / #bracket / #bet / #country
 const initialTab = (location.hash||'').replace('#','');
-if(['news','stats','groups','schedule','bracket','country'].includes(initialTab)){
+if(['news','stats','groups','schedule','bracket','bet','country'].includes(initialTab)){
   const t = document.querySelector(`.tab[data-tab="${initialTab}"]`); if(t) t.click();
 }
 
@@ -1601,6 +1634,89 @@ function renderBracket(rounds){
     + `<div class="bmatches">${bracketMatch(byKey['3P'][0])}</div></div>`;
   panes.bracket.innerHTML = html;
 }
+/* ───────── Bet: Monte Carlo title-odds simulator ───────── */
+// Approximate team strength (Elo-ish), keyed by canonical team name. These are
+// rough priors, not official ratings — they only set match win probabilities.
+const RATINGS = {unitedstates:1820,canada:1760,mexico:1800,austria:1790,belgium:1930,bosniaherzegovina:1680,croatia:1880,czechia:1740,england:2010,france:2060,germany:1965,netherlands:1970,norway:1820,portugal:1990,scotland:1700,spain:2050,sweden:1740,switzerland:1830,turkiye:1780,argentina:2080,brazil:2030,colombia:1880,ecuador:1790,paraguay:1700,uruguay:1900,algeria:1720,capeverde:1560,drcongo:1660,cotedivoire:1760,egypt:1730,ghana:1700,morocco:1860,senegal:1820,southafrica:1680,tunisia:1700,australia:1720,iran:1760,iraq:1620,japan:1810,jordan:1600,southkorea:1770,qatar:1640,saudiarabia:1650,uzbekistan:1640,curacao:1480,haiti:1520,panama:1620,newzealand:1560};
+// Fixed knockout structure (position-based slots + tree). w/r=group winner/
+// runner-up, t=eligible groups for a third-placed slot, wm/lm=winner/loser of
+// match index. Matches 0-15 R32, 16-23 R16, 24-27 QF, 28-29 SF, 30 Final, 31 3rd.
+const BRACKET_STRUCT = [{"r":"R32","a":{"w":"E"},"b":{"t":"ABCDF"}},{"r":"R32","a":{"w":"I"},"b":{"t":"CDFGH"}},{"r":"R32","a":{"r":"A"},"b":{"r":"B"}},{"r":"R32","a":{"w":"F"},"b":{"r":"C"}},{"r":"R32","a":{"r":"K"},"b":{"r":"L"}},{"r":"R32","a":{"w":"H"},"b":{"r":"J"}},{"r":"R32","a":{"w":"D"},"b":{"t":"BEI"}},{"r":"R32","a":{"w":"G"},"b":{"t":"AEHIJ"}},{"r":"R32","a":{"w":"C"},"b":{"r":"F"}},{"r":"R32","a":{"r":"E"},"b":{"r":"I"}},{"r":"R32","a":{"w":"A"},"b":{"t":"CEFHI"}},{"r":"R32","a":{"w":"L"},"b":{"t":"EHIJK"}},{"r":"R32","a":{"w":"J"},"b":{"r":"H"}},{"r":"R32","a":{"r":"D"},"b":{"r":"G"}},{"r":"R32","a":{"w":"B"},"b":{"t":"EFGIJ"}},{"r":"R32","a":{"w":"K"},"b":{"t":"DEIJL"}},{"r":"R16","a":{"wm":1},"b":{"wm":4}},{"r":"R16","a":{"wm":0},"b":{"wm":2}},{"r":"R16","a":{"wm":10},"b":{"wm":11}},{"r":"R16","a":{"wm":8},"b":{"wm":9}},{"r":"R16","a":{"wm":3},"b":{"wm":5}},{"r":"R16","a":{"wm":6},"b":{"wm":7}},{"r":"R16","a":{"wm":13},"b":{"wm":15}},{"r":"R16","a":{"wm":12},"b":{"wm":14}},{"r":"QF","a":{"wm":16},"b":{"wm":17}},{"r":"QF","a":{"wm":20},"b":{"wm":21}},{"r":"QF","a":{"wm":18},"b":{"wm":19}},{"r":"QF","a":{"wm":22},"b":{"wm":23}},{"r":"SF","a":{"wm":24},"b":{"wm":25}},{"r":"SF","a":{"wm":26},"b":{"wm":27}},{"r":"F","a":{"wm":28},"b":{"wm":29}},{"r":"3P","a":{"lm":28},"b":{"lm":29}}];
+const TSLOTS = []; BRACKET_STRUCT.slice(0,16).forEach((m,i)=>['a','b'].forEach(side=>{ if(m[side].t) TSLOTS.push({i,side,groups:m[side].t.split('')}); }));
+const rat = x => RATINGS[x] || 1650;
+function poisson(l){ let L=Math.exp(-l),k=0,p=1; do{k++;p*=Math.random();}while(p>L); return k-1; }
+function simGoals(ra,rb){ const d=ra-rb; return [poisson(Math.max(0.18,1.35*Math.exp(d/400*0.8))), poisson(Math.max(0.18,1.35*Math.exp(-d/400*0.8)))]; }
+function koWinner(a,b){ const [ga,gb]=simGoals(rat(a),rat(b)); if(ga>gb)return a; if(gb>ga)return b; return Math.random()<1/(1+Math.pow(10,(rat(b)-rat(a))/400))?a:b; }
+function assignThirds(qual){ const res={}, used=new Array(qual.length).fill(false);
+  const bt=si=>{ if(si===TSLOTS.length)return true; const sl=TSLOTS[si];
+    for(let q=0;q<qual.length;q++){ if(!used[q]&&sl.groups.includes(qual[q].group)){ used[q]=true; res[si]=qual[q].team; if(bt(si+1))return true; used[q]=false; } }
+    return false; };
+  return bt(0)?res:null;
+}
+function betGroups(){ const g={}; WC_SCHEDULE.forEach(s=>{ (g[s.g]=g[s.g]||new Set()).add(canonTeam(s.hn)); g[s.g].add(canonTeam(s.an)); }); for(const k in g) g[k]=[...g[k]]; return g; }
+function simOnce(groups, base, rem, tally){
+  const st={}; for(const g in groups) for(const x of groups[g]){ const b=base[x]||{pts:0,gd:0,gf:0}; st[x]={pts:b.pts,gd:b.gd,gf:b.gf}; }
+  for(const f of rem){ const [ga,gb]=simGoals(rat(f.a),rat(f.b)); const A=st[f.a],B=st[f.b]; if(!A||!B) continue;
+    A.gf+=ga;B.gf+=gb;A.gd+=ga-gb;B.gd+=gb-ga; if(ga>gb)A.pts+=3; else if(gb>ga)B.pts+=3; else{A.pts++;B.pts++;} }
+  const by=(x,y)=>(st[y].pts-st[x].pts)||(st[y].gd-st[x].gd)||(st[y].gf-st[x].gf)||(Math.random()-0.5);
+  const pos={}, thirds=[];
+  for(const g in groups){ const r=[...groups[g]].sort(by); pos['w'+g]=r[0]; pos['r'+g]=r[1]; thirds.push({team:r[2],group:g}); }
+  thirds.sort((x,y)=>(st[y.team].pts-st[x.team].pts)||(st[y.team].gd-st[x.team].gd)||(st[y.team].gf-st[x.team].gf)||(Math.random()-0.5));
+  const tassign=assignThirds(thirds.slice(0,8)); if(!tassign) return false;
+  const thirdOf={}; TSLOTS.forEach((sl,si)=> thirdOf[sl.i+sl.side]=tassign[si]);
+  const win=new Array(32), lose=new Array(32);
+  for(let i=0;i<32;i++){ const m=BRACKET_STRUCT[i];
+    const get=(sl,side)=> sl.t ? thirdOf[i+side] : (sl.w!=null||sl.r!=null) ? (sl.w!=null?pos['w'+sl.w]:pos['r'+sl.r]) : sl.wm!=null?win[sl.wm] : sl.lm!=null?lose[sl.lm] : null;
+    if(m.r==='3P') continue;
+    const a=get(m.a,'a'), b=get(m.b,'b'); const w=koWinner(a,b); win[i]=w; lose[i]= w===a?b:a;
+  }
+  tally(win[30],'champ');
+  tally(win[BRACKET_STRUCT[30].a.wm],'final'); tally(win[BRACKET_STRUCT[30].b.wm],'final');
+  [24,25,26,27].forEach(q=> tally(win[q],'sf'));
+  return true;
+}
+let betLoaded=false, betRunning=false, betRows=null, BET_SIMS=20000;
+function loadBet(){ betLoaded=true; renderBetShell(); setTimeout(()=> runBet(BET_SIMS), 20); }
+function runBet(total){
+  if(betRunning) return; betRunning=true; betRows=null;
+  const btn=document.getElementById('betRun'); if(btn) btn.disabled=true;
+  const groups=betGroups();
+  const base={}; (lastGroups||[]).forEach(gr=> (gr.table||[]).forEach(r=> base[canonTeam(r.name)]={pts:r.points||0,gd:r.gd||0,gf:r.gf||0}));
+  const now=Date.now();
+  const rem=WC_SCHEDULE.filter(s=> new Date(s.iso).getTime()>now).map(s=>({g:s.g,a:canonTeam(s.hn),b:canonTeam(s.an)}));
+  const counts={}; const tally=(tm,k)=>{ if(!tm)return; (counts[tm]=counts[tm]||{champ:0,final:0,sf:0})[k]++; };
+  let done=0, valid=0; const batch=2000;
+  const step=()=>{
+    const end=Math.min(done+batch,total);
+    for(;done<end;done++){ if(simOnce(groups,base,rem,tally)) valid++; }
+    const p=document.getElementById('betProg'); if(p) p.textContent = `${t('bet_simulating')} ${Math.round(done/total*100)}%`;
+    if(done<total){ setTimeout(step,0); return; }
+    betRows = Object.entries(counts).map(([tm,c])=>({tm,champ:c.champ/valid,final:c.final/valid,sf:c.sf/valid})).sort((a,b)=> b.champ-a.champ);
+    betRunning=false; renderBetResults();
+    const b2=document.getElementById('betRun'); if(b2) b2.disabled=false;
+  };
+  step();
+}
+function renderBetShell(){
+  panes.bet.innerHTML = `<p class="statnote">${t('bet_note')}</p>`
+    + `<div class="betbar"><button id="betRun" class="betbtn">${t('bet_rerun')}</button><span id="betProg" class="betprog"></span></div>`
+    + `<div id="betResults"></div>`;
+  const b=document.getElementById('betRun'); if(b) b.onclick=()=> runBet(BET_SIMS);
+}
+function renderBetResults(){
+  const box=document.getElementById('betResults'); if(!box||!betRows) return;
+  const max=betRows[0]?betRows[0].champ:1;
+  const pct=v=> (v*100)<0.05?'–':(v*100).toFixed(1)+'%';
+  box.innerHTML = `<table class="bettable"><thead><tr><th class="rkh">#</th><th class="plh">${t('col_team')}</th>`
+    + `<th>${t('bet_champ')}</th><th>${t('bet_final')}</th><th>${t('bet_semi')}</th></tr></thead><tbody>`
+    + betRows.slice(0,24).map((r,i)=>{ const info=markersByName[r.tm]||{name:r.tm,iso:''};
+        return `<tr class="${i===0?'lead':''}"><td class="rk">${i+1}</td>`
+          + `<td class="pl"><span class="betteam">${info.iso?`<img class="pf" src="https://flagcdn.com/w40/${esc(info.iso)}.png" alt="">`:''}<span>${esc(info.name)}</span></span></td>`
+          + `<td class="betc"><span class="betfill" style="width:${Math.round(r.champ/max*100)}%"></span><b>${pct(r.champ)}</b></td>`
+          + `<td>${pct(r.final)}</td><td>${pct(r.sf)}</td></tr>`;
+      }).join('') + `</tbody></table>`;
+}
+
 // Career WC totals THROUGH 2022 [name, iso, country, value, lastWC]. The cards
 // add live 2026 numbers; anyone in the 2026 feed has their lastWC shown as 2026.
 const WC_GOALS_BASE = [
