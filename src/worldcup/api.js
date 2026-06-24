@@ -38,6 +38,7 @@ export async function handleWorldCupApi(request, env, ctx) {
     case "/api/events": return handleEvents(request, env, ctx);
     case "/api/wiki": return handleWiki(request, env, ctx);
     case "/api/records": return handleRecords(request, env, ctx);
+    case "/api/bracket": return handleBracket(request, env, ctx);
     default: return null;
   }
 }
@@ -510,6 +511,88 @@ function parseTeamRecords(html) {
     teamApps = [...arr].sort((a, b) => b.part - a.part).slice(0, 8).map((x) => ({ name: x.name, val: x.part }));
   }
   return { titles, teamGoals, teamApps };
+}
+
+// ───────── Knockout bracket (parsed from Wikipedia, cached) ─────────
+// The "knockout stage" article holds the whole bracket in a {{#invoke:RoundN}}
+// template: per match a "Date – Place | Team1 | Score1 | Team2 | Score2" tuple,
+// where a team is either a flag code (clinched) or a slot label ("Winner Group
+// A", "3rd Group A/B/C/D/F", "Winner Match 73"). We return it round by round and
+// let the page render the tree. Cached 15 min so it tracks Wikipedia as teams
+// and scores fill in.
+async function handleBracket(request, env, ctx) {
+  const cache = caches.default;
+  const ckey = new Request("https://wc.cache/bracket-v1");
+  const hit = await cache.match(ckey);
+  if (hit) return hit;
+  try {
+    const r = await fetch(
+      "https://en.wikipedia.org/w/api.php?action=parse&page=2026_FIFA_World_Cup_knockout_stage&prop=wikitext&format=json&formatversion=2",
+      { headers: { "user-agent": "samueltung.com/1.0 (World Cup bracket)" } }
+    );
+    if (!r.ok) throw new Error("wiki " + r.status);
+    const d = await r.json();
+    const rounds = parseBracket((d.parse && d.parse.wikitext) || "");
+    if (!rounds.length) throw new Error("no bracket");
+    const res = json({ source: "wikipedia", updated: new Date().toISOString(), rounds }, 200, 900);
+    ctx.waitUntil(cache.put(ckey, res.clone()));
+    return res;
+  } catch (e) {
+    return json({ error: "bracket_failed", message: String(e) }, 200, 0);
+  }
+}
+function parseBracket(wt) {
+  const i = wt.indexOf("{{#invoke:RoundN");
+  if (i < 0) return [];
+  let depth = 0, j = i;
+  while (j < wt.length) {
+    if (wt.substr(j, 2) === "{{") { depth++; j += 2; continue; }
+    if (wt.substr(j, 2) === "}}") { depth--; j += 2; } else j++;
+    if (depth === 0) break;
+  }
+  const inner = wt.slice(i + 2, j - 2);
+  const splitTop = (s) => {
+    const toks = []; let buf = "", b = 0, sq = 0, k = 0;
+    while (k < s.length) {
+      const two = s.substr(k, 2);
+      if (two === "{{") { b++; buf += two; k += 2; continue; }
+      if (two === "}}") { b--; buf += two; k += 2; continue; }
+      if (two === "[[") { sq++; buf += two; k += 2; continue; }
+      if (two === "]]") { sq--; buf += two; k += 2; continue; }
+      if (s[k] === "|" && b === 0 && sq === 0) { toks.push(buf); buf = ""; k++; continue; }
+      buf += s[k]; k++;
+    }
+    toks.push(buf); return toks;
+  };
+  const team = (mk) => {
+    mk = mk.replace(/<!--[\s\S]*?-->/g, "").trim();
+    const m = mk.match(/#invoke:flag\|fb[^|}]*\|([A-Za-z]{3})/);
+    if (m) return { code: m[1].toUpperCase() };
+    const txt = mk.replace(/\[\[[^\]|]*\|?([^\]]*)\]\]/g, "$1").replace(/'''/g, "").replace(/^\|+|\|+$/g, "").trim();
+    return { slot: txt };
+  };
+  const dateplace = (dp) => {
+    dp = dp.replace(/<!--[\s\S]*?-->/g, "").replace(/\[\[[^\]|]*\|?([^\]]*)\]\]/g, "$1").trim();
+    const m = dp.match(/([A-Za-z]+ \d+)\s*[–-]\s*(.*)/);
+    return m ? { date: m[1], place: m[2].trim() } : { date: dp, place: "" };
+  };
+  const score = (x) => x.replace(/<!--[\s\S]*?-->/g, "").replace(/'''/g, "").trim();
+  const RMAP = { "Round of 32": "R32", "Round of 16": "R16", "Quarterfinals": "QF", "Quarterfinal": "QF", "Semifinals": "SF", "Semifinal": "SF", "Final": "F", "Match for third place": "3P" };
+  const parts = inner.split(/<!--\s*(Round of 32|Round of 16|Quarterfinals?|Semifinals?|Final|Match for third place)\s*-->/i);
+  const rounds = [];
+  for (let k = 1; k < parts.length; k += 2) {
+    const key = RMAP[parts[k]] || parts[k];
+    const fields = splitTop(parts[k + 1]).slice(1).map((x) => x.trim());
+    const n = Math.floor(fields.length / 5);
+    const matches = [];
+    for (let a = 0; a < n; a++) {
+      const f = fields.slice(a * 5, a * 5 + 5);
+      const dp = dateplace(f[0]);
+      matches.push({ date: dp.date, place: dp.place, t1: team(f[1]), s1: score(f[2]), t2: team(f[3]), s2: score(f[4]) });
+    }
+    rounds.push({ key, matches });
+  }
+  return rounds;
 }
 
 function decodeXml(s) {

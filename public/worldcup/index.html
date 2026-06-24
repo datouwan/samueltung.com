@@ -228,6 +228,29 @@
     .cal-cell{min-height:0}
   }
 
+  /* knockout bracket */
+  .bracket-wrap{overflow-x:auto;padding:4px 2px 12px}
+  .bracket{display:flex;gap:26px;min-width:max-content;align-items:stretch}
+  .bround{display:flex;flex-direction:column;min-width:158px}
+  .brh{text-align:center;font:700 11px var(--sans);text-transform:uppercase;letter-spacing:.05em;
+    color:var(--accent-ink);padding:5px 0;margin-bottom:6px;border-bottom:1px solid var(--line)}
+  .bmatches{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:8px}
+  .bmatch{position:relative;border:1px solid var(--line);border-radius:9px;background:var(--card);overflow:hidden;
+    box-shadow:0 2px 8px rgba(28,27,25,.05)}
+  .bround:not(:last-child) .bmatch::after{content:'';position:absolute;top:50%;right:-26px;width:26px;height:1px;background:var(--line)}
+  .brow{display:flex;align-items:center;gap:7px;padding:6px 9px;font-size:13px;font-weight:600}
+  .brow+.brow{border-top:1px solid var(--paper-2)}
+  .brow .bteam{flex:1;min-width:0;display:flex;align-items:center;gap:7px;overflow:hidden}
+  .brow .bf{width:20px;height:14px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line);flex:0 0 auto}
+  .brow .bcode{font-weight:700}
+  .brow .bslot{color:var(--muted);font-weight:500;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .brow .bsc{font-family:var(--serif);font-weight:700;font-size:15px;min-width:14px;text-align:right;color:var(--muted)}
+  .brow.bwin{background:linear-gradient(90deg,rgba(31,157,107,.12),transparent)}
+  .brow.bwin .bcode{color:var(--go)} .brow.bwin .bsc{color:var(--go)}
+  .b3p{margin-top:20px;max-width:220px}
+  .b3p .bmatches{display:block}
+  @media(max-width:560px){.bracket{gap:20px}.bround:not(:last-child) .bmatch::after{right:-20px;width:20px}}
+
   /* news */
   .newslist{display:grid;gap:10px;max-width:760px}
   .narti{display:block;text-decoration:none;color:var(--ink);border:1px solid var(--line);border-radius:11px;
@@ -453,6 +476,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="groups" data-i18n="tab_groups">Group stage</button>
     <button class="tab" data-tab="schedule" data-i18n="tab_schedule">Schedule</button>
+    <button class="tab" data-tab="bracket" data-i18n="tab_bracket">Bracket</button>
     <button class="tab" data-tab="country" data-i18n="tab_country">Country stats</button>
     <button class="tab" data-tab="stats" data-i18n="tab_stats">Player stats</button>
     <button class="tab" data-tab="news" data-i18n="tab_news">News</button>
@@ -463,6 +487,9 @@
   </div>
   <div class="tabpane" id="schedulePane" data-pane="schedule" hidden>
     <div class="state-note" data-i18n="loading_sched">Loading match schedule…</div>
+  </div>
+  <div class="tabpane" id="bracketPane" data-pane="bracket" hidden>
+    <div class="state-note" data-i18n="loading_bracket">Loading knockout bracket…</div>
   </div>
   <div class="tabpane" id="countryPane" data-pane="country" hidden>
     <div class="state-note" data-i18n="loading_country">Loading country stats…</div>
@@ -517,7 +544,11 @@
 const I18N = {
   en:{
     role:'FIFA World Cup 2026 · USA · Canada · Mexico', title:'Map, Groups & Live Scores', sub:'48 teams · 12 groups · live tables',
-    tab_groups:'Group stage', tab_schedule:'Schedule', tab_country:'Country stats', tab_stats:'Player stats', tab_news:'News',
+    tab_groups:'Group stage', tab_schedule:'Schedule', tab_bracket:'Bracket', tab_country:'Country stats', tab_stats:'Player stats', tab_news:'News',
+    loading_bracket:'Loading knockout bracket…', bracket_unavail:'Bracket unavailable right now. Try again shortly.',
+    bracket_note:'Knockout bracket from Wikipedia — teams and scores fill in as the tournament progresses.',
+    rnd_R32:'Round of 32', rnd_R16:'Round of 16', rnd_QF:'Quarter-finals', rnd_SF:'Semi-finals', rnd_F:'Final', rnd_3P:'Third place',
+    w_group:'Winner Group {g}', ru_group:'Runner-up Group {g}', third_group:'3rd Group {g}', w_match:'Winner Match {n}', l_match:'Loser Match {n}',
     loading_groups:'Loading group standings…', loading_sched:'Loading match schedule…', loading_country:'Loading country stats…',
     loading_stats:'Loading player stats…', loading_news:'Loading World Cup news…', loading_live:'Loading live scores…',
     search_ph:'🔍 Search any player — e.g. Messi, Harry Kane, Vinícius…', search_btn:'Search', search_ing:'Searching…',
@@ -542,7 +573,11 @@ const I18N = {
   zh:{
     role:'2026 国际足联世界杯 · 美国 · 加拿大 · 墨西哥',
     title:'地图、小组与实时比分', sub:'48 支球队 · 12 个小组 · 实时积分',
-    tab_groups:'小组赛', tab_schedule:'赛程', tab_country:'国家统计', tab_stats:'球员统计', tab_news:'新闻',
+    tab_groups:'小组赛', tab_schedule:'赛程', tab_bracket:'淘汰赛', tab_country:'国家统计', tab_stats:'球员统计', tab_news:'新闻',
+    loading_bracket:'正在加载淘汰赛对阵…', bracket_unavail:'淘汰赛对阵暂时无法加载，请稍后重试。',
+    bracket_note:'淘汰赛对阵来自维基百科 — 随赛事进程逐步填入球队与比分。',
+    rnd_R32:'32强', rnd_R16:'16强', rnd_QF:'八强', rnd_SF:'半决赛', rnd_F:'决赛', rnd_3P:'季军赛',
+    w_group:'{g}组第一', ru_group:'{g}组第二', third_group:'{g}组第三', w_match:'第{n}场胜者', l_match:'第{n}场负者',
     loading_groups:'正在加载小组积分榜…', loading_sched:'正在加载赛程…', loading_country:'正在加载国家统计…',
     loading_stats:'正在加载球员统计…', loading_news:'正在加载世界杯新闻…', loading_live:'正在加载实时比分…',
     search_ph:'🔍 搜索任意球员 — 如 梅西、凯恩、维尼修斯…', search_btn:'搜索', search_ing:'搜索中…',
@@ -567,7 +602,11 @@ const I18N = {
   es:{
     role:'Copa Mundial FIFA 2026 · EE. UU. · Canadá · México',
     title:'Mapa, grupos y marcadores', sub:'48 equipos · 12 grupos · tablas en vivo',
-    tab_groups:'Fase de grupos', tab_schedule:'Calendario', tab_country:'Países', tab_stats:'Jugadores', tab_news:'Noticias',
+    tab_groups:'Fase de grupos', tab_schedule:'Calendario', tab_bracket:'Eliminatorias', tab_country:'Países', tab_stats:'Jugadores', tab_news:'Noticias',
+    loading_bracket:'Cargando el cuadro eliminatorio…', bracket_unavail:'Cuadro no disponible ahora. Inténtalo en breve.',
+    bracket_note:'Cuadro eliminatorio de Wikipedia — equipos y resultados se completan según avanza el torneo.',
+    rnd_R32:'Dieciseisavos', rnd_R16:'Octavos', rnd_QF:'Cuartos de final', rnd_SF:'Semifinales', rnd_F:'Final', rnd_3P:'Tercer puesto',
+    w_group:'1.º Grupo {g}', ru_group:'2.º Grupo {g}', third_group:'3.º Grupo {g}', w_match:'Ganador partido {n}', l_match:'Perdedor partido {n}',
     loading_groups:'Cargando clasificación de grupos…', loading_sched:'Cargando el calendario…', loading_country:'Cargando estadísticas por país…',
     loading_stats:'Cargando estadísticas de jugadores…', loading_news:'Cargando noticias del Mundial…', loading_live:'Cargando marcadores en vivo…',
     search_ph:'🔍 Busca cualquier jugador — p. ej. Messi, Kane, Vinícius…', search_btn:'Buscar', search_ing:'Buscando…',
@@ -1318,6 +1357,7 @@ function rerenderI18n(){
     renderSchedule(lastMatches||[]);
     drawStats();
     renderCountry(lastGroups||[]);
+    if(bracketLoaded && lastBracket) renderBracket(lastBracket);
   }catch(e){}
 }
 langSel.addEventListener('change', ()=>{
@@ -1331,6 +1371,7 @@ langSel.addEventListener('change', ()=>{
 const panes = {
   groups: document.getElementById('groups'),
   schedule: document.getElementById('schedulePane'),
+  bracket: document.getElementById('bracketPane'),
   country: document.getElementById('countryPane'),
   stats: document.getElementById('statsPane'),
   news: document.getElementById('newsPane'),
@@ -1343,10 +1384,11 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', (
   const id = tab.dataset.tab;
   Object.entries(panes).forEach(([k,el])=>{ el.hidden = (k!==id); });
   if(id==='news' && !newsLoaded) loadNews();
+  if(id==='bracket' && !bracketLoaded) loadBracket();
 }));
-// deep-link a tab via #news / #stats / #groups / #schedule / #country
+// deep-link a tab via #news / #stats / #groups / #schedule / #bracket / #country
 const initialTab = (location.hash||'').replace('#','');
-if(['news','stats','groups','schedule','country'].includes(initialTab)){
+if(['news','stats','groups','schedule','bracket','country'].includes(initialTab)){
   const t = document.querySelector(`.tab[data-tab="${initialTab}"]`); if(t) t.click();
 }
 
@@ -1500,6 +1542,64 @@ async function loadNews(){
         + `<div class="nm"><b>${esc(a.source||'News')}</b>${ago?` · ${ago}`:''}</div></a>`;
     }).join('') + `</div>`;
   }catch(e){ panes.news.innerHTML = `<div class="state-note">${t('news_fail')}</div>`; newsLoaded = false; }
+}
+
+/* ───────── Knockout bracket ───────── */
+// FIFA 3-letter code → flag ISO, built from the embedded schedule.
+const CODE2ISO = {}; WC_SCHEDULE.forEach(s=>{ CODE2ISO[s.hc]=s.hi; CODE2ISO[s.ac]=s.ai; });
+const BR_ORDER = ['R32','R16','QF','SF','F'];
+let bracketLoaded = false, lastBracket = null;
+async function loadBracket(){
+  bracketLoaded = true;
+  try{
+    const d = await fetch('/api/bracket').then(r=>r.json());
+    if(d.error || !(d.rounds||[]).length){ panes.bracket.innerHTML = `<div class="state-note">${t('bracket_unavail')}</div>`; bracketLoaded=false; return; }
+    lastBracket = d.rounds;
+    renderBracket(lastBracket);
+  }catch(e){ panes.bracket.innerHTML = `<div class="state-note">${t('bracket_unavail')}</div>`; bracketLoaded=false; }
+}
+// translate "Winner Group A" / "3rd Group A/B/C" / "Winner Match 73" slot labels
+function slotLabel(s){
+  if(!s || lang==='en') return s||'';
+  let m;
+  if(m=s.match(/^Winner Group (.+)$/)) return t('w_group').replace('{g}',m[1]);
+  if(m=s.match(/^Runner-up Group (.+)$/)) return t('ru_group').replace('{g}',m[1]);
+  if(m=s.match(/^3rd Group (.+)$/)) return t('third_group').replace('{g}',m[1]);
+  if(m=s.match(/^Winner Match (\d+)$/)) return t('w_match').replace('{n}',m[1]);
+  if(m=s.match(/^Loser Match (\d+)$/)) return t('l_match').replace('{n}',m[1]);
+  return s;
+}
+function parseScore(x){
+  const m = String(x||'').match(/(\d+)(?:\s*\((\d+)\))?/);
+  return m ? {main:+m[1], pen: m[2]!=null?+m[2]:null} : null;
+}
+function bracketTeam(tm, win){
+  const inner = tm.code
+    ? `<img class="bf" src="https://flagcdn.com/w20/${esc(CODE2ISO[tm.code]||'')}.png" alt=""><span class="bcode">${esc(tm.code)}</span>`
+    : `<span class="bslot">${esc(slotLabel(tm.slot))}</span>`;
+  return inner + (win?' ':'');
+}
+function bracketMatch(m){
+  const a=parseScore(m.s1), b=parseScore(m.s2);
+  let w1=false,w2=false;
+  if(a&&b){ if(a.main>b.main) w1=true; else if(b.main>a.main) w2=true;
+    else if(a.pen!=null&&b.pen!=null){ if(a.pen>b.pen) w1=true; else if(b.pen>a.pen) w2=true; } }
+  const row = (tm,sc,win)=> `<div class="brow${win?' bwin':''}">`
+    + `<span class="bteam">${bracketTeam(tm,win)}</span><span class="bsc">${esc(sc||'')}</span></div>`;
+  const meta = [m.date, m.place].filter(Boolean).join(' · ');
+  return `<div class="bmatch">${row(m.t1,m.s1,w1)}${row(m.t2,m.s2,w2)}`
+    + (meta?`<div class="bmeta">${esc(meta)}</div>`:'') + `</div>`;
+}
+function renderBracket(rounds){
+  const byKey = {}; rounds.forEach(r=> byKey[r.key]=r.matches);
+  const cols = BR_ORDER.filter(k=> byKey[k]).map(k=>
+    `<div class="bround"><div class="brh">${t('rnd_'+k)}</div>`
+    + `<div class="bmatches">${byKey[k].map(bracketMatch).join('')}</div></div>`).join('');
+  let html = `<p class="statnote">${t('bracket_note')}</p>`
+    + `<div class="bracket-wrap"><div class="bracket">${cols}</div></div>`;
+  if(byKey['3P']) html += `<div class="b3p"><div class="brh">${t('rnd_3P')}</div>`
+    + `<div class="bmatches">${bracketMatch(byKey['3P'][0])}</div></div>`;
+  panes.bracket.innerHTML = html;
 }
 // Career WC totals THROUGH 2022 [name, iso, country, value, lastWC]. The cards
 // add live 2026 numbers; anyone in the 2026 feed has their lastWC shown as 2026.
