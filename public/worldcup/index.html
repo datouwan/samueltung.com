@@ -1056,10 +1056,13 @@ function finalCard(m){
 function renderLive(live, matches){
   const finished = (matches||[]).filter(m => m.status==='FINISHED')
     .sort((a,b)=> new Date(b.utcDate)-new Date(a.utcDate));
-  const nextM = (matches||[]).filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
-    .sort((a,b)=> new Date(a.utcDate)-new Date(b.utcDate))[0];
+  // all games sharing the earliest upcoming kickoff (often 2+ start together)
+  const upcoming = (matches||[]).filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
+    .sort((a,b)=> new Date(a.utcDate)-new Date(b.utcDate));
+  const nextT = upcoming.length ? new Date(upcoming[0].utcDate).getTime() : null;
+  const nextMs = upcoming.filter(m => new Date(m.utcDate).getTime() === nextT);
 
-  // Top bar: only the live game(s) and the next upcoming game.
+  // Top bar: only the live game(s) and the next upcoming game(s).
   let html = '';
   if(live.length){
     liveBar.className = ''; currentLive = live;
@@ -1068,8 +1071,8 @@ function renderLive(live, matches){
     liveBar.className = 'idle'; currentLive = [];
     html += `<span class="tag">${t('no_live')}</span>`;
   }
-  if(nextM){ html += `<span class="seg">${t('next_live')}</span>` + scheduledCard(nextM); }
-  if(!live.length && !nextM){ html = `<span class="tag">${t('no_today')}</span>`; }
+  if(nextMs.length){ html += `<span class="seg">${t('next_live')}</span>` + nextMs.map(scheduledCard).join(''); }
+  if(!live.length && !nextMs.length){ html = `<span class="tag">${t('no_today')}</span>`; }
   liveBar.innerHTML = html;
 
   // Completed games go in their own strip below the map.
@@ -1129,7 +1132,10 @@ function renderSchedule(matches){
     return {...s, t:new Date(utc).getTime(), live, fin, hs, as, minute: fm&&fm.minute};
   }).sort((a,b)=> a.t-b.t);
 
-  const nextItem = items.find(it=> !it.live && !it.fin && it.t>=now) || items.find(it=> !it.live && !it.fin);
+  // mark every game at the earliest upcoming kickoff as "next" (games kick off in pairs)
+  const firstNext = items.find(it=> !it.live && !it.fin && it.t>=now) || items.find(it=> !it.live && !it.fin);
+  const nextT = firstNext ? firstNext.t : null;
+  const isNext = it => !it.live && !it.fin && it.t===nextT;
 
   const byDay = {};
   items.forEach(it=>{ (byDay[dayKey(new Date(it.t))] ||= []).push(it); });
@@ -1150,7 +1156,7 @@ function renderSchedule(matches){
   for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
     const k = dayKey(d);
     const games = byDay[k] || [];
-    const evs = games.map(it=> calEvent(it, it===nextItem)).join('');
+    const evs = games.map(it=> calEvent(it, isNext(it))).join('');
     cells += `<div class="cal-cell${games.length?'':' empty'}${k===todayK?' today':''}">`
       + `<span class="cal-dn">${WD[d.getDay()]} ${d.getDate()}</span>${evs}</div>`;
   }
