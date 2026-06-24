@@ -142,19 +142,44 @@
   .narti .nm b{color:var(--accent-ink);font-weight:600}
 
   /* player stats */
-  .stathead{font-family:var(--serif);font-size:18px;margin:0 0 12px}
-  .scorers{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden;max-width:560px}
-  .scorer{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--paper-2)}
-  .scorer:last-child{border-bottom:none}
-  .scorer.lead{background:linear-gradient(90deg,rgba(161,74,50,.10),transparent)}
-  .scorer .rk{width:22px;text-align:center;font-weight:700;color:var(--muted)}
-  .scorer.lead .rk{color:var(--accent)}
-  .scorer .pf{width:28px;height:20px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
-  .scorer .pn{flex:1;font-weight:600;min-width:0}
-  .scorer .pn small{display:block;color:var(--muted);font-weight:400;font-size:12px;
+  .substabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+  .stab{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+    font:600 13px var(--sans);padding:6px 14px;border-radius:20px;cursor:pointer;transition:.15s}
+  .stab:hover{border-color:var(--accent)}
+  .stab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .statnote{color:var(--muted);font-size:12.5px;margin:0 0 12px;max-width:580px}
+
+  .ptable{width:100%;max-width:560px;border-collapse:collapse;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .ptable th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);
+    padding:10px 8px;text-align:center;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+  .ptable th.plh,.ptable th.rkh{cursor:default}.ptable th.plh{text-align:left}
+  .ptable th.on{color:var(--accent)}
+  .ptable td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--paper-2);font-weight:600}
+  .ptable tr:last-child td{border-bottom:none}
+  .ptable td.on{color:var(--accent)}
+  .ptable td.rk{color:var(--muted)}
+  .ptable td.pl{text-align:left}
+  .ptable .pl{display:flex;align-items:center;gap:9px}
+  .ptable .pf{width:26px;height:19px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
+  .ptable .pnm{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+  .ptable .pnm small{color:var(--muted);font-weight:400;font-size:11.5px;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .scorer .gg{font-family:var(--serif);font-weight:700;font-size:20px;text-align:right}
-  .scorer .gg small{font-family:var(--sans);font-weight:600;font-size:11px;color:var(--muted);display:block}
+  .ptable tr.lead td{background:linear-gradient(90deg,rgba(161,74,50,.10),transparent)}
+
+  .histgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;max-width:1000px}
+  .histcard{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:14px 16px}
+  .histcard h4{margin:0;font-family:var(--serif);font-size:16px}
+  .histcard .hn{margin:4px 0 0;color:var(--muted);font-size:11.5px}
+  .hlist{list-style:none;margin:8px 0 0;padding:0}
+  .hlist li{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--paper-2)}
+  .hlist li:last-child{border-bottom:none}
+  .hlist .hrk{width:18px;text-align:center;color:var(--muted);font-weight:700;font-size:13px}
+  .hlist .pf{width:24px;height:17px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
+  .hlist .hnm{flex:1;font-weight:600;font-size:13.5px;display:flex;flex-direction:column;line-height:1.15;min-width:0}
+  .hlist .hnm small{color:var(--muted);font-weight:400;font-size:11px}
+  .hlist .hv{font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}
+  .hlist .hv small{font-family:var(--sans);font-weight:600;font-size:10px;color:var(--muted);display:block}
 
   /* live-bar segment labels + final/next chips */
   #liveBar .seg{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
@@ -707,17 +732,67 @@ async function loadNews(){
     }).join('') + `</div>`;
   }catch(e){ panes.news.innerHTML = `<div class="state-note">Couldn’t load news.</div>`; newsLoaded = false; }
 }
+// All-time men's World Cup records (through the 2022 tournament). [name, iso, team, value]
+const HISTORICAL = [
+  {title:'⚽ All-time top scorers', unit:'goals', rows:[
+    ['Miroslav Klose','de','Germany',16],['Ronaldo','br','Brazil',15],['Gerd Müller','de','West Germany',14],
+    ['Just Fontaine','fr','France',13],['Lionel Messi','ar','Argentina',13],['Kylian Mbappé','fr','France',12],
+    ['Pelé','br','Brazil',12],['Sándor Kocsis','hu','Hungary',11]]},
+  {title:'🎯 Most goals, single tournament', unit:'goals', rows:[
+    ['Just Fontaine','fr','France · 1958',13],['Sándor Kocsis','hu','Hungary · 1954',11],
+    ['Gerd Müller','de','W. Germany · 1970',10],['Eusébio','pt','Portugal · 1966',9]]},
+  {title:'👟 Most assists', unit:'assists', note:'FIFA-credited; older assists are estimates', rows:[
+    ['Pelé','br','Brazil',10],['Diego Maradona','ar','Argentina',8],['Lionel Messi','ar','Argentina',8],
+    ['Thomas Müller','de','Germany',6]]},
+  {title:'🧤 Most clean sheets (GK)', unit:'clean sheets', note:'goalkeeping shut-out record', rows:[
+    ['Peter Shilton','gb-eng','England',10],['Fabien Barthez','fr','France',10],
+    ['Iker Casillas','es','Spain',8]]},
+  {title:'🏟️ Most appearances', unit:'matches', rows:[
+    ['Lionel Messi','ar','Argentina',26],['Lothar Matthäus','de','Germany',25],
+    ['Miroslav Klose','de','Germany',24],['Paolo Maldini','it','Italy',23]]},
+  {title:'🏆 Most titles (player)', unit:'titles', rows:[
+    ['Pelé','br','Brazil',3]]},
+];
+
+let statsView = '2026', sortKey = 'goals', lastScorers = [];
+
 function renderStats(scorers){
-  if(!(scorers||[]).length){ panes.stats.innerHTML = `<div class="state-note">Top-scorer data isn’t available yet.</div>`; return; }
-  panes.stats.innerHTML = `<h3 class="stathead">⚽ Golden Boot race — top scorers</h3><div class="scorers">`
-    + scorers.map((s,i)=>{
-      const fl = countryFlag(s.nationality) || s.crest;
-      const extra = (s.assists!=null ? ` · ${s.assists} ast` : '');
-      return `<div class="scorer${i===0?' lead':''}"><span class="rk">${i+1}</span>`
-        + (fl?`<img class="pf" src="${esc(fl)}" alt="">`:'')
-        + `<span class="pn">${esc(s.name)}<small>${esc(s.team)}</small></span>`
-        + `<span class="gg">${s.goals}<small>goals${extra}</small></span></div>`;
-    }).join('') + `</div>`;
+  if(scorers && scorers.length) lastScorers = scorers;
+  drawStats();
+}
+function drawStats(){
+  const tab = (v,label)=>`<button class="stab ${statsView===v?'active':''}" data-sv="${v}">${label}</button>`;
+  panes.stats.innerHTML = `<div class="substabs">${tab('2026','2026 Tournament')}${tab('alltime','All-time records')}</div>`
+    + (statsView==='2026' ? render2026() : renderHistorical());
+  panes.stats.querySelectorAll('.stab').forEach(b=> b.onclick = ()=>{ statsView=b.dataset.sv; drawStats(); });
+  if(statsView==='2026')
+    panes.stats.querySelectorAll('th[data-k]').forEach(th=> th.onclick = ()=>{ sortKey=th.dataset.k; drawStats(); });
+}
+function render2026(){
+  if(!lastScorers.length) return `<div class="state-note">No 2026 player data yet — appears once goals are scored.</div>`;
+  const rows = [...lastScorers].sort((a,b)=> (b[sortKey]==null?-1:b[sortKey]) - (a[sortKey]==null?-1:a[sortKey]));
+  const th = (k,l)=>`<th data-k="${k}" class="${sortKey===k?'on':''}">${l}</th>`;
+  return `<p class="statnote">FIFA World Cup 2026 — tap a column to sort. Goals are complete; assists &amp; penalties are partially reported by the free feed.</p>`
+    + `<table class="ptable"><thead><tr><th class="rkh">#</th><th class="plh">Player</th>${th('goals','G')}${th('assists','A')}${th('penalties','Pen')}</tr></thead><tbody>`
+    + rows.map((s,i)=>{
+        const fl = countryFlag(s.nationality) || s.crest;
+        const cell = (k,v)=>`<td class="${sortKey===k?'on':''}">${v==null?'–':v}</td>`;
+        return `<tr class="${i===0&&sortKey==='goals'?'lead':''}"><td class="rk">${i+1}</td>`
+          + `<td class="pl">${fl?`<img class="pf" src="${esc(fl)}" alt="">`:''}<span class="pnm">${esc(s.name)}<small>${esc(s.team)}</small></span></td>`
+          + cell('goals',s.goals) + cell('assists',s.assists) + cell('penalties',s.penalties) + `</tr>`;
+      }).join('') + `</tbody></table>`;
+}
+function renderHistorical(){
+  return `<p class="statnote">All-time men’s World Cup records (through the 2022 tournament — 2026 is in progress).</p>`
+    + `<div class="histgrid">` + HISTORICAL.map(c=>
+        `<div class="histcard"><h4>${c.title}</h4>` + (c.note?`<p class="hn">${esc(c.note)}</p>`:'')
+        + `<ol class="hlist">` + c.rows.map((r,i)=>{
+            const [name,iso,team,val]=r;
+            return `<li><span class="hrk">${i+1}</span><img class="pf" src="https://flagcdn.com/w40/${iso}.png" alt="">`
+              + `<span class="hnm">${esc(name)}<small>${esc(team)}</small></span>`
+              + `<b class="hv">${val}<small>${esc(c.unit)}</small></b></li>`;
+          }).join('') + `</ol></div>`
+      ).join('') + `</div>`;
 }
 
 /* ───────── Manual update button ───────── */

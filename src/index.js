@@ -83,7 +83,7 @@ async function handleWC(request, env, ctx) {
     [standings, matchesRaw, scorersRaw] = await Promise.all([
       cachedJson(`${FD}/standings`, fdHeaders, FD_TTL, "fd-standings"),
       cachedJson(`${FD}/matches?dateFrom=${from}&dateTo=${to}`, fdHeaders, FD_TTL, `fd-matches-${from}`),
-      cachedJson(`${FD}/scorers?limit=20`, fdHeaders, 300, "fd-scorers").catch(() => null),
+      cachedJson(`${FD}/scorers?limit=30`, fdHeaders, 300, "fd-scorers-30").catch(() => null),
     ]);
   } catch (err) {
     return json({ error: "upstream", message: String(err) }, 502, 0);
