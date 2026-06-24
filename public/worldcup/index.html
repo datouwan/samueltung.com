@@ -544,6 +544,8 @@ const ALIAS = {
   congodr:'drcongo', congodrc:'drcongo', democraticrepublicofthecongo:'drcongo',
   bosniaandherzegovina:'bosniaherzegovina',
   turkey:'turkiye',
+  czechrepublic:'czechia',
+  ivorycoast:'cotedivoire',
   usa:'unitedstates', unitedstatesofamerica:'unitedstates', us:'unitedstates',
 };
 function norm(s){
@@ -609,11 +611,110 @@ function venueInfo(v){
   const img = v.id ? `https://media.api-sports.io/football/venues/${v.id}.png` : '';
   return { s, img, name: v.name || (s&&s.n) || 'Stadium', city: v.city || (s&&s.city) || '' };
 }
-// resolve any match (live feed venue object, or feed venue string) to a host stadium
+// Built-in 2026 group-stage fixture → host stadium map (parsed from Wikipedia,
+// keyed by canonical team-pair). Lets us place every match on the map even when
+// the live feed reports no venue (football-data free tier never does).
+const FIXTURE_VENUES = {
+  "algeria|austria":"Arrowhead Stadium",
+  "argentina|algeria":"Arrowhead Stadium",
+  "argentina|austria":"AT&T Stadium",
+  "australia|turkiye":"BC Place",
+  "austria|jordan":"Levi's Stadium",
+  "belgium|egypt":"Lumen Field",
+  "belgium|iran":"SoFi Stadium",
+  "bosniaherzegovina|qatar":"Lumen Field",
+  "brazil|haiti":"Lincoln Financial Field",
+  "brazil|morocco":"MetLife Stadium",
+  "canada|bosniaherzegovina":"BMO Field",
+  "canada|qatar":"BC Place",
+  "capeverde|saudiarabia":"NRG Stadium",
+  "colombia|drcongo":"Estadio Akron",
+  "colombia|portugal":"Hard Rock Stadium",
+  "cotedivoire|ecuador":"Lincoln Financial Field",
+  "croatia|ghana":"Lincoln Financial Field",
+  "curacao|cotedivoire":"Lincoln Financial Field",
+  "czechia|mexico":"Estadio Azteca",
+  "czechia|southafrica":"Mercedes-Benz Stadium",
+  "drcongo|uzbekistan":"Mercedes-Benz Stadium",
+  "ecuador|curacao":"Arrowhead Stadium",
+  "ecuador|germany":"MetLife Stadium",
+  "egypt|iran":"Lumen Field",
+  "england|croatia":"AT&T Stadium",
+  "england|ghana":"Gillette Stadium",
+  "france|iraq":"Lincoln Financial Field",
+  "france|senegal":"MetLife Stadium",
+  "germany|cotedivoire":"BMO Field",
+  "germany|curacao":"NRG Stadium",
+  "ghana|panama":"BMO Field",
+  "haiti|scotland":"Gillette Stadium",
+  "iran|newzealand":"SoFi Stadium",
+  "iraq|norway":"Gillette Stadium",
+  "japan|sweden":"AT&T Stadium",
+  "jordan|algeria":"Levi's Stadium",
+  "jordan|argentina":"AT&T Stadium",
+  "mexico|southafrica":"Estadio Azteca",
+  "mexico|southkorea":"Estadio Akron",
+  "morocco|haiti":"Mercedes-Benz Stadium",
+  "netherlands|japan":"AT&T Stadium",
+  "netherlands|sweden":"NRG Stadium",
+  "newzealand|belgium":"BC Place",
+  "newzealand|egypt":"BC Place",
+  "norway|france":"Gillette Stadium",
+  "norway|senegal":"MetLife Stadium",
+  "panama|croatia":"BMO Field",
+  "panama|england":"MetLife Stadium",
+  "paraguay|australia":"Levi's Stadium",
+  "portugal|drcongo":"NRG Stadium",
+  "portugal|uzbekistan":"NRG Stadium",
+  "qatar|switzerland":"Levi's Stadium",
+  "saudiarabia|uruguay":"Hard Rock Stadium",
+  "scotland|brazil":"Hard Rock Stadium",
+  "scotland|morocco":"Gillette Stadium",
+  "senegal|iraq":"BMO Field",
+  "southafrica|southkorea":"Estadio BBVA",
+  "southkorea|czechia":"Estadio Akron",
+  "spain|capeverde":"Mercedes-Benz Stadium",
+  "spain|saudiarabia":"Mercedes-Benz Stadium",
+  "sweden|tunisia":"Estadio BBVA",
+  "switzerland|bosniaherzegovina":"SoFi Stadium",
+  "switzerland|canada":"BC Place",
+  "tunisia|japan":"Estadio BBVA",
+  "tunisia|netherlands":"Arrowhead Stadium",
+  "turkiye|paraguay":"Levi's Stadium",
+  "turkiye|unitedstates":"SoFi Stadium",
+  "unitedstates|australia":"Lumen Field",
+  "unitedstates|paraguay":"SoFi Stadium",
+  "uruguay|capeverde":"Hard Rock Stadium",
+  "uruguay|spain":"Estadio Akron",
+  "uzbekistan|colombia":"Estadio Azteca",
+};
+
+// Resolve a (possibly short/aliased) team name to one of the 48 known team keys.
+const TEAM_NORMS = Object.keys(markersByName);
+function canonTeam(name){
+  const k = norm(name);
+  if(markersByName[k]) return k;
+  if(k.length >= 4){
+    const hit = TEAM_NORMS.find(t => t.startsWith(k) || k.startsWith(t));
+    if(hit) return hit;
+  }
+  return k;
+}
+
+// resolve any match to a host stadium: explicit feed venue first, then the
+// built-in fixture map by team pair.
 function matchStadium(m){
-  if(!m || !m.venue) return null;
-  const vi = venueInfo(typeof m.venue==='string' ? {name:m.venue} : m.venue);
-  return (vi && vi.s) || null;
+  if(!m) return null;
+  if(m.venue){
+    const vi = venueInfo(typeof m.venue==='string' ? {name:m.venue} : m.venue);
+    if(vi && vi.s) return vi.s;
+  }
+  if(m.home && m.away){
+    const a = canonTeam(m.home.name), b = canonTeam(m.away.name);
+    const n = FIXTURE_VENUES[a+'|'+b] || FIXTURE_VENUES[b+'|'+a];
+    if(n){ const s = stadiumByName[norm(n)]; if(s) return s; }
+  }
+  return null;
 }
 
 /* ───────── Stadiums-only map view ───────── */
@@ -689,7 +790,7 @@ function renderMapLive(live){
   clearMapLive();
   if(mapView==='stadiums'){ renderStadiumLive(live); return; }
   (live||[]).forEach(m=>{
-    const h = markersByName[norm(m.home.name)], a = markersByName[norm(m.away.name)];
+    const h = markersByName[canonTeam(m.home.name)], a = markersByName[canonTeam(m.away.name)];
     if(!h || !a) return;
     const hp = h.marker.getLatLng(), ap = a.marker.getLatLng();
 
@@ -724,7 +825,7 @@ function renderMapLive(live){
 
 // click a game in the live bar to zoom the map to it
 window.focusLiveMatch = (hn,an)=>{
-  const h=markersByName[norm(hn)], a=markersByName[norm(an)];
+  const h=markersByName[canonTeam(hn)], a=markersByName[canonTeam(an)];
   if(h&&a) map.flyToBounds(L.latLngBounds([h.marker.getLatLng(),a.marker.getLatLng()]).pad(0.6),{maxZoom:5});
 };
 
