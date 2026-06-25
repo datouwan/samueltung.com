@@ -1160,8 +1160,7 @@ function renderMapLive(live){
       // each drawn in that team's own kit color.
       [[hp,hc],[ap,ac]].forEach(([p,col])=>{
         const arc = curvePts(p, sLL, 0.22);
-        L.polyline(arc,{color:haloColor(col),weight:4,opacity:1,lineCap:'round'}).addTo(liveLayer);       // thin contrast outline
-        L.polyline(arc,{color:col,weight:2.6,opacity:.98,dashArray:'5 9',className:'liveline',lineCap:'round'}).addTo(liveLayer); // dashes flow → stadium
+        L.polyline(arc,{color:col,weight:2.8,opacity:.98,dashArray:'5 9',className:'liveline',lineCap:'round'}).addTo(liveLayer); // dashes flow → stadium
       });
       // landing node at the stadium (neutral hub where both arcs meet)
       L.circleMarker(sLL,{radius:5,color:'#fff',weight:2,fillColor:'#1c1b19',fillOpacity:1}).addTo(liveLayer);
@@ -1172,10 +1171,8 @@ function renderMapLive(live){
     } else {
       // no venue coords — fall back to a direct link, split home→away kit color
       const mp = L.latLng((hp.lat+ap.lat)/2,(hp.lng+ap.lng)/2);
-      L.polyline([hp,mp],{color:haloColor(hc),weight:4,opacity:1,lineCap:'round'}).addTo(liveLayer);
-      L.polyline([mp,ap],{color:haloColor(ac),weight:4,opacity:1,lineCap:'round'}).addTo(liveLayer);
-      L.polyline([hp,mp],{color:hc,weight:2.6,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
-      L.polyline([mp,ap],{color:ac,weight:2.6,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
+      L.polyline([hp,mp],{color:hc,weight:2.8,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
+      L.polyline([mp,ap],{color:ac,weight:2.8,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
     }
 
     // the live score card — each side tinted with its team's kit color: a
