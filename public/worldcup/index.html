@@ -18,6 +18,7 @@
     --paper:#faf9f6; --paper-2:#f3f1ea; --ink:#1c1b19; --ink-soft:#3b3934; --muted:#807b72;
     --line:#e6e2d8; --accent:#a14a32; --accent-ink:#8a3d28; --live:#d6422b; --go:#1f9d6b;
     --card:#fff; --legend:rgba(255,255,255,.96); --img-bg:#e9e6df; --map-bg:#eef0f2;
+    --tcard-bg:#e8e4da; --tcard-bd:#d7d1c4; --tcard-fg:#1c1b19;
     --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     --c-host:#a14a32; --c-uefa:#2f6f9f; --c-conmebol:#1f9d6b;
@@ -28,6 +29,7 @@
     --paper:#15130f; --paper-2:#211d17; --ink:#f1ece3; --ink-soft:#cfc8bb; --muted:#928b80;
     --line:#332e26; --accent:#cf7053; --accent-ink:#e29173; --live:#f0654d; --go:#39c08a;
     --card:#1d1a15; --legend:rgba(29,26,21,.94); --img-bg:#2a251e; --map-bg:#0e0d0b;
+    --tcard-bg:#2a2826; --tcard-bd:#3a3733; --tcard-fg:#fff;
     --c-uefa:#5b97c4; --c-conmebol:#39c08a; --c-caf:#e0ad55; --c-afc:#a888d6;
     --c-concacaf:#e07a64; --c-ofc:#5fc3cb;
     color-scheme:dark;
@@ -53,8 +55,8 @@
     box-shadow:0 0 0 0 rgba(214,66,43,.7);animation:pulse 1.5s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(214,66,43,.7)}70%{box-shadow:0 0 0 9px rgba(214,66,43,0)}100%{box-shadow:0 0 0 0 rgba(214,66,43,0)}}
   .lgame{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:14px}
-  .lgame .tcard{display:inline-flex;align-items:center;gap:6px;background:#2a2826;border:1px solid #3a3733;
-    border-radius:9px;padding:3px 9px;color:#fff;transition:border-color .15s}
+  .lgame .tcard{display:inline-flex;align-items:center;gap:6px;background:var(--tcard-bg);border:1px solid var(--tcard-bd);
+    border-radius:9px;padding:3px 9px;color:var(--tcard-fg);transition:border-color .15s}
   .lgame .tcard img{width:20px;height:14px;object-fit:contain;border-radius:2px;background:#fff}
   .lgame .tcard .cn{font-weight:600}
   .kit{flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
