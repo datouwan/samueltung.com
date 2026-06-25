@@ -493,6 +493,7 @@
     70%{box-shadow:0 0 0 3px rgba(214,66,43,.6),0 0 0 16px rgba(214,66,43,0)}
     100%{box-shadow:0 0 0 3px rgba(214,66,43,.6),0 0 0 0 rgba(214,66,43,0)}}
   .pill-wrap{transform:translate(-50%,-50%)}
+  .pill-wrap.at-venue{transform:translate(-50%,calc(-50% - 50px))}
   .live-score-pill{display:inline-flex;align-items:center;gap:5px;background:#1c1b19;color:#fff;
     border:1.5px solid var(--live);border-radius:20px;padding:4px 9px;white-space:nowrap;cursor:pointer;
     font:700 13px var(--sans);box-shadow:0 4px 14px rgba(0,0,0,.4)}
@@ -1104,52 +1105,53 @@ function curvePts(from, to, bend){
   return pts;
 }
 
+// distinct colors so several simultaneous live games are easy to tell apart
+const LIVE_COLORS = ['#d6422b','#2563eb','#179e57','#9b3fd0','#e08a1e','#0e9bb5','#d61f69','#5b6b1f'];
+
 function renderMapLive(live){
   clearMapLive();
   if(mapView==='stadiums'){ renderStadiumLive(live); return; }
-  (live||[]).forEach(m=>{
+  (live||[]).forEach((m,i)=>{
     const h = markersByName[canonTeam(m.home.name)], a = markersByName[canonTeam(m.away.name)];
     if(!h || !a) return;
     const hp = h.marker.getLatLng(), ap = a.marker.getLatLng();
-
-    // connecting line between the two countries
-    L.polyline([hp,ap],{color:'#d6422b',weight:2.5,opacity:.85,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
+    const c = LIVE_COLORS[i % LIVE_COLORS.length];
+    const goal = isFreshGoal(m);
+    const lv = goal ? '⚽ GOAL!' : liveState(m);
+    const vi = venueInfo(m.venue);
+    const sLL = (vi && vi.s) ? L.latLng(vi.s.lat, vi.s.lng) : null;
 
     // highlight both country markers
     [h,a].forEach(t=>{ const el=t.marker._icon; if(el){ el.classList.add('live-marker'); liveMarked.push(el); } });
 
-    // live score pill ("the card") floats at the midpoint between the two nations
-    const mid = L.latLng((hp.lat+ap.lat)/2, (hp.lng+ap.lng)/2);
-    const goal = isFreshGoal(m);
-    const lv = goal ? '⚽ GOAL!' : liveState(m);
-
-    // a graceful curve tethers the live card back to the actual host stadium
-    const vi = venueInfo(m.venue);
-    const sLL = (vi && vi.s) ? L.latLng(vi.s.lat, vi.s.lng) : null;
     if(sLL){
-      const arc = curvePts(mid, sLL, 0.22);
-      L.polyline(arc,{color:'#d6422b',weight:9,opacity:.14,lineCap:'round'}).addTo(liveLayer);            // soft glow
-      L.polyline(arc,{color:'#d6422b',weight:2.5,opacity:.9,dashArray:'5 9',className:'liveline',lineCap:'round'}).addTo(liveLayer); // flowing dashes → stadium
-      // small pulsing node where the curve meets the card
-      L.circleMarker(mid,{radius:3.5,color:'#fff',weight:1.5,fillColor:'#d6422b',fillOpacity:1}).addTo(liveLayer);
-    }
-
-    const pill = L.divIcon({className:'', iconSize:null,
-      html:`<div class="pill-wrap"><div class="live-score-pill${goal?' goal':''}">`
-        +`<img src="${flagUrl(h.iso)}" alt=""><span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
-        +`<img src="${flagUrl(a.iso)}" alt=""><span class="lv">${lv}</span></div></div>`});
-    const fit = sLL ? L.latLngBounds([hp,ap,sLL]) : L.latLngBounds([hp,ap]);
-    L.marker(mid,{icon:pill,zIndexOffset:1000})
-      .on('click',()=>map.flyToBounds(fit.pad(0.4),{maxZoom:5}))
-      .addTo(liveLayer);
-
-    // stadium marker at the live venue — the hub the curve points to
-    if(sLL){
+      // flight-path arcs: each nation curves in and "lands" at the host stadium
+      [hp,ap].forEach(p=>{
+        const arc = curvePts(p, sLL, 0.22);
+        L.polyline(arc,{color:c,weight:8,opacity:.15,lineCap:'round'}).addTo(liveLayer);          // soft glow trail
+        L.polyline(arc,{color:c,weight:2.4,opacity:.92,dashArray:'5 9',className:'liveline',lineCap:'round'}).addTo(liveLayer); // dashes flow → stadium
+      });
+      // landing node at the stadium
+      L.circleMarker(sLL,{radius:5,color:'#fff',weight:2,fillColor:c,fillOpacity:1}).addTo(liveLayer);
+      // stadium marker just under the floating card
       const sicon = L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-30],
         html:`<div class="stadium-marker" title="${esc(vi.name)} — click for info">🏟️</div>`});
-      L.marker(sLL,{icon:sicon, zIndexOffset:1400})
-        .on('click',()=>openStadium(m)).addTo(liveLayer);
+      L.marker(sLL,{icon:sicon, zIndexOffset:1400}).on('click',()=>openStadium(m)).addTo(liveLayer);
+    } else {
+      // no venue coords — fall back to a direct country-to-country link
+      L.polyline([hp,ap],{color:c,weight:2.5,opacity:.85,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
     }
+
+    // the live score card — floats on top of the stadium (or the midpoint as fallback)
+    const cardAt = sLL || L.latLng((hp.lat+ap.lat)/2, (hp.lng+ap.lng)/2);
+    const pill = L.divIcon({className:'', iconSize:null,
+      html:`<div class="pill-wrap${sLL?' at-venue':''}"><div class="live-score-pill${goal?' goal':''}" style="border-color:${c};box-shadow:0 4px 14px rgba(0,0,0,.4),0 0 0 2px ${c}33">`
+        +`<img src="${flagUrl(h.iso)}" alt=""><span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
+        +`<img src="${flagUrl(a.iso)}" alt=""><span class="lv" style="color:${c}">${lv}</span></div></div>`});
+    const fit = sLL ? L.latLngBounds([hp,ap,sLL]) : L.latLngBounds([hp,ap]);
+    L.marker(cardAt,{icon:pill,zIndexOffset:1600})
+      .on('click',()=>map.flyToBounds(fit.pad(0.4),{maxZoom:5}))
+      .addTo(liveLayer);
   });
 }
 
