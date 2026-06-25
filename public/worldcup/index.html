@@ -561,6 +561,12 @@
     cursor:pointer;font:600 13px var(--sans);padding:0 10px;transition:border-color .15s,color .15s}
   #langSel:hover{border-color:var(--accent);color:var(--accent)}
   #langSel:focus{outline:none;border-color:var(--accent)}
+  .palettes{display:flex;align-items:center;gap:6px}
+  html[data-theme="dark"] .palettes{display:none}
+  .swatch{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);background:var(--sw);
+    cursor:pointer;padding:0;transition:transform .12s,box-shadow .12s}
+  .swatch:hover{transform:scale(1.14)}
+  .swatch.on{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--accent)}
 
   /* dark-mode: keep Leaflet popups & controls readable */
   html[data-theme="dark"] .leaflet-popup-content-wrapper,
@@ -593,6 +599,13 @@
 
 <header class="bar">
   <div class="topright">
+    <div class="palettes" id="palettes" role="group" aria-label="Light theme colour">
+      <button class="swatch" data-pal="classic" title="Classic" style="--sw:#ffffff"></button>
+      <button class="swatch" data-pal="sand" title="Sand" style="--sw:#e3cfa8"></button>
+      <button class="swatch" data-pal="sage" title="Sage" style="--sw:#c5d3b4"></button>
+      <button class="swatch" data-pal="stone" title="Stone" style="--sw:#c3d0de"></button>
+      <button class="swatch" data-pal="clay" title="Clay" style="--sw:#e6c9b6"></button>
+    </div>
     <select id="langSel" aria-label="Language">
       <option value="en">EN</option>
       <option value="zh">中文</option>
@@ -1660,6 +1673,20 @@ applyTheme(document.documentElement.getAttribute('data-theme') || 'light', false
 themeBtn.addEventListener('click', ()=>{
   applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark', true);
 });
+
+/* ───────── Light-theme palette swatches ───────── */
+(function(){
+  const box = document.getElementById('palettes'); if(!box) return;
+  const swatches = [...box.querySelectorAll('.swatch')];
+  const mark = p => swatches.forEach(b=> b.classList.toggle('on', b.dataset.pal===p));
+  mark(document.documentElement.getAttribute('data-palette') || 'sand');
+  swatches.forEach(b=> b.addEventListener('click', ()=>{
+    const p = b.dataset.pal;
+    document.documentElement.setAttribute('data-palette', p);
+    try{ localStorage.setItem('wc-palette', p); }catch(e){}
+    mark(p);
+  }));
+})();
 
 /* ───────── Language switch ───────── */
 const langSel = document.getElementById('langSel');
