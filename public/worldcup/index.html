@@ -1147,8 +1147,10 @@ function renderMapLive(live){
     const hc = kitColor(m.home.name), ac = kitColor(m.away.name); // team kit colors
     const goal = isFreshGoal(m);
     const lv = goal ? '⚽ GOAL!' : liveState(m);
-    const vi = venueInfo(m.venue);
-    const sLL = (vi && vi.s) ? L.latLng(vi.s.lat, vi.s.lng) : null;
+    // resolve the host stadium from static fixtures (instant) — the free feed
+    // rarely reports a venue, so don't wait on it before drawing the arcs.
+    const s = matchStadium(m);
+    const sLL = s ? L.latLng(s.lat, s.lng) : null;
 
     // highlight both country markers
     [h,a].forEach(t=>{ const el=t.marker._icon; if(el){ el.classList.add('live-marker'); liveMarked.push(el); } });
@@ -1158,20 +1160,22 @@ function renderMapLive(live){
       // each drawn in that team's own kit color.
       [[hp,hc],[ap,ac]].forEach(([p,col])=>{
         const arc = curvePts(p, sLL, 0.22);
-        L.polyline(arc,{color:col,weight:8,opacity:.16,lineCap:'round'}).addTo(liveLayer);          // soft glow trail
-        L.polyline(arc,{color:col,weight:2.6,opacity:.95,dashArray:'5 9',className:'liveline',lineCap:'round'}).addTo(liveLayer); // dashes flow → stadium
+        L.polyline(arc,{color:haloColor(col),weight:6.5,opacity:1,lineCap:'round'}).addTo(liveLayer);     // contrast glow outline
+        L.polyline(arc,{color:col,weight:2.6,opacity:.98,dashArray:'5 9',className:'liveline',lineCap:'round'}).addTo(liveLayer); // dashes flow → stadium
       });
       // landing node at the stadium (neutral hub where both arcs meet)
       L.circleMarker(sLL,{radius:5,color:'#fff',weight:2,fillColor:'#1c1b19',fillOpacity:1}).addTo(liveLayer);
       // stadium marker just under the floating card
       const sicon = L.divIcon({className:'', iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-30],
-        html:`<div class="stadium-marker" title="${esc(vi.name)} — click for info">🏟️</div>`});
+        html:`<div class="stadium-marker" title="${esc(s.n)} — click for info">🏟️</div>`});
       L.marker(sLL,{icon:sicon, zIndexOffset:1400}).on('click',()=>openStadium(m)).addTo(liveLayer);
     } else {
       // no venue coords — fall back to a direct link, split home→away kit color
       const mp = L.latLng((hp.lat+ap.lat)/2,(hp.lng+ap.lng)/2);
-      L.polyline([hp,mp],{color:hc,weight:2.6,opacity:.9,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
-      L.polyline([mp,ap],{color:ac,weight:2.6,opacity:.9,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
+      L.polyline([hp,mp],{color:haloColor(hc),weight:6.5,opacity:1,lineCap:'round'}).addTo(liveLayer);
+      L.polyline([mp,ap],{color:haloColor(ac),weight:6.5,opacity:1,lineCap:'round'}).addTo(liveLayer);
+      L.polyline([hp,mp],{color:hc,weight:2.6,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
+      L.polyline([mp,ap],{color:ac,weight:2.6,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
     }
 
     // the live score card — each side tinted with its team's kit color: a
@@ -1221,15 +1225,22 @@ const KIT = {
   saudiarabia:['#006c35','#ffffff'], uzbekistan:['#ffffff','#0099b5'], curacao:['#002b7f','#f9e814'],
   haiti:['#00209f','#d21034'], panama:['#d21034','#005293'], newzealand:['#ffffff','#111111'],
 };
+// perceived brightness of a #rrggbb color (0–255)
+function hexLum(hex){
+  const n=String(hex).replace('#',''); if(n.length<6) return 128;
+  return 0.299*parseInt(n.slice(0,2),16)+0.587*parseInt(n.slice(2,4),16)+0.114*parseInt(n.slice(4,6),16);
+}
 // a map-visible kit color for a team: its primary shirt color, but fall back to
 // the accent when the primary is near-white (so it shows on the light basemap).
 function kitColor(name){
   const k = KIT[canonTeam(name)]; if(!k) return '#777';
-  const lum = hx=>{ const n=hx.replace('#',''); return 0.299*parseInt(n.slice(0,2),16)+0.587*parseInt(n.slice(2,4),16)+0.114*parseInt(n.slice(4,6),16); };
-  if(lum(k[0]) < 205) return k[0];
-  if(k[1] && lum(k[1]) < 232) return k[1];
+  if(hexLum(k[0]) < 205) return k[0];
+  if(k[1] && hexLum(k[1]) < 232) return k[1];
   return '#777';
 }
+// a contrasting halo for an arc so it stays visible on any basemap: light glow
+// behind dark lines (the dark-mode problem), dark glow behind light lines.
+function haloColor(col){ return hexLum(col) < 140 ? 'rgba(255,255,255,.72)' : 'rgba(12,10,8,.5)'; }
 function kitSvg(name){
   const [k1,k2] = KIT[norm(name)] || ['#888','#bbb'];
   return `<svg class="kit" viewBox="0 0 28 26" width="18" height="17" aria-hidden="true">`
@@ -1516,7 +1527,10 @@ async function setStadiumPhoto(stadium, fallbackImg){
 }
 
 function openStadium(m){
-  const vi = venueInfo(m.venue); if(!vi) return;
+  let vi = venueInfo(m.venue);
+  // the free feed rarely sends a venue — fall back to the static fixture map
+  if(!vi || !vi.s){ const s = matchStadium(m); if(s) vi = { s, img:(vi&&vi.img)||'', name:s.n, city:s.city }; }
+  if(!vi) return;
   setStadiumPhoto(vi.s, vi.img);
   document.getElementById('sName').textContent = vi.name;
   document.getElementById('sLoc').textContent = [vi.city, vi.s && vi.s.country].filter(Boolean).join(' · ');
