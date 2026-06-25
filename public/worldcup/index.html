@@ -114,6 +114,10 @@
   .live-stadium .smk-pin{border-color:var(--live);
     box-shadow:0 3px 8px rgba(0,0,0,.3),0 0 0 0 rgba(214,66,43,.6);animation:mpulse 1.4s infinite}
   .live-stadium .smk-nm{border-color:var(--live);color:var(--live)}
+  /* nudge the basemap toward a mid-tone so both dark & light kit colors show:
+     dark map 20% lighter, light map 20% darker */
+  .basemap-dark{filter:brightness(1.2)}
+  .basemap-light{filter:brightness(.8)}
 
   /* clickable player names */
   .plink{cursor:pointer;display:inline-flex;align-items:center;gap:9px;min-width:0}
@@ -829,8 +833,8 @@ const TEAMS = [
 const map = L.map('map',{worldCopyJump:true,minZoom:2,maxZoom:6}).setView([24,5],2);
 map.setMaxBounds([[-85,-200],[85,200]]);
 const ESRI_ATTR = 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap contributors';
-const tileLight = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:ESRI_ATTR, maxZoom:6});
-const tileDark  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:ESRI_ATTR, maxZoom:6});
+const tileLight = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:ESRI_ATTR, maxZoom:6, className:'basemap-light'});
+const tileDark  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:ESRI_ATTR, maxZoom:6, className:'basemap-dark'});
 function applyMapTiles(theme){
   const on = theme==='dark' ? tileDark : tileLight, off = theme==='dark' ? tileLight : tileDark;
   if(map.hasLayer(off)) map.removeLayer(off);
