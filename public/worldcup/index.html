@@ -158,6 +158,8 @@
   .smodal{position:fixed;inset:0;z-index:2000;background:rgba(20,18,16,.55);
     display:grid;place-items:center;padding:20px;backdrop-filter:blur(2px)}
   .smodal[hidden]{display:none}
+  /* the player card is a detail view — keep it above the line-up / stadium modals */
+  #playerModal{z-index:2200}
   .sbox{position:relative;width:min(440px,100%);max-height:90vh;overflow:auto;background:var(--card);border-radius:16px;
     box-shadow:0 24px 70px rgba(0,0,0,.4);animation:pop .25s ease}
   .sclose{position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border:none;border-radius:50%;
@@ -756,6 +758,7 @@ const I18N = {
     loading_stats:'Loading player stats…', loading_news:'Loading World Cup news…', loading_live:'Loading live scores…',
     search_ph:'🔍 Search any player — e.g. Messi, Harry Kane, Vinícius…', search_btn:'Search', search_ing:'Searching…',
     search_none:'No players found for “{q}”.', search_fail:'Search failed — try again.', read_wiki:'Read more on Wikipedia ↗',
+    club_history:'Club career', wc_apps:'WC apps', wc_goals:'WC goals', wc_assists:'WC assists', avg_rating:'avg rating',
     live_now:'Live now', no_live:'No match live', next_live:'Next live', final_scores:'Final scores', no_today:'No live or upcoming match',
     cal_live:'Live', cal_next:'Next', cal_final:'Final',
     col_team:'Team', groups_empty:'No group tables published yet. They’ll appear here once the draw/standings are available from the data feed.',
@@ -803,6 +806,7 @@ const I18N = {
     loading_stats:'正在加载球员统计…', loading_news:'正在加载世界杯新闻…', loading_live:'正在加载实时比分…',
     search_ph:'🔍 搜索任意球员 — 如 梅西、凯恩、维尼修斯…', search_btn:'搜索', search_ing:'搜索中…',
     search_none:'未找到与“{q}”相关的球员。', search_fail:'搜索失败，请重试。', read_wiki:'在维基百科上阅读更多 ↗',
+    club_history:'俱乐部生涯', wc_apps:'世界杯出场', wc_goals:'世界杯进球', wc_assists:'世界杯助攻', avg_rating:'平均评分',
     live_now:'正在直播', no_live:'暂无比赛进行', next_live:'下一场', final_scores:'最终比分', no_today:'暂无比赛',
     cal_live:'直播', cal_next:'下一场', cal_final:'完场',
     col_team:'球队', groups_empty:'尚未公布小组积分榜。一旦数据源提供抽签或积分，将显示在此处。',
@@ -850,6 +854,7 @@ const I18N = {
     loading_stats:'Cargando estadísticas de jugadores…', loading_news:'Cargando noticias del Mundial…', loading_live:'Cargando marcadores en vivo…',
     search_ph:'🔍 Busca cualquier jugador — p. ej. Messi, Kane, Vinícius…', search_btn:'Buscar', search_ing:'Buscando…',
     search_none:'No se encontraron jugadores para «{q}».', search_fail:'La búsqueda falló — inténtalo de nuevo.', read_wiki:'Leer más en Wikipedia ↗',
+    club_history:'Trayectoria en clubes', wc_apps:'Part. Mundial', wc_goals:'Goles Mundial', wc_assists:'Asist. Mundial', avg_rating:'valoración media',
     live_now:'En vivo', no_live:'Sin partidos en vivo', next_live:'Próximo', final_scores:'Resultados finales', no_today:'Sin partidos en vivo ni próximos',
     cal_live:'En vivo', cal_next:'Próximo', cal_final:'Final',
     col_team:'Equipo', groups_empty:'Aún no hay tablas de grupos. Aparecerán aquí cuando el proveedor de datos publique el sorteo o la clasificación.',
@@ -2623,35 +2628,72 @@ function pstat(v,l){ return `<span class="pstat"><b>${esc(String(v))}</b>${esc(l
 async function openPlayer(el){
   const d = el.dataset;
   const name = d.name;
+  const nat = d.nat || d.team || '';
   pModal.hidden = false;
   pModal.querySelector('.sbox').scrollTop = 0;
   document.getElementById('pName').textContent = name;
-  document.getElementById('pMeta').textContent = (d.nat || d.team || '') + ' · ' + t('loading_word');
+  document.getElementById('pMeta').textContent = nat + ' · ' + t('loading_word');
   pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
   const clubsEl = document.getElementById('pClubs'); clubsEl.hidden = true; clubsEl.innerHTML = '';
   const extractEl = document.getElementById('pExtract'); extractEl.textContent = '';
   const wikiEl = document.getElementById('pWiki'); wikiEl.hidden = true; wikiEl.removeAttribute('href');
+  const statsEl = document.getElementById('pStats');
+  // chips passed in from the caller (e.g. the scorers / records tables)
   const chips = [];
-  if(d.g!=null && d.g!=='') chips.push(pstat(d.g, '2026 goals'));
-  if(d.a!=null && d.a!=='' && d.a!=='null') chips.push(pstat(d.a, '2026 assists'));
+  if(d.g!=null && d.g!=='') chips.push(pstat(d.g, t('wc_goals')));
+  if(d.a!=null && d.a!=='' && d.a!=='null') chips.push(pstat(d.a, t('wc_assists')));
   if(d.alltime) chips.push(pstat(d.alltime, 'all-time WC goals'));
   if(d.val && d.unit) chips.push(pstat(d.val, d.unit));
-  document.getElementById('pStats').innerHTML = chips.join('');
+  statsEl.innerHTML = chips.join('');
 
-  // Wikipedia only — free & unlimited, so we save the api-football quota for
-  // live game info. (Photo, bio summary and link all come from Wikipedia.)
-  let wiki = null;
-  try{
-    const wb = await fetch(`/api/wiki?q=${encodeURIComponent(name)}`).then(r=>r.json());
-    if(pModal.hidden) return; // closed meanwhile
-    wiki = (wb.results || [])[0] || null;
-  }catch(e){ /* handled below */ }
+  // Wikipedia (photo + bio, free) and api-football (club career + WC stats, Pro)
+  // fetched together. Each is independent, so one failing still shows the rest.
+  const [wiki, p] = await Promise.all([
+    fetch(`/api/wiki?q=${encodeURIComponent(name)}`).then(r=>r.json()).then(w=>(w.results||[])[0]||null).catch(()=>null),
+    fetch(`/api/player?name=${encodeURIComponent(name)}&nat=${encodeURIComponent(nat)}`).then(r=>r.json()).catch(()=>null),
+  ]);
+  if(pModal.hidden) return; // closed meanwhile
+  const pf = (p && !p.error) ? p : null;
 
-  if(wiki && wiki.thumbnail){ pPhoto.style.backgroundImage = `url('${wiki.thumbnail}')`; pPhoto.classList.remove('noimg'); }
-  document.getElementById('pMeta').textContent = (wiki && wiki.description) || d.nat || d.team || 'No Wikipedia profile found';
+  // photo: Wikipedia first, else the api-football headshot
+  const photo = (wiki && wiki.thumbnail) || (pf && pf.photo) || '';
+  if(photo){ pPhoto.style.backgroundImage = `url('${photo}')`; pPhoto.classList.remove('noimg'); }
+
+  // meta line: position · age · current club (from api-football), else wiki blurb
+  let meta = [];
+  if(pf){
+    if(pf.position) meta.push(pf.position);
+    if(pf.age!=null) meta.push(pf.age + (lang==='zh'?'岁':' yrs'));
+    const club = (pf.currentClub && pf.currentClub.name) || pf.club;
+    if(club) meta.push(club);
+  }
+  document.getElementById('pMeta').textContent = meta.length ? meta.join(' · ')
+    : ((wiki && wiki.description) || nat || 'No profile found');
+
+  // WC stats chips from api-football (don't duplicate caller-supplied goals/assists)
+  if(pf && pf.stats){
+    const s = pf.stats, more = [];
+    if(s.apps) more.push(pstat(s.apps, t('wc_apps')));
+    if((d.g==null||d.g==='') && s.goals!=null) more.push(pstat(s.goals, t('wc_goals')));
+    if((d.a==null||d.a===''||d.a==='null') && s.assists!=null) more.push(pstat(s.assists, t('wc_assists')));
+    if(s.rating) more.push(pstat(s.rating, t('avg_rating')));
+    if(more.length) statsEl.innerHTML = chips.concat(more).join('');
+  }
+
+  // bio extract + Wikipedia link
   if(wiki){
     if(wiki.extract) extractEl.textContent = wiki.extract;
     if(wiki.url){ wikiEl.hidden = false; wikiEl.href = wiki.url; }
+  }
+
+  // full club career (newest first), with crests
+  if(pf && pf.clubs && pf.clubs.length){
+    clubsEl.hidden = false;
+    clubsEl.innerHTML = `<div class="pchead">${t('club_history')}</div>` + pf.clubs.map(c=>{
+      const yrs = c.from ? (c.from===c.to ? String(c.from) : `${c.from}–${c.to||''}`) : '';
+      const logo = c.logo ? `<img src="${esc(c.logo)}" alt="">` : `<span class="pcdot"></span>`;
+      return `<div class="pcrow">${logo}<span class="pcn">${esc(c.name)}</span><span class="pcy">${esc(yrs)}</span></div>`;
+    }).join('');
   }
 }
 function closePlayer(){ pModal.hidden = true; }

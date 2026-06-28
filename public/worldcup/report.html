@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>World Cup 2026 Site — Build Report & Learnings</title>
+<meta name="description" content="A report on the functions of the World Cup 2026 interactive site and the engineering progress and learnings behind it." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='10' fill='%23a14a32'/></svg>" />
+<style>
+  :root{
+    --paper:#eef0f3; --paper-2:#e3e7ec; --ink:#1c1b19; --ink-soft:#3b3934; --muted:#807b72;
+    --line:#dde2e8; --accent:#a14a32; --accent-ink:#8a3d28; --go:#1f9d6b; --live:#d6422b;
+    --card:#fbfcfd; --img-bg:#e2e6ec;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    color-scheme:light;
+  }
+  html[data-theme="dark"]{
+    --paper:#15130f; --paper-2:#211d17; --ink:#f1ece3; --ink-soft:#cfc8bb; --muted:#928b80;
+    --line:#332e26; --accent:#cf7053; --accent-ink:#e29173; --go:#39c08a; --live:#f0654d;
+    --card:#1d1a15; --img-bg:#2a251e; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px 80px}
+
+  header.bar{border-bottom:1px solid var(--line);background:var(--paper);position:relative}
+  header.bar .inner{max-width:880px;margin:0 auto;padding:26px 22px 22px}
+  header.bar .role{color:var(--accent-ink);font-weight:600;letter-spacing:.05em;font-size:12px;
+    text-transform:uppercase;margin:0 0 6px}
+  header.bar h1{font-family:var(--serif);font-weight:600;font-size:30px;line-height:1.12;margin:0;letter-spacing:-.01em}
+  header.bar p.sub{color:var(--muted);margin:8px 0 0;font-size:15px;max-width:60ch}
+  .back{display:inline-block;margin-top:14px;font-size:13.5px;color:var(--accent);text-decoration:none;font-weight:600}
+  .back:hover{text-decoration:underline}
+  #themeBtn{position:absolute;top:22px;right:22px;width:34px;height:34px;border:1px solid var(--line);
+    border-radius:50%;background:var(--card);color:var(--ink-soft);cursor:pointer;font-size:15px;line-height:1}
+  #themeBtn:hover{border-color:var(--accent);color:var(--accent)}
+
+  h2{font-family:var(--serif);font-size:23px;margin:46px 0 6px;letter-spacing:-.01em}
+  h2 .em{font-size:18px;margin-right:8px}
+  h3{font-family:var(--serif);font-size:18px;margin:26px 0 6px}
+  p{margin:10px 0}
+  a{color:var(--accent)}
+  .lead{font-size:17px;color:var(--ink-soft);margin-top:18px}
+  .meta{color:var(--muted);font-size:13px;margin-top:6px}
+  code{font-family:'SFMono-Regular',ui-monospace,Consolas,monospace;font-size:.86em;
+    background:var(--paper-2);padding:1px 6px;border-radius:5px}
+  hr{border:none;border-top:1px solid var(--line);margin:40px 0}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:13px;background:var(--card);padding:15px 17px;
+    box-shadow:0 4px 16px rgba(28,27,25,.04)}
+  .card h4{margin:0 0 4px;font-family:var(--serif);font-size:16px;display:flex;align-items:center;gap:8px}
+  .card p{margin:4px 0 0;font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;
+    padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600}
+  td{padding:10px 12px;border-bottom:1px solid var(--paper-2);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td code{white-space:nowrap}
+
+  .src{display:flex;flex-wrap:wrap;gap:14px;margin:16px 0}
+  .src .s{flex:1;min-width:240px;border:1px solid var(--line);border-radius:13px;background:var(--card);padding:15px 17px}
+  .src .s b{font-family:var(--serif);font-size:16px}
+  .tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    border-radius:20px;padding:2px 9px;margin-left:6px}
+  .tag.free{background:rgba(31,157,107,.16);color:var(--go)}
+  .tag.paid{background:rgba(161,74,50,.15);color:var(--accent-ink)}
+
+  ul.clean{margin:10px 0;padding-left:22px}
+  ul.clean li{margin:7px 0}
+  .lesson{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;
+    background:var(--card);padding:14px 17px;margin:14px 0}
+  .lesson h4{margin:0 0 5px;font-size:15.5px;font-weight:700}
+  .lesson p{margin:5px 0 0;font-size:14px;color:var(--ink-soft)}
+  .lesson .took{display:block;margin-top:8px;font-size:12.5px;color:var(--muted)}
+
+  .timeline{list-style:none;margin:16px 0;padding:0}
+  .timeline li{position:relative;padding:0 0 16px 26px;border-left:2px solid var(--line);margin-left:6px}
+  .timeline li:last-child{border-left-color:transparent}
+  .timeline li::before{content:'';position:absolute;left:-7px;top:3px;width:12px;height:12px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 0 3px var(--paper)}
+  .timeline b{font-weight:600}
+  .timeline .d{color:var(--muted);font-size:12.5px}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;border-radius:20px;
+    padding:3px 11px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);margin:2px 4px 2px 0}
+  .footnote{color:var(--muted);font-size:13px;margin-top:40px;border-top:1px solid var(--line);padding-top:16px}
+  @media(max-width:560px){header.bar h1{font-size:24px}h2{font-size:20px}}
+</style>
+<script>
+  (function(){ try{
+    var t = localStorage.getItem('wc-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    document.documentElement.setAttribute('data-theme', t);
+  }catch(e){} })();
+</script>
+</head>
+<body>
+
+<header class="bar">
+  <button id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">🌙</button>
+  <div class="inner">
+    <p class="role">FIFA World Cup 2026 · Project Report</p>
+    <h1>Interactive World Cup site — functions &amp; build learnings</h1>
+    <p class="sub">A tour of what the site does, the data and architecture behind it, and the engineering
+      lessons from getting live data fast and reliable.</p>
+    <a class="back" href="/worldcup/">← Back to the live site</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <p class="lead">The World Cup 2026 site is a single-page app served from a Cloudflare Worker. It pairs an
+  interactive world map of all 48 qualified nations with live scores, standings, the knockout bracket,
+  full squads, live line-ups, player &amp; country stats, news, and a prediction game — in three languages.</p>
+  <p class="meta">Stack: Cloudflare Workers (edge API + static assets) · Leaflet map · vanilla JS, no framework ·
+  data proxied server-side so API keys stay private.</p>
+
+  <h2><span class="em">⚽</span>What the site does</h2>
+  <p>The interface is a sticky <b>live bar</b> on top of an interactive <b>map</b>, followed by a set of tabs.</p>
+
+  <div class="grid">
+    <div class="card"><h4>🗺️ Interactive map</h4><p>All 48 nations as flag markers, colored by confederation.
+      A "Teams / Stadiums" toggle switches between teams and the 16 host stadiums. Live games draw animated
+      flight-path arcs to the host stadium with a floating score card.</p></div>
+    <div class="card"><h4>🔴 Live bar &amp; scores</h4><p>Sticky ticker of in-play games (accurate minute + score),
+      next kickoffs, and a finished-scores strip. Goals flash when a score increments between polls.</p></div>
+    <div class="card"><h4>👥 Live line-ups</h4><p>Click a live card → both teams' Starting XI &amp; subs with
+      formation and coach. Falls back to full squads if the XI isn't posted yet. Players open their own card.</p></div>
+    <div class="card"><h4>📋 Squads tab</h4><p>Pick any nation to see its full World Cup squad grouped by
+      position (GK / DF / MF / FW) with shirt number, club, age, and photo where available.</p></div>
+    <div class="card"><h4>📊 Group stage</h4><p>Live group tables (P/W/D/L/GD/Pts) with qualification
+      highlighting and a "LIVE" badge on groups with a game in play.</p></div>
+    <div class="card"><h4>📅 Schedule</h4><p>Full fixture calendar overlaying live status/scores, auto-scrolling
+      to the live or next game.</p></div>
+    <div class="card"><h4>🏆 Knockout bracket</h4><p>The full Round-of-32 → Final tree parsed from Wikipedia,
+      filling in teams and scores as the tournament progresses.</p></div>
+    <div class="card"><h4>🥉 3rd-place race</h4><p>Live table of the best third-placed teams and their projected
+      knockout slots.</p></div>
+    <div class="card"><h4>🎲 Prediction game</h4><p>A Monte-Carlo "bet" simulator and a dice mode that rolls a
+      random tournament, with adjustable team boosts.</p></div>
+    <div class="card"><h4>📈 Player &amp; country stats</h4><p>2026 top scorers plus all-time records (scorers,
+      titles, appearances), with player search via Wikipedia.</p></div>
+    <div class="card"><h4>📰 News</h4><p>World Cup headlines merged and de-duplicated from several publisher RSS
+      feeds (Guardian, BBC, Sky, CBS, talkSPORT).</p></div>
+    <div class="card"><h4>🌐 i18n &amp; theming</h4><p>English / 中文 / Español, with country names localized to
+      Chinese. Light/dark toggle; light theme locked to a warm "stone" palette.</p></div>
+  </div>
+
+  <h2><span class="em">🔌</span>API endpoints</h2>
+  <p>All endpoints are handled by the Worker (<code>src/worldcup/api.js</code>) and edge-cached so the page can
+  poll cheaply without exposing upstream keys.</p>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Purpose</th><th>Source</th><th>Cache</th></tr></thead>
+    <tbody>
+      <tr><td><code>/api/wc</code></td><td>Standings, fixtures, live scores &amp; minute, scorers</td><td>football-data + api-football</td><td>~15–30s</td></tr>
+      <tr><td><code>/api/lineups</code></td><td>Both teams' XI + subs for a fixture (lazy, on click)</td><td>api-football</td><td>~60s</td></tr>
+      <tr><td><code>/api/squad</code></td><td>A nation's full squad by name</td><td>api-football → Wikipedia</td><td>6–24h</td></tr>
+      <tr><td><code>/api/events</code></td><td>Goal events for one fixture</td><td>api-football</td><td>~45s</td></tr>
+      <tr><td><code>/api/player</code></td><td>Player bio + club history</td><td>api-football</td><td>24h</td></tr>
+      <tr><td><code>/api/bracket</code></td><td>Knockout tree</td><td>Wikipedia</td><td>15m</td></tr>
+      <tr><td><code>/api/records</code></td><td>All-time records</td><td>Wikipedia</td><td>6h</td></tr>
+      <tr><td><code>/api/wiki</code></td><td>Fuzzy player / team / stadium lookup</td><td>Wikipedia</td><td>24h</td></tr>
+      <tr><td><code>/api/news</code></td><td>Merged WC headlines</td><td>Publisher RSS</td><td>10m</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="em">🧰</span>Data sources</h2>
+  <div class="src">
+    <div class="s"><b>football-data.org</b><span class="tag free">free</span>
+      <p>Group standings &amp; schedule. No daily cap (10/min), so it's polled freely. Provides the "is anything
+      live?" signal cheaply.</p></div>
+    <div class="s"><b>api-football (api-sports.io)</b><span class="tag paid">Pro</span>
+      <p>Accurate live minute/score, line-ups, squads, player bios, goal events. Pro plan: 7,500/day, 300/min.</p></div>
+    <div class="s"><b>Wikipedia</b><span class="tag free">free</span>
+      <p>Bracket, all-time records, squads fallback, player/stadium photos &amp; bios. Free and unlimited —
+      used wherever possible to conserve the metered API.</p></div>
+  </div>
+
+  <h2><span class="em">🏗️</span>Architecture notes</h2>
+  <ul class="clean">
+    <li><b>Edge-cached fan-in.</b> Each upstream has its own cache key &amp; TTL, so the page can poll often while
+      upstreams are hit rarely — caching is shared across all visitors.</li>
+    <li><b>Keys stay server-side.</b> The browser only ever talks to the Worker; API tokens live as Worker secrets.</li>
+    <li><b>Lazy &amp; cheap.</b> Expensive calls (line-ups, squads, player cards, events) fire only on interaction
+      and are cached, so they never touch the page-load or polling path.</li>
+    <li><b>Graceful degradation.</b> Every metered call has a free fallback (e.g. squads → Wikipedia; live score →
+      football-data's delayed feed), so the site keeps working if the paid API is unavailable.</li>
+    <li><b>Cross-source name matching.</b> A shared <code>norm()</code> + alias map reconciles spellings
+      ("Korea Republic" ↔ "South Korea", "Ivory Coast" ↔ "Côte d'Ivoire") across every provider.</li>
+  </ul>
+
+  <h2><span class="em">💡</span>Engineering learnings</h2>
+
+  <div class="lesson">
+    <h4>The cheap signal gates the expensive one</h4>
+    <p>football-data (free, no daily cap) tells us <em>whether</em> anything is live; the metered api-football is
+      only called when a game is actually in play. A free feed guarding a paid one keeps cost predictable.</p>
+  </div>
+
+  <div class="lesson">
+    <h4>Polling faster isn't free — pick the right payload</h4>
+    <p>The biggest slowdown came from fetching api-football's global <code>live=all</code> feed (every live match
+      on earth) every 10s. It tripped the 300/min limit and made requests slow. Switching to a
+      <b>World-Cup-only query by date</b> — a handful of fixtures — made short polling both fast and safe.</p>
+    <span class="took">Lesson: shrink the payload before shortening the interval.</span>
+  </div>
+
+  <div class="lesson">
+    <h4>Always put a timeout on a fetch</h4>
+    <p>A single stalled request with no timeout left the page stuck on "Loading…" for minutes. An 8-second
+      <code>AbortController</code> timeout (plus keeping the last-good data on screen) turned a freeze into a
+      silent retry.</p>
+  </div>
+
+  <div class="lesson">
+    <h4>Match the cadence to the source</h4>
+    <p>api-football refreshes live data roughly every 15s, so polling faster just re-fetches identical data.
+      The poll interval was tuned to ~15s — near-real-time without waste.</p>
+  </div>
+
+  <div class="lesson">
+    <h4>Checkpoint before you experiment</h4>
+    <p>When a change degraded performance, having the working tree stashed and a tagged commit
+      (<code>wc-stable</code>) made rollback a one-liner. The line-up feature was then re-added on top and tagged
+      separately (<code>wc-lineups</code>) so the two are trivial to compare.</p>
+  </div>
+
+  <div class="lesson">
+    <h4>Localize display, not data</h4>
+    <p>Chinese names are applied only to <em>visible</em> text; the underlying English names stay as keys for
+      lookups and cross-source matching — so translation never breaks logic.</p>
+  </div>
+
+  <h2><span class="em">🧭</span>Progress so far</h2>
+  <ul class="timeline">
+    <li><b>Live line-ups</b> — click a team to see both squads side by side. <span class="d">click-to-line-up feature</span></li>
+    <li><b>Chinese country names</b> — full localization on language switch. <span class="d">i18n</span></li>
+    <li><b>Squads tab</b> — full roster per nation, api-football with Wikipedia fallback. <span class="d">new tab</span></li>
+    <li><b>Pro upgrade</b> — moved api-football to Pro (7,500/day) for richer, fresher data. <span class="d">subscription</span></li>
+    <li><b>Theme polish</b> — theme-aware live bar; light theme locked to "stone"; picker removed. <span class="d">design</span></li>
+    <li><b>Performance fix</b> — replaced <code>live=all</code> with the WC-only query; added fetch timeout; tuned poll to 15s. <span class="d">stability</span></li>
+    <li><b>Stable checkpoints</b> — tagged <code>wc-stable</code> and <code>wc-lineups</code>. <span class="d">git</span></li>
+    <li><b>Live line-ups, the fast way</b> — re-added on the lightweight base; load path verified unchanged. <span class="d">current</span></li>
+  </ul>
+
+  <h2><span class="em">🔭</span>Possible next steps</h2>
+  <p>
+    <span class="pill">Line-ups on the Stadiums map view</span>
+    <span class="pill">"Updated Xs ago" freshness indicator</span>
+    <span class="pill">Player photos in line-ups via api-football</span>
+    <span class="pill">Push toward sub-15s polling if desired</span>
+  </p>
+
+  <p class="footnote">Generated as a living summary of the World Cup 2026 site. Functions and figures reflect the
+  current deployment; cache TTLs and the poll interval are tuning knobs that may change.</p>
+
+</main>
+
+<script>
+  var btn = document.getElementById('themeBtn');
+  function sync(){ btn.textContent = document.documentElement.getAttribute('data-theme')==='dark' ? '☀️' : '🌙'; }
+  sync();
+  btn.addEventListener('click', function(){
+    var next = document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try{ localStorage.setItem('wc-theme', next); }catch(e){}
+    sync();
+  });
+</script>
+</body>
+</html>

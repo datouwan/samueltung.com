@@ -288,10 +288,9 @@ async function handlePlayer(request, env, ctx) {
   const cached = await cache.match(ckey);
   if (cached) return cached;
 
+  const headers = { "x-apisports-key": env.APIFOOTBALL_KEY };
   try {
-    const r = await fetch(`${AF}/players/profiles?search=${encodeURIComponent(term)}`, {
-      headers: { "x-apisports-key": env.APIFOOTBALL_KEY },
-    });
+    const r = await fetch(`${AF}/players/profiles?search=${encodeURIComponent(term)}`, { headers });
     if (!r.ok) return json({ error: "upstream" }, 200, 0);
     const data = await r.json();
     const errs = data && data.errors;
@@ -322,9 +321,7 @@ async function handlePlayer(request, env, ctx) {
     // full club history from career teams (national team excluded), newest first
     let clubs = [];
     try {
-      const tr = await fetch(`${AF}/players/teams?player=${best.id}`, {
-        headers: { "x-apisports-key": env.APIFOOTBALL_KEY },
-      });
+      const tr = await fetch(`${AF}/players/teams?player=${best.id}`, { headers });
       if (tr.ok) {
         const td = await tr.json();
         clubs = (td.response || [])
@@ -342,10 +339,35 @@ async function handlePlayer(request, env, ctx) {
       }
     } catch (_) { /* clubs are optional */ }
 
+    // World Cup 2026 stats (Pro plan): appearances / goals / assists / rating.
+    // Filtered to the WC league + season so the numbers are tournament-specific.
+    let stats = null;
+    let currentClub = clubs[0] ? { name: clubs[0].name, logo: clubs[0].logo } : null;
+    try {
+      const sr = await fetch(`${AF}/players?id=${best.id}&season=${WC_SEASON}&league=${WC_LEAGUE}`, { headers });
+      if (sr.ok) {
+        const sd = await sr.json();
+        const blocks = (((sd.response || [])[0]) || {}).statistics || [];
+        if (blocks.length) {
+          let apps = 0, goals = 0, assists = 0, minutes = 0, rSum = 0, rN = 0;
+          for (const b of blocks) {
+            const g = b.games || {};
+            apps += g.appearences || 0;
+            minutes += g.minutes || 0;
+            goals += (b.goals && b.goals.total) || 0;
+            assists += (b.goals && b.goals.assists) || 0;
+            const rt = parseFloat(b.rating);
+            if (Number.isFinite(rt)) { rSum += rt; rN++; }
+          }
+          stats = { apps, goals, assists, minutes, rating: rN ? +(rSum / rN).toFixed(2) : null };
+        }
+      }
+    } catch (_) { /* stats optional */ }
+
     const res = json({
       name: best.name, firstname: best.firstname, lastname: best.lastname,
       photo: best.photo || "", nationality: best.nationality || "",
-      club: clubs[0] ? clubs[0].name : "", clubs,
+      club: clubs[0] ? clubs[0].name : "", clubs, currentClub, stats,
       birthDate: (best.birth && best.birth.date) || "", birthPlace: (best.birth && best.birth.place) || "",
       birthCountry: (best.birth && best.birth.country) || "",
       age: best.age ?? null, height: best.height || "", weight: best.weight || "",
