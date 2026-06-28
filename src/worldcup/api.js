@@ -23,8 +23,9 @@ const AF = "https://v3.football.api-sports.io";
 const WC_LEAGUE = 1;
 const WC_SEASON = 2026;
 
-const FD_TTL = 30; // football-data sub-cache (seconds)
-const AF_TTL = 70; // api-football sub-cache — keeps us within 100/day on free
+const FD_TTL = 30; // football-data sub-cache (seconds) — free tier is 10/min
+const AF_TTL = 15; // api-football live sub-cache — Pro plan; ~15s matches how
+                   // often api-football refreshes live fixtures (lighter WC query)
 const LIVE_FD = ["LIVE", "IN_PLAY", "PAUSED"]; // football-data "live" statuses
 
 // Route a request to a World Cup API handler, or return null if the path
@@ -39,6 +40,7 @@ export async function handleWorldCupApi(request, env, ctx) {
     case "/api/wiki": return handleWiki(request, env, ctx);
     case "/api/records": return handleRecords(request, env, ctx);
     case "/api/bracket": return handleBracket(request, env, ctx);
+    case "/api/squad": return handleSquad(request, env, ctx);
     default: return null;
   }
 }
@@ -132,27 +134,34 @@ async function handleWC(request, env, ctx) {
 
   const fdLive = matches.filter((m) => LIVE_FD.includes(m.status));
 
-  // Only spend api-football quota when something is actually live.
+  // Only spend api-football requests when something is actually live.
   let live = null, source = "football-data";
   if (fdLive.length && env.APIFOOTBALL_KEY) {
     try {
-      // NOTE: the free plan rejects season-filtered queries for 2026, but the
-      // plain live=all feed is allowed and includes current matches. We filter
-      // to the World Cup (league id 1) in code below.
-      const af = await cachedJson(
-        `${AF}/fixtures?live=all`,
-        { "x-apisports-key": env.APIFOOTBALL_KEY },
-        AF_TTL,
-        "af-live"
-      );
-      const errs = af && af.errors;
-      const hasErr = Array.isArray(errs) ? errs.length > 0 : errs && Object.keys(errs).length > 0;
-      if (hasErr) throw new Error("api-football: " + JSON.stringify(errs));
-      const mapped = (af.response || [])
-        .filter((f) => f.league?.id === WC_LEAGUE)
+      // Query ONLY the World Cup fixtures for today + yesterday (UTC). This is a
+      // tiny payload (a handful of fixtures) — far lighter and faster than the
+      // global live=all feed, and it stays well within the per-minute limit even
+      // at a short poll interval. Yesterday is needed because a match in play
+      // across UTC midnight is dated by its (earlier) kickoff day.
+      const afHeaders = { "x-apisports-key": env.APIFOOTBALL_KEY };
+      const dToday = new Date(now).toISOString().slice(0, 10);
+      const dYest = new Date(now - DAY).toISOString().slice(0, 10);
+      const base = `${AF}/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}`;
+      const [a, b] = await Promise.all([
+        cachedJson(`${base}&date=${dToday}`, afHeaders, AF_TTL, `af-fix-${dToday}`).catch(() => null),
+        cachedJson(`${base}&date=${dYest}`, afHeaders, AF_TTL, `af-fix-${dYest}`).catch(() => null),
+      ]);
+      const noErr = (x) => {
+        const e = x && x.errors;
+        return x && !(Array.isArray(e) ? e.length : e && Object.keys(e).length);
+      };
+      const fixtures = [].concat(noErr(a) ? a.response || [] : [], noErr(b) ? b.response || [] : []);
+      const LIVE_AF = ["1H", "HT", "2H", "ET", "BT", "P", "LIVE", "SUSP", "INT"];
+      const mapped = fixtures
+        .filter((f) => LIVE_AF.includes(f.fixture?.status?.short))
         .map((f) => {
           const hn = f.teams.home.name, an = f.teams.away.name;
-          const short = f.fixture.status.short; // 1H,HT,2H,ET,BT,P,FT...
+          const short = f.fixture.status.short; // 1H,HT,2H,ET,BT,P...
           const v = f.fixture.venue || {};
           return {
             status: "LIVE",
@@ -450,6 +459,148 @@ async function handleRecords(request, env, ctx) {
     return json({ error: "records_failed", message: String(e) }, 200, 0);
   }
 }
+// ───────── Squads tab: a nation's full roster by country name ─────────
+// api-football first (player photos + ages); if it's unavailable / out of
+// quota, fall back to Wikipedia (free, unlimited; gives club but no photos).
+const SEARCH_ALIAS = {
+  unitedstates: "usa", turkiye: "turkey", czechia: "czech republic",
+  cotedivoire: "ivory coast", drcongo: "congo dr", capeverde: "cape verde",
+  bosniaherzegovina: "bosnia and herzegovina", southkorea: "south korea",
+};
+async function resolveNationalTeamId(name, headers) {
+  const cache = caches.default;
+  const ckey = new Request(`https://wc.cache/teamid-${norm(name)}`);
+  const hit = await cache.match(ckey);
+  if (hit) return (await hit.json()).id;
+  const term = (SEARCH_ALIAS[norm(name)] || name).normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const r = await fetch(`${AF}/teams?search=${encodeURIComponent(term)}`, { headers });
+  if (!r.ok) return null;
+  const d = await r.json();
+  const e = d && d.errors;
+  if (Array.isArray(e) ? e.length : e && Object.keys(e).length) throw new Error("rate_limited");
+  const list = d.response || [];
+  const best =
+    list.find((x) => x.team && x.team.national && norm(x.team.name) === norm(name)) ||
+    list.find((x) => x.team && x.team.national) || list[0];
+  const id = best && best.team ? best.team.id : null;
+  if (id) {
+    await cache.put(ckey, new Response(JSON.stringify({ id }), {
+      headers: { "content-type": "application/json", "cache-control": "max-age=2592000" },
+    }));
+  }
+  return id;
+}
+async function apiFootballSquad(name, env) {
+  const headers = { "x-apisports-key": env.APIFOOTBALL_KEY };
+  const teamId = await resolveNationalTeamId(name, headers);
+  if (!teamId) return null;
+  const r = await fetch(`${AF}/players/squads?team=${teamId}`, { headers });
+  if (!r.ok) return null;
+  const d = await r.json();
+  const e = d && d.errors;
+  if (Array.isArray(e) ? e.length : e && Object.keys(e).length) throw new Error("rate_limited");
+  const squad = (d.response || [])[0];
+  const players = ((squad && squad.players) || []).map((p) => ({
+    name: p.name || "", number: p.number ?? null, position: p.position || "",
+    age: p.age ?? null, club: "", photo: p.photo || "",
+  })).filter((p) => p.name);
+  if (!players.length) return null;
+  return { team: (squad.team && squad.team.name) || name, logo: (squad.team && squad.team.logo) || "", players };
+}
+// Wikipedia squads: parse the "2026 FIFA World Cup squads" article once for all
+// 48 teams (cached 6h), then serve per team. Position codes (GK/DF/MF/FW) map to
+// the same words api-football uses so the page groups both sources identically.
+const WPOS = { GK: "Goalkeeper", DF: "Defender", MF: "Midfielder", FW: "Attacker" };
+function parseSquadTable(table) {
+  const rows = wRows(table);
+  if (rows.length < 2) return [];
+  const header = wCells(rows[0]).map((s) => s.toLowerCase());
+  const iPlayer = header.findIndex((h) => /player/.test(h));
+  const iPos = header.findIndex((h) => /pos/.test(h));
+  const iDob = header.findIndex((h) => /birth|age/.test(h));
+  const iClub = header.findIndex((h) => /club/.test(h));
+  const iNo = header.findIndex((h) => /^no/.test(h));
+  if (iPlayer < 0 || iPos < 0) return [];
+  const out = [];
+  for (const r of rows.slice(1)) {
+    const c = wCells(r);
+    if (c.length <= iPlayer) continue;
+    const name = c[iPlayer].replace(/\s*\(\s*(?:c|captain)\s*\)\s*$/i, "").trim();
+    if (!name) continue;
+    const pm = (c[iPos] || "").toUpperCase().match(/GK|DF|MF|FW/);
+    const num = iNo >= 0 ? parseInt(c[iNo], 10) : NaN;
+    const am = iDob >= 0 ? (c[iDob] || "").match(/aged?\s*(\d{1,2})/i) : null;
+    out.push({
+      name, number: Number.isFinite(num) ? num : null,
+      position: pm ? WPOS[pm[0]] : "", age: am ? +am[1] : null,
+      club: iClub >= 0 ? (c[iClub] || "") : "", photo: "",
+    });
+  }
+  return out;
+}
+function parseSquads(html) {
+  const teams = {};
+  const re = /<h[234][^>]*>([\s\S]*?)<\/h[234]>|<table[^>]*wikitable[^>]*>[\s\S]*?<\/table>/g;
+  let m, cur = null;
+  while ((m = re.exec(html))) {
+    if (m[1] !== undefined) {
+      const nm = wtidy(m[1]).replace(/\s*\[\s*edit\s*\]\s*/gi, "").trim();
+      if (nm) cur = nm;
+    } else if (cur) {
+      const players = parseSquadTable(m[0]);
+      const k = norm(cur);
+      if (players.length && !teams[k]) teams[k] = { name: cur, players };
+    }
+  }
+  return teams;
+}
+async function getAllSquads() {
+  const cache = caches.default;
+  const ckey = new Request("https://wc.cache/squads-wiki-v2");
+  const hit = await cache.match(ckey);
+  if (hit) return hit.json();
+  const html = await wikiPageHtml("2026_FIFA_World_Cup_squads");
+  const teams = parseSquads(html);
+  if (!Object.keys(teams).length) return {};
+  await cache.put(ckey, new Response(JSON.stringify(teams), {
+    headers: { "content-type": "application/json", "cache-control": "max-age=21600" },
+  }));
+  return teams;
+}
+async function handleSquad(request, env, ctx) {
+  const url = new URL(request.url);
+  const name = (url.searchParams.get("team") || "").trim();
+  if (!name) return json({ error: "no_team" }, 400, 0);
+
+  const cache = caches.default;
+  const ckey = new Request(`https://wc.cache/squad-${norm(name)}`);
+  const hit = await cache.match(ckey);
+  if (hit) return hit;
+
+  // 1) api-football first (photos + ages) — when a key is set & in quota
+  if (env.APIFOOTBALL_KEY) {
+    try {
+      const af = await apiFootballSquad(name, env);
+      if (af) {
+        const res = json({ source: "api-football", ...af }, 200, 86400);
+        ctx.waitUntil(cache.put(ckey, res.clone()));
+        return res;
+      }
+    } catch (_) { /* quota/error — fall through to Wikipedia */ }
+  }
+
+  // 2) Wikipedia fallback (free, unlimited). NOT stored under ckey, so the next
+  //    request re-tries api-football first (e.g. once quota resets).
+  try {
+    const all = await getAllSquads();
+    const team = all[norm(name)];
+    if (team && team.players.length)
+      return json({ source: "wikipedia", team: team.name, players: team.players }, 200, 1800);
+  } catch (_) { /* ignore */ }
+
+  return json({ error: "not_found" }, 200, 0);
+}
+
 async function wikiPageHtml(page) {
   const r = await fetch(
     `https://en.wikipedia.org/w/api.php?action=parse&format=json&page=${page}&prop=text&formatversion=2`,
@@ -465,7 +616,7 @@ function wtidy(s) {
     .replace(/\[[^\]]*\]/g, "").replace(/[♦†‡*]/g, "").replace(/\s+/g, " ").trim();
 }
 const wTables = (html) => html.match(/<table[^>]*wikitable[^>]*>[\s\S]*?<\/table>/g) || [];
-const wRows = (t) => t.match(/<tr>[\s\S]*?<\/tr>/g) || [];
+const wRows = (t) => t.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
 function wCells(r) { const o = []; const re = /<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/g; let m; while ((m = re.exec(r))) o.push(wtidy(m[1])); return o; }
 const findTable = (tables, ...keys) => tables.find((t) => { const h = wtidy(wRows(t)[0] || "").toLowerCase(); return keys.every((k) => h.includes(k)); });
 const cleanTeam = (s) => s.replace(/\s*\([^)]*\)/g, "").replace(/\s+note\s+\d+/gi, "").trim();
@@ -608,10 +759,15 @@ function groupLetter(g) {
 }
 
 // normalize a name for cross-source matching (mirror of the frontend's norm)
+// Keep in sync with the frontend ALIAS so Wikipedia squad headings ("Czech
+// Republic", "Ivory Coast") and the names the page sends ("Czechia", "Côte
+// d'Ivoire") normalize to the same canonical key.
 const ALIAS = {
   korearepublic: "southkorea", republicofkorea: "southkorea", koreasouth: "southkorea",
-  iriran: "iran", caboverde: "capeverde", congodr: "drcongo", congodrc: "drcongo",
+  iriran: "iran", caboverde: "capeverde",
+  congodr: "drcongo", congodrc: "drcongo", democraticrepublicofthecongo: "drcongo",
   bosniaandherzegovina: "bosniaherzegovina", turkey: "turkiye",
+  czechrepublic: "czechia", ivorycoast: "cotedivoire",
   usa: "unitedstates", unitedstatesofamerica: "unitedstates", us: "unitedstates",
 };
 function norm(s) {

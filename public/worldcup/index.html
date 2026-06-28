@@ -34,26 +34,10 @@
     --c-concacaf:#e07a64; --c-ofc:#5fc3cb;
     color-scheme:dark;
   }
-  /* selectable light-theme palettes (try ?palette=sand|sage|stone|clay|classic) */
-  html[data-palette="classic"]:not([data-theme="dark"]){
-    --paper:#faf9f6; --paper-2:#f3f1ea; --line:#e6e2d8; --card:#fff;
-    --legend:rgba(255,255,255,.96); --img-bg:#e9e6df; --tcard-bg:#e8e4da; --tcard-bd:#d7d1c4;
-  }
-  html[data-palette="sand"]:not([data-theme="dark"]){
-    --paper:#f5efe2; --paper-2:#ece4d3; --line:#e1d8c6; --card:#fbf7ef;
-    --legend:rgba(251,247,239,.96); --img-bg:#e9e0d0; --tcard-bg:#e4dac7; --tcard-bd:#d4c9b3;
-  }
-  html[data-palette="sage"]:not([data-theme="dark"]){
-    --paper:#eef1e9; --paper-2:#e3e8da; --line:#dde3d2; --card:#f7f9f3;
-    --legend:rgba(247,249,243,.96); --img-bg:#e2e7da; --tcard-bg:#dde4d2; --tcard-bd:#cdd6c0;
-  }
-  html[data-palette="stone"]:not([data-theme="dark"]){
+  /* light theme is locked to the "stone" palette */
+  html:not([data-theme="dark"]){
     --paper:#eef0f3; --paper-2:#e3e7ec; --line:#dde2e8; --card:#fbfcfd;
     --legend:rgba(251,252,253,.96); --img-bg:#e2e6ec; --tcard-bg:#dee3ea; --tcard-bd:#ccd3dc;
-  }
-  html[data-palette="clay"]:not([data-theme="dark"]){
-    --paper:#f6ede6; --paper-2:#efe1d7; --line:#e8dace; --card:#fdf8f4;
-    --legend:rgba(253,248,244,.96); --img-bg:#ecdfd4; --tcard-bg:#e7dacd; --tcard-bd:#d8c8b8;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
@@ -67,11 +51,11 @@
   header.bar .back:hover{color:var(--accent)}
 
   /* live banner */
-  #liveBar{position:sticky;top:0;z-index:600;background:#1c1b19;color:#fff;
-    border-bottom:1px solid #000;min-height:46px;display:flex;align-items:center;gap:14px;
+  #liveBar{position:sticky;top:0;z-index:600;background:var(--paper-2);color:var(--ink-soft);
+    border-bottom:1px solid var(--line);min-height:46px;display:flex;align-items:center;gap:14px;
     padding:8px 16px;overflow-x:auto;scrollbar-width:thin}
   #liveBar .tag{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px;
-    letter-spacing:.06em;text-transform:uppercase;color:#ffb3a6;white-space:nowrap}
+    letter-spacing:.06em;text-transform:uppercase;color:var(--live);white-space:nowrap}
   #liveBar .dot{width:9px;height:9px;border-radius:50%;background:var(--live);
     box-shadow:0 0 0 0 rgba(214,66,43,.7);animation:pulse 1.5s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(214,66,43,.7)}70%{box-shadow:0 0 0 9px rgba(214,66,43,0)}100%{box-shadow:0 0 0 0 rgba(214,66,43,0)}}
@@ -81,14 +65,14 @@
   .lgame .tcard img{width:20px;height:14px;object-fit:contain;border-radius:2px;background:#fff}
   .lgame .tcard .cn{font-weight:600}
   .kit{flex:0 0 auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
-  .lgame .sc{font-family:var(--serif);font-weight:700;font-size:16px;padding:0 2px;letter-spacing:.02em}
-  .lgame .min{color:#ffb3a6;font-size:11px;font-weight:700;margin-left:2px}
-  .lgame .grp{color:#9c968c;font-size:11px;margin-left:2px}
+  .lgame .sc{font-family:var(--serif);font-weight:700;font-size:16px;padding:0 2px;letter-spacing:.02em;color:var(--ink)}
+  .lgame .min{color:var(--live);font-size:11px;font-weight:700;margin-left:2px}
+  .lgame .grp{color:var(--muted);font-size:11px;margin-left:2px}
   .goalbadge{font-size:11px;font-weight:800;letter-spacing:.04em;color:#06351a;background:#7CFF9B;
     border-radius:10px;padding:2px 8px;margin-left:2px;animation:pop .35s ease}
   @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
   .lgame.goal .sc{animation:scoreflash .9s ease-in-out 3}
-  @keyframes scoreflash{0%,100%{color:#fff;transform:scale(1)}50%{color:#7CFF9B;transform:scale(1.18)}}
+  @keyframes scoreflash{0%,100%{color:var(--ink);transform:scale(1)}50%{color:var(--go);transform:scale(1.18)}}
   .live-score-pill.goal{animation:pillflash .9s ease-in-out 3}
   @keyframes pillflash{0%,100%{border-color:var(--live);box-shadow:0 4px 14px rgba(0,0,0,.4)}
     50%{border-color:#7CFF9B;box-shadow:0 0 0 4px rgba(124,255,155,.55)}}
@@ -470,7 +454,7 @@
 
   /* live-bar segment labels + final/next chips */
   #liveBar .seg{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
-    color:#9c968c;padding-left:6px;border-left:1px solid #3a3733;margin-left:2px}
+    color:var(--muted);padding-left:6px;border-left:1px solid var(--line);margin-left:2px}
   #liveBar.idle .seg{color:var(--muted);border-left-color:var(--line)}
   .finalbadge{font-size:10px;font-weight:800;letter-spacing:.05em;color:#cfc8bb;background:#3a3733;
     border-radius:9px;padding:2px 7px;margin-left:2px}
@@ -561,12 +545,6 @@
     cursor:pointer;font:600 13px var(--sans);padding:0 10px;transition:border-color .15s,color .15s}
   #langSel:hover{border-color:var(--accent);color:var(--accent)}
   #langSel:focus{outline:none;border-color:var(--accent)}
-  .palettes{display:flex;align-items:center;gap:6px}
-  html[data-theme="dark"] .palettes{display:none}
-  .swatch{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);background:var(--sw);
-    cursor:pointer;padding:0;transition:transform .12s,box-shadow .12s}
-  .swatch:hover{transform:scale(1.14)}
-  .swatch.on{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--accent)}
 
   /* dark-mode: keep Leaflet popups & controls readable */
   html[data-theme="dark"] .leaflet-popup-content-wrapper,
@@ -578,6 +556,34 @@
 
   @media(max-width:560px){header.bar h1{font-size:21px}header.bar h1 .sub{display:none}.legend{display:none}
     .topright{top:12px;right:14px;gap:8px}}
+
+  /* squads tab */
+  .sqpick{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+  .sqteam{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);
+    border-radius:20px;padding:5px 13px 5px 7px;cursor:pointer;font:600 13.5px var(--sans);color:var(--ink-soft);transition:.12s}
+  .sqteam:hover{border-color:var(--accent);color:var(--accent)}
+  .sqteam.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .sqteam img{width:22px;height:16px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px var(--line);flex:0 0 auto}
+  .sqteam.on img{box-shadow:0 0 0 1px rgba(255,255,255,.5)}
+  .sqhead{display:flex;align-items:center;gap:12px;margin:0 0 6px}
+  .sqhead img{width:40px;height:28px;object-fit:cover;border-radius:3px;box-shadow:0 0 0 1px var(--line)}
+  .sqhead h3{font-family:var(--serif);font-size:23px;margin:0}
+  .sqgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
+  .sqgroup{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden;
+    box-shadow:0 4px 16px rgba(28,27,25,.04)}
+  .sqgh{font:700 11px var(--sans);text-transform:uppercase;letter-spacing:.04em;color:var(--accent-ink);
+    background:var(--paper-2);padding:8px 14px;border-bottom:1px solid var(--line)}
+  .sqrow{display:flex;align-items:center;gap:10px;padding:7px 14px;border-bottom:1px solid var(--paper-2);
+    font-size:14px;cursor:pointer}
+  .sqrow:last-child{border-bottom:none}
+  .sqrow:hover{background:var(--paper-2)}
+  .sqrow:hover .sqname{color:var(--accent);text-decoration:underline}
+  .sqnum{min-width:22px;text-align:center;font-family:var(--serif);font-weight:700;color:var(--accent);flex:0 0 auto}
+  .sqphoto{width:30px;height:30px;border-radius:50%;object-fit:cover;background:var(--paper-2);flex:0 0 auto}
+  .sqmeta{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+  .sqname{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sqclub{color:var(--muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sqage{margin-left:auto;color:var(--muted);font-size:12px;flex:0 0 auto;font-variant-numeric:tabular-nums}
 </style>
 <script>
   // set theme before paint to avoid a flash
@@ -587,10 +593,6 @@
       var t = q || localStorage.getItem('wc-theme')
         || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.setAttribute('data-theme', t);
-      // light-theme palette: ?palette=sand|sage|stone|clay|classic (sticky)
-      var p = new URLSearchParams(location.search).get('palette');
-      if(p) localStorage.setItem('wc-palette', p);
-      document.documentElement.setAttribute('data-palette', p || localStorage.getItem('wc-palette') || 'sand');
     }catch(e){}
   })();
 </script>
@@ -599,13 +601,6 @@
 
 <header class="bar">
   <div class="topright">
-    <div class="palettes" id="palettes" role="group" aria-label="Light theme colour">
-      <button class="swatch" data-pal="classic" title="Classic" style="--sw:#ffffff"></button>
-      <button class="swatch" data-pal="sand" title="Sand" style="--sw:#e3cfa8"></button>
-      <button class="swatch" data-pal="sage" title="Sage" style="--sw:#c5d3b4"></button>
-      <button class="swatch" data-pal="stone" title="Stone" style="--sw:#c3d0de"></button>
-      <button class="swatch" data-pal="clay" title="Clay" style="--sw:#e6c9b6"></button>
-    </div>
     <select id="langSel" aria-label="Language">
       <option value="en">EN</option>
       <option value="zh">中文</option>
@@ -633,6 +628,7 @@
     <button class="tab" data-tab="thirds" data-i18n="tab_thirds">3rd place</button>
     <button class="tab" data-tab="bet" data-i18n="tab_bet">Bet</button>
     <button class="tab" data-tab="country" data-i18n="tab_country">Country stats</button>
+    <button class="tab" data-tab="squads" data-i18n="tab_squads">Squads</button>
     <button class="tab" data-tab="stats" data-i18n="tab_stats">Player stats</button>
     <button class="tab" data-tab="news" data-i18n="tab_news">News</button>
     <span class="upd" id="updated"></span>
@@ -652,6 +648,9 @@
   <div class="tabpane" id="betPane" data-pane="bet" hidden></div>
   <div class="tabpane" id="countryPane" data-pane="country" hidden>
     <div class="state-note" data-i18n="loading_country">Loading country stats…</div>
+  </div>
+  <div class="tabpane" id="squadsPane" data-pane="squads" hidden>
+    <div class="state-note" data-i18n="squads_pick">Pick a country above to see its squad.</div>
   </div>
   <div class="tabpane" id="statsPane" data-pane="stats" hidden>
     <div class="psearch">
@@ -738,6 +737,10 @@ const I18N = {
     t_capacity:'capacity', host_venue:'host venue', fixtures_here:'📅 Fixtures at this venue', fixtures_hd:'📅 Fixtures',
     no_fixtures:'No fixtures listed at this venue in the current feed window.', goals_hd:'⚽ Goals', goals_hd_tap:'⚽ Goals — tap a scorer for their card',
     goals_none:'No goals yet.', goals_loading:'Loading…', loading_word:'loading…', natl_team:'National football team',
+    tab_squads:'Squads', squads_note:'Tap a country to see its full World Cup squad.', squads_pick:'Pick a country above to see its squad.',
+    squad_loading:'Loading squad…', squad_none:'Squad not available yet for this team.', squad_tap:'Tap a player for their card',
+    squad_busy:'Live data is busy right now (daily limit) — please try again later.',
+    pos_gk:'Goalkeepers', pos_def:'Defenders', pos_mid:'Midfielders', pos_fwd:'Forwards',
     news_unavail:'News unavailable right now. Try again shortly.', news_fail:'Couldn’t load news.',
   },
   zh:{
@@ -778,6 +781,10 @@ const I18N = {
     t_capacity:'容量', host_venue:'主办场馆', fixtures_here:'📅 本场馆赛程', fixtures_hd:'📅 赛程',
     no_fixtures:'当前数据窗口内本场馆暂无赛程。', goals_hd:'⚽ 进球', goals_hd_tap:'⚽ 进球 — 点击射手查看资料',
     goals_none:'暂无进球。', goals_loading:'加载中…', loading_word:'加载中…', natl_team:'国家足球队',
+    tab_squads:'球员名单', squads_note:'点击国家查看其完整世界杯阵容。', squads_pick:'请在上方选择一个国家以查看其阵容。',
+    squad_loading:'加载阵容中…', squad_none:'暂无该队阵容。', squad_tap:'点击球员查看资料',
+    squad_busy:'实时数据当前繁忙（已达每日上限），请稍后再试。',
+    pos_gk:'门将', pos_def:'后卫', pos_mid:'中场', pos_fwd:'前锋',
     news_unavail:'暂时无法加载新闻，请稍后重试。', news_fail:'无法加载新闻。',
   },
   es:{
@@ -818,6 +825,10 @@ const I18N = {
     t_capacity:'aforo', host_venue:'sede', fixtures_here:'📅 Partidos en esta sede', fixtures_hd:'📅 Partidos',
     no_fixtures:'No hay partidos en esta sede dentro de la ventana de datos actual.', goals_hd:'⚽ Goles', goals_hd_tap:'⚽ Goles — toca a un goleador para ver su ficha',
     goals_none:'Aún no hay goles.', goals_loading:'Cargando…', loading_word:'cargando…', natl_team:'Selección nacional de fútbol',
+    tab_squads:'Plantillas', squads_note:'Toca un país para ver su plantilla completa del Mundial.', squads_pick:'Elige un país arriba para ver su plantilla.',
+    squad_loading:'Cargando plantilla…', squad_none:'Plantilla aún no disponible para este equipo.', squad_tap:'Toca a un jugador para ver su ficha',
+    squad_busy:'Los datos en vivo están ocupados ahora (límite diario) — inténtalo más tarde.',
+    pos_gk:'Porteros', pos_def:'Defensas', pos_mid:'Centrocampistas', pos_fwd:'Delanteros',
     news_unavail:'Noticias no disponibles ahora. Inténtalo en breve.', news_fail:'No se pudieron cargar las noticias.',
   },
 };
@@ -899,6 +910,39 @@ function norm(s){
     .toLowerCase().replace(/[^a-z0-9]/g,'');
   return ALIAS[k] || k;
 }
+
+// Localized country names, keyed by norm(name) so any feed spelling matches.
+// tn(name) returns the localized display name for the current language, falling
+// back to the original (English) name for unknown teams / languages.
+const NAME_I18N = {
+  zh:{
+    unitedstates:'美国', canada:'加拿大', mexico:'墨西哥',
+    austria:'奥地利', belgium:'比利时', bosniaherzegovina:'波黑',
+    croatia:'克罗地亚', czechia:'捷克', england:'英格兰',
+    france:'法国', germany:'德国', netherlands:'荷兰',
+    norway:'挪威', portugal:'葡萄牙', scotland:'苏格兰',
+    spain:'西班牙', sweden:'瑞典', switzerland:'瑞士', turkiye:'土耳其',
+    argentina:'阿根廷', brazil:'巴西', colombia:'哥伦比亚',
+    ecuador:'厄瓜多尔', paraguay:'巴拉圭', uruguay:'乌拉圭',
+    algeria:'阿尔及利亚', capeverde:'佛得角', drcongo:'刚果（金）',
+    cotedivoire:'科特迪瓦', egypt:'埃及', ghana:'加纳',
+    morocco:'摩洛哥', senegal:'塞内加尔', southafrica:'南非', tunisia:'突尼斯',
+    australia:'澳大利亚', iran:'伊朗', iraq:'伊拉克', japan:'日本',
+    jordan:'约旦', southkorea:'韩国', qatar:'卡塔尔',
+    saudiarabia:'沙特阿拉伯', uzbekistan:'乌兹别克斯坦',
+    curacao:'库拉索', haiti:'海地', panama:'巴拿马', newzealand:'新西兰',
+    // historical names that show up in all-time records
+    westgermany:'西德', sovietunion:'苏联', yugoslavia:'南斯拉夫',
+    czechoslovakia:'捷克斯洛伐克', serbia:'塞尔维亚', hungary:'匈牙利',
+    poland:'波兰', chile:'智利', peru:'秘鲁', nigeria:'尼日利亚',
+    cameroon:'喀麦隆', italy:'意大利', russia:'俄罗斯', denmark:'丹麦',
+  },
+};
+function tn(name){
+  const m = NAME_I18N[lang];
+  if(!m) return name;
+  return m[norm(name)] || name;
+}
 const markersByName = {}; // norm(name) -> { marker, iso, name }
 const teamLayer = L.layerGroup().addTo(map); // toggled off in "Stadiums" view
 
@@ -907,13 +951,23 @@ TEAMS.forEach(([name,iso,lat,lng,conf])=>{
   const icon = L.divIcon({className:'',
     html:`<div class="flag-marker conf-${conf}${host?' host':''}"><img src="https://flagcdn.com/w40/${iso}.png" alt="${name} flag" loading="lazy"></div>`,
     iconSize: host?[34,24]:[30,21], iconAnchor: host?[17,12]:[15,10], popupAnchor:[0,-12]});
-  const mk = L.marker([lat,lng],{icon,title:name})
-   .bindTooltip(name,{className:'team',direction:'top',offset:[0,-8]})
-   .bindPopup(`<div class="pop"><img src="https://flagcdn.com/w160/${iso}.png" alt="${name} flag">`
-     +`<div class="nm">${name}</div><div class="cf">${CONF[conf]}</div>`
-     +(host?'<div class="badge">HOST 2026</div>':'')+`</div>`).addTo(teamLayer);
-  markersByName[norm(name)] = {marker:mk, iso, name};
+  const mk = L.marker([lat,lng],{icon,title:tn(name)})
+   .bindTooltip(tn(name),{className:'team',direction:'top',offset:[0,-8]})
+   .bindPopup(markerPopup(name,iso,conf,host)).addTo(teamLayer);
+  markersByName[norm(name)] = {marker:mk, iso, name, conf, host};
 });
+function markerPopup(name,iso,conf,host){
+  return `<div class="pop"><img src="https://flagcdn.com/w160/${iso}.png" alt="${tn(name)} flag">`
+    +`<div class="nm">${tn(name)}</div><div class="cf">${CONF[conf]}</div>`
+    +(host?'<div class="badge">HOST 2026</div>':'')+`</div>`;
+}
+// re-label map tooltips/popups when the language changes
+function relabelMarkers(){
+  Object.values(markersByName).forEach(({marker,iso,name,conf,host})=>{
+    marker.setTooltipContent(tn(name));
+    marker.setPopupContent(markerPopup(name,iso,conf,host));
+  });
+}
 
 const counts = TEAMS.reduce((a,[,,,,c])=>(a[c]=(a[c]||0)+1,a),{});
 const legend = L.control({position:'bottomright'});
@@ -1292,7 +1346,7 @@ function kitSvg(name){
 }
 function teamCard(t, reversed){
   const flag = t.crest ? `<img src="${esc(t.crest)}" alt="">` : '';
-  const name = `<span class="cn">${esc(t.name)}</span>`;
+  const name = `<span class="cn">${esc(tn(t.name))}</span>`;
   const kit = kitSvg(t.name);
   const col = kitColor(t.name); // tint each side with its team's kit color
   return `<span class="tcard" style="border-bottom:2px solid ${col}">`
@@ -1409,7 +1463,7 @@ function renderGroups(groups, live){
     const rows = g.table.map(r=>{
       const adv = r.position<=2 ? ' class="adv"' : '';
       const crest = r.crest?`<img src="${esc(r.crest)}" alt="">`:`<img src="" alt="" style="visibility:hidden">`;
-      return `<tr${adv}><td class="tm"><span class="pos">${r.position}</span>${crest}<span class="nm">${esc(r.name)}</span></td>`
+      return `<tr${adv}><td class="tm"><span class="pos">${r.position}</span>${crest}<span class="nm">${esc(tn(r.name))}</span></td>`
         + `<td>${r.played}</td><td>${r.won}</td><td>${r.draw}</td><td>${r.lost}</td>`
         + `<td>${r.gd>0?'+':''}${r.gd}</td><td class="pts">${r.points}</td></tr>`;
     }).join('');
@@ -1585,8 +1639,8 @@ function openStadium(m){
   document.getElementById('sStats').innerHTML = stats.join('');
   const mEl = document.getElementById('sMatch');
   mEl.style.display = '';
-  mEl.innerHTML = `<span class="ld">●</span> ${esc(m.home.name)} `
-    + `<b>${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</b> ${esc(m.away.name)} · ${liveState(m)}`;
+  mEl.innerHTML = `<span class="ld">●</span> ${esc(tn(m.home.name))} `
+    + `<b>${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</b> ${esc(tn(m.away.name))} · ${liveState(m)}`;
   if(vi.s) renderStadiumSchedule(vi.s); else document.getElementById('sSchedule').innerHTML = '';
   sModal.hidden = false;
   loadScorers(m);
@@ -1608,7 +1662,7 @@ async function loadScorers(m){
       const asst = g.assist ? ` <span class="scasst">↳ ${esc(g.assist)}</span>` : '';
       return `<div class="scrow"><span class="scmin">${g.minute}${g.extra?`+${g.extra}`:''}'</span>`
         + `<span class="plink scname" data-name="${esc(g.player)}" data-nat="${esc(g.team)}" onclick="openPlayer(this)">${esc(g.player)}</span>${tag}`
-        + `<span class="scteam">${esc(g.team)}</span>${asst}</div>`;
+        + `<span class="scteam">${esc(tn(g.team))}</span>${asst}</div>`;
     }).join('');
   }catch(e){ box.innerHTML = ''; }
 }
@@ -1628,8 +1682,8 @@ function openStadiumVenue(s){
   const mEl = document.getElementById('sMatch');
   if(liveHere){
     mEl.style.display = '';
-    mEl.innerHTML = `<span class="ld">●</span> ${esc(liveHere.home.name)} `
-      + `<b>${fmtScore(liveHere.home.score)}–${fmtScore(liveHere.away.score)}</b> ${esc(liveHere.away.name)} · ${liveState(liveHere)}`;
+    mEl.innerHTML = `<span class="ld">●</span> ${esc(tn(liveHere.home.name))} `
+      + `<b>${fmtScore(liveHere.home.score)}–${fmtScore(liveHere.away.score)}</b> ${esc(tn(liveHere.away.name))} · ${liveState(liveHere)}`;
   }else{ mEl.style.display = 'none'; mEl.innerHTML = ''; }
   document.getElementById('sScorers').innerHTML = '';
   renderStadiumSchedule(s);
@@ -1651,7 +1705,7 @@ function renderStadiumSchedule(s){
     const tag = live ? `<span class="sctag" style="color:var(--live)">LIVE</span>`
               : (fin ? `<span class="sctag">FT</span>` : '');
     return `<div class="scrow"><span class="scmin">${esc(when)}</span>`
-      + `<span class="scname" style="cursor:default">${esc(m.home.name)} ${mid} ${esc(m.away.name)}`
+      + `<span class="scname" style="cursor:default">${esc(tn(m.home.name))} ${mid} ${esc(tn(m.away.name))}`
       + (m.group?` · Grp ${esc(m.group)}`:'') + `</span> ${tag}</div>`;
   }).join('');
 }
@@ -1674,36 +1728,84 @@ themeBtn.addEventListener('click', ()=>{
   applyTheme(document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark', true);
 });
 
-/* ───────── Light-theme palette swatches ───────── */
-(function(){
-  const box = document.getElementById('palettes'); if(!box) return;
-  const swatches = [...box.querySelectorAll('.swatch')];
-  const mark = p => swatches.forEach(b=> b.classList.toggle('on', b.dataset.pal===p));
-  mark(document.documentElement.getAttribute('data-palette') || 'sand');
-  swatches.forEach(b=> b.addEventListener('click', ()=>{
-    const p = b.dataset.pal;
-    document.documentElement.setAttribute('data-palette', p);
-    try{ localStorage.setItem('wc-palette', p); }catch(e){}
-    mark(p);
-  }));
-})();
-
 /* ───────── Language switch ───────── */
 const langSel = document.getElementById('langSel');
 langSel.value = lang;
 function rerenderI18n(){
   applyStaticI18n();
   try{
+    relabelMarkers();
     renderLive(currentLive||[], lastMatches||[]);
     renderGroups(lastGroups||[], currentLive||[]);
     renderSchedule(lastMatches||[]);
     drawStats();
     renderCountry(lastGroups||[]);
+    if(squadsOpened) renderSquadsTab();
     if(lastBracket) renderBracket(lastBracket);
     renderThirds();
     if(betLoaded) renderBetShell();
   }catch(e){}
 }
+
+/* ───────── Squads tab — full roster per country ───────── */
+// Pick a nation, see its full World Cup squad grouped by position. Squads come
+// from api-football (with photos) or fall back to Wikipedia (with club), cached
+// at the edge and here in the page. Player names drill into the player card.
+let squadsOpened = false, currentSquadName = null;
+const squadCache = {};
+let squadSeq = 0;
+const POS_ORDER = [['Goalkeeper','pos_gk'],['Defender','pos_def'],['Midfielder','pos_mid'],['Attacker','pos_fwd']];
+function renderSquadsTab(){
+  const pane = panes.squads; if(!pane) return;
+  const pick = TEAMS.map(([name,iso])=>
+    `<button class="sqteam${norm(name)===norm(currentSquadName||'')?' on':''}" data-team="${esc(name)}" onclick="openSquad(this.dataset.team)">`
+    + `<img src="https://flagcdn.com/w40/${iso}.png" alt="">${esc(tn(name))}</button>`).join('');
+  pane.innerHTML = `<p class="statnote">${t('squads_note')}</p>`
+    + `<div class="sqpick">${pick}</div>`
+    + `<div id="squadResult">${currentSquadName?'':`<div class="state-note">${t('squads_pick')}</div>`}</div>`;
+  if(currentSquadName) openSquad(currentSquadName);
+}
+async function openSquad(name){
+  currentSquadName = name;
+  document.querySelectorAll('.sqteam').forEach(b=> b.classList.toggle('on', norm(b.dataset.team)===norm(name)));
+  const box = document.getElementById('squadResult'); if(!box) return;
+  const key = norm(name), seq = ++squadSeq;
+  if(squadCache[key]){ renderSquad(box, name, squadCache[key]); return; }
+  box.innerHTML = `<div class="state-note">${t('squad_loading')}</div>`;
+  let d;
+  try{ d = await fetch(`/api/squad?team=${encodeURIComponent(name)}`).then(r=>r.json()); }
+  catch(e){ d = {error:'failed'}; }
+  if(seq!==squadSeq) return;
+  if(d && !d.error && d.players && d.players.length) squadCache[key] = d;
+  renderSquad(box, name, d);
+}
+function renderSquad(box, name, d){
+  if(d && d.error === 'rate_limited'){ box.innerHTML = `<div class="state-note">${t('squad_busy')}</div>`; return; }
+  if(!d || d.error || !d.players || !d.players.length){
+    box.innerHTML = `<div class="state-note">${t('squad_none')}</div>`; return;
+  }
+  const iso = isoByCountry[norm(name)];
+  const flag = iso ? `<img src="https://flagcdn.com/w80/${iso}.png" alt="">` : '';
+  const byPos = {};
+  d.players.forEach(p=>{ (byPos[p.position]=byPos[p.position]||[]).push(p); });
+  const groupHtml = (label, list)=>{
+    list.sort((a,b)=> (a.number==null?99:a.number)-(b.number==null?99:b.number));
+    return `<div class="sqgroup"><div class="sqgh">${esc(label)} · ${list.length}</div>`
+      + list.map(p=>`<div class="sqrow" data-name="${esc(p.name)}" data-nat="${esc(name)}" onclick="openPlayer(this)">`
+        + `<span class="sqnum">${p.number!=null?esc(String(p.number)):''}</span>`
+        + (p.photo?`<img class="sqphoto" src="${esc(p.photo)}" alt="">`:'')
+        + `<span class="sqmeta"><span class="sqname">${esc(p.name)}</span>`
+        + (p.club?`<small class="sqclub">${esc(p.club)}</small>`:'') + `</span>`
+        + (p.age!=null?`<span class="sqage">${esc(String(p.age))}</span>`:'') + `</div>`).join('')
+      + `</div>`;
+  };
+  let cards = '', seen = new Set();
+  POS_ORDER.forEach(([pos,k])=>{ if(byPos[pos]){ cards += groupHtml(t(k), byPos[pos]); seen.add(pos); } });
+  Object.keys(byPos).forEach(pos=>{ if(!seen.has(pos)) cards += groupHtml(pos||'—', byPos[pos]); });
+  box.innerHTML = `<div class="sqhead">${flag}<h3>${esc(tn(name))}</h3></div>`
+    + `<p class="statnote">${t('squad_tap')}</p><div class="sqgrid">${cards}</div>`;
+}
+window.openSquad = openSquad;
 langSel.addEventListener('change', ()=>{
   lang = I18N[langSel.value] ? langSel.value : 'en';
   try{ localStorage.setItem('wc-lang', lang); }catch(e){}
@@ -1719,6 +1821,7 @@ const panes = {
   thirds: document.getElementById('thirdsPane'),
   bet: document.getElementById('betPane'),
   country: document.getElementById('countryPane'),
+  squads: document.getElementById('squadsPane'),
   stats: document.getElementById('statsPane'),
   news: document.getElementById('newsPane'),
 };
@@ -1734,6 +1837,7 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', (
   if(id==='thirds') renderThirds();
   if(id==='schedule') scrollScheduleToToday();
   if(id==='bet' && !betLoaded) loadBet();
+  if(id==='squads'){ squadsOpened = true; renderSquadsTab(); }
 }));
 // On opening the calendar, jump to what matters now: the live game, else the
 // next upcoming one, else today's cell — so the user isn't scrolling to find it.
@@ -1746,7 +1850,7 @@ function scrollScheduleToToday(){
 }
 // deep-link a tab via #news / #stats / #groups / #schedule / #bracket / #thirds / #bet / #country
 const initialTab = (location.hash||'').replace('#','');
-if(['news','stats','groups','schedule','bracket','thirds','bet','country'].includes(initialTab)){
+if(['news','stats','groups','schedule','bracket','thirds','bet','country','squads'].includes(initialTab)){
   const t = document.querySelector(`.tab[data-tab="${initialTab}"]`); if(t) t.click();
 }
 
@@ -1821,7 +1925,7 @@ function countryCard(title, unit, rows, opts){
         const sub = r.sub ? `<small>${esc(r.sub)}</small>` : '';
         return `<tr><td class="hrk">${i+1}</td>`
           + `<td class="hpl"><span class="plink" data-country="${esc(r.name)}" onclick="openCountry(this.dataset.country)">`
-          + `${flag}<span class="hnm">${esc(r.name)}${sub}</span></span></td>`
+          + `${flag}<span class="hnm">${esc(tn(r.name))}${sub}</span></span></td>`
           + `<td class="hv">${r.val}<small>${esc(tunit(unit))}</small></td></tr>`;
       }).join('') + `</tbody></table></div>`;
 }
@@ -1850,7 +1954,7 @@ function renderCountry(groups){
 }
 async function openCountry(name){
   pModal.hidden = false; pModal.querySelector('.sbox').scrollTop = 0;
-  document.getElementById('pName').textContent = name;
+  document.getElementById('pName').textContent = tn(name);
   document.getElementById('pMeta').textContent = t('natl_team') + ' · ' + t('loading_word');
   pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
   const clubsEl = document.getElementById('pClubs'); clubsEl.hidden = true; clubsEl.innerHTML = '';
@@ -2015,7 +2119,7 @@ function renderThirds(){
       ? `${t('thirds_vs')} ${esc(slotLabel(sl.oppLabel))} <small>· #${sl.match}</small>` : '—';
     return `<tr class="${cls}">`
       + `<td class="rk">${i+1}</td>`
-      + `<td class="tm"><span class="nm">${crest}<b>${esc(r.name)}</b>`
+      + `<td class="tm"><span class="nm">${crest}<b>${esc(tn(r.name))}</b>`
       + `<small>${esc(t('third_group').replace('{g}',x.group))}</small></span></td>`
       + `<td>${r.played||0}</td><td class="pts">${r.points||0}</td>`
       + `<td>${r.gd>0?'+':''}${r.gd||0}</td><td>${r.gf||0}</td>`
@@ -2197,13 +2301,13 @@ function revealDice(out){
   const ti=tm=> markersByName[tm]||{name:tm,iso:''};
   const c=ti(out.champ), RN={R32:t('rnd_R32'),R16:t('rnd_R16'),QF:t('rnd_QF'),SF:t('rnd_SF'),F:t('rnd_F')};
   box.innerHTML = `<div class="champ-reveal"><div class="champ-trophy">🏆</div>`
-    + `<div class="champ-name">${c.iso?`<img src="https://flagcdn.com/w80/${esc(c.iso)}.png" alt="">`:''}<b>${esc(c.name)}</b></div>`
+    + `<div class="champ-name">${c.iso?`<img src="https://flagcdn.com/w80/${esc(c.iso)}.png" alt="">`:''}<b>${esc(tn(c.name))}</b></div>`
     + `<div class="champ-sub">${t('dice_champ')}</div></div>`
     + `<div class="dpath"><div class="dp-h">${t('dice_road')}</div>`
     + out.path.map(p=>{ const o=ti(p.opp); return `<div class="dp-row"><span class="dp-r">${esc(RN[p.round])}</span>`
-        + `<span class="dp-o">${o.iso?`<img class="pf" src="https://flagcdn.com/w40/${esc(o.iso)}.png" alt="">`:''}${esc(o.name)}</span>`
+        + `<span class="dp-o">${o.iso?`<img class="pf" src="https://flagcdn.com/w40/${esc(o.iso)}.png" alt="">`:''}${esc(tn(o.name))}</span>`
         + `<span class="dp-s">${esc(p.score)}${p.pens?' (P)':''}</span></div>`; }).join('') + `</div>`
-    + `<div class="dice-extra">🥈 ${esc(ti(out.runnerUp).name)} &nbsp; 🥉 ${esc(ti(out.third).name)}</div>`;
+    + `<div class="dice-extra">🥈 ${esc(tn(ti(out.runnerUp).name))} &nbsp; 🥉 ${esc(tn(ti(out.third).name))}</div>`;
   confetti(window.innerWidth/2, box.getBoundingClientRect().top+40);
   setTimeout(()=> confetti(window.innerWidth/2-90, box.getBoundingClientRect().top+40), 120);
   setTimeout(()=> confetti(window.innerWidth/2+90, box.getBoundingClientRect().top+40), 240);
@@ -2219,7 +2323,7 @@ function buildBetRows(){
   const body=document.getElementById('betBody');
   body.innerHTML = betTeams().map(tm=>{ const info=markersByName[tm]||{name:tm,iso:''};
     return `<tr data-tm="${esc(tm)}"><td class="rk brk">–</td>`
-      + `<td class="pl"><span class="betteam">${info.iso?`<img class="pf" src="https://flagcdn.com/w40/${esc(info.iso)}.png" alt="">`:''}<span>${esc(info.name)}</span></span></td>`
+      + `<td class="pl"><span class="betteam">${info.iso?`<img class="pf" src="https://flagcdn.com/w40/${esc(info.iso)}.png" alt="">`:''}<span>${esc(tn(info.name))}</span></span></td>`
       + `<td class="bboost"><button class="bb" data-d="-20">−</button><span class="bbv">0</span><button class="bb" data-d="20">+</button></td>`
       + `<td class="betc"><span class="betfill"></span><b class="bpct">–</b><span class="bdelta"></span></td>`
       + `<td class="bspark"></td>`
@@ -2308,7 +2412,7 @@ function render2026(){
         const cell = (k,v)=>`<td class="${sortKey===k?'on':''}">${v==null?'–':v}</td>`;
         return `<tr class="${i===0&&sortKey==='goals'?'lead':''}"><td class="rk">${i+1}</td>`
           + `<td class="pl"><span class="plink" data-name="${esc(s.name)}" data-nat="${esc(s.nationality||'')}" data-team="${esc(s.team)}" data-g="${s.goals}" data-a="${s.assists==null?'':s.assists}" onclick="openPlayer(this)">`
-          + `${fl?`<img class="pf" src="${esc(fl)}" alt="">`:''}<span class="pnm">${esc(s.name)}<small>${esc(s.team)}</small></span></span></td>`
+          + `${fl?`<img class="pf" src="${esc(fl)}" alt="">`:''}<span class="pnm">${esc(s.name)}<small>${esc(tn(s.team))}</small></span></span></td>`
           + cell('goals',s.goals) + cell('assists',s.assists) + cell('penalties',s.penalties) + `</tr>`;
       }).join('') + `</tbody></table>`;
 }
@@ -2321,7 +2425,7 @@ function recordCard(title, unit, rows, opts){
   return `<div class="histcard"><h4>${title}${tag}</h4>` + (opts.note?`<p class="hn">${esc(opts.note)}</p>`:'')
     + `<table class="rtable"><tbody>` + rows.map((r,i)=>{
         const last = is2026Active(r.name) ? 2026 : r.last;
-        const sub = `${esc(r.team)}${last?` · WC ${last}`:''}`;
+        const sub = `${esc(tn(r.team))}${last?` · WC ${last}`:''}`;
         return `<tr><td class="hrk">${i+1}</td>`
         + `<td class="hpl"><span class="plink" data-name="${esc(r.name)}" data-nat="${esc(r.team)}" data-val="${esc(String(r.val))}" data-unit="${esc(unit)}" onclick="openPlayer(this)">`
         + `${flagImg(r.iso)}<span class="hnm">${esc(r.name)}<small>${sub}</small></span></span></td>`
@@ -2416,19 +2520,34 @@ pModal.addEventListener('click', e=>{ if(e.target===pModal) closePlayer(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closePlayer(); });
 window.openPlayer = openPlayer; window.closePlayer = closePlayer;
 
+// fetch with a hard timeout so one stalled request can never freeze the page
+async function fetchJSON(url, ms){
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=> ctrl.abort(), ms || 8000);
+  try{ const r = await fetch(url, {cache:'no-store', signal:ctrl.signal}); return await r.json(); }
+  finally{ clearTimeout(timer); }
+}
+let everLoaded = false, failStreak = 0; // keep last good render through blips
 async function refresh(){
   try{
-    const r = await fetch('/api/wc', {cache:'no-store'});
-    const data = await r.json();
+    const data = await fetchJSON('/api/wc', 8000);
     if(data.error){
+      // Missing token is a permanent setup problem — always surface it.
+      if(data.error==='missing_token'){
+        clearMapLive();
+        liveBar.className='idle';
+        liveBar.innerHTML = `<span class="tag">Live data unavailable</span>`;
+        groupsEl.innerHTML = `<div class="state-note"><b>Live feed not configured yet.</b><br>Set the football-data.org API token on the Worker:<br>
+           <code>npx wrangler secret put FOOTBALL_DATA_TOKEN</code> (and add it to <code>.dev.vars</code> for local dev), then redeploy.
+           The map above works without it.</div>`;
+        return;
+      }
+      // Transient upstream error: keep the last good data if we have it.
+      if(everLoaded) return;
       clearMapLive();
       liveBar.className='idle';
       liveBar.innerHTML = `<span class="tag">Live data unavailable</span>`;
-      groupsEl.innerHTML = data.error==='missing_token'
-        ? `<div class="state-note"><b>Live feed not configured yet.</b><br>Set the football-data.org API token on the Worker:<br>
-           <code>npx wrangler secret put FOOTBALL_DATA_TOKEN</code> (and add it to <code>.dev.vars</code> for local dev), then redeploy.
-           The map above works without it.</div>`
-        : `<div class="state-note">Couldn’t load standings right now (<code>${esc(data.error)}</code>). Will retry automatically.</div>`;
+      groupsEl.innerHTML = `<div class="state-note">Couldn’t load standings right now (<code>${esc(data.error)}</code>). Will retry automatically.</div>`;
       return;
     }
     goalCheck(data.live||[]);
@@ -2448,13 +2567,20 @@ async function refresh(){
                 : (data.live&&data.live.length ? ' · live (delayed feed)' : '');
       updEl.textContent = 'Updated ' + t + src + ' · auto-refreshes';
     }
+    everLoaded = true; failStreak = 0;
   }catch(e){
+    // Timed-out or failed fetch. Keep the last good data on screen and retry
+    // silently; on first load keep "Loading…" for a couple of quick retries
+    // before admitting we're offline (so a single slow reload doesn't flash it).
+    failStreak++;
+    if(everLoaded) return;
+    if(failStreak < 3){ setTimeout(refresh, 1500); return; }
     liveBar.className='idle';
     liveBar.innerHTML = `<span class="tag">Offline — retrying…</span>`;
   }
 }
 refresh();
-setInterval(refresh, 30000); // poll every 30s
+setInterval(refresh, 15000); // poll every 15s (Pro — ~matches api-football's live refresh)
 loadRecords(); // Wikipedia all-time records (once)
 </script>
 </body>
