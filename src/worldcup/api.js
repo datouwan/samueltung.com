@@ -41,6 +41,7 @@ export async function handleWorldCupApi(request, env, ctx) {
     case "/api/records": return handleRecords(request, env, ctx);
     case "/api/bracket": return handleBracket(request, env, ctx);
     case "/api/squad": return handleSquad(request, env, ctx);
+    case "/api/lineups": return handleLineups(request, env, ctx);
     default: return null;
   }
 }
@@ -459,6 +460,54 @@ async function handleRecords(request, env, ctx) {
     return json({ error: "records_failed", message: String(e) }, 200, 0);
   }
 }
+// Both teams' line-ups for one fixture (lazy — only when a live card is
+// clicked). api-football publishes line-ups ~20-40 min before kickoff and keeps
+// them through the match. Cached ~60s so repeated opens during a match don't
+// burn requests. Returns 200 with {error}/empty teams on failure so the page
+// can fall back to full squads.
+async function handleLineups(request, env, ctx) {
+  const url = new URL(request.url);
+  const fid = url.searchParams.get("fixture") || "";
+  if (!/^\d+$/.test(fid)) return json({ error: "bad_fixture" }, 400, 0);
+  if (!env.APIFOOTBALL_KEY) return json({ error: "no_key" }, 200, 0);
+
+  const cache = caches.default;
+  const ckey = new Request(`https://wc.cache/lineups-${fid}`);
+  const hit = await cache.match(ckey);
+  if (hit) return hit;
+
+  try {
+    const r = await fetch(`${AF}/fixtures/lineups?fixture=${fid}`, {
+      headers: { "x-apisports-key": env.APIFOOTBALL_KEY },
+    });
+    if (!r.ok) return json({ error: "upstream" }, 200, 0);
+    const d = await r.json();
+    const e = d && d.errors;
+    if (Array.isArray(e) ? e.length : e && Object.keys(e).length)
+      return json({ error: "rate_limited" }, 200, 0);
+    const mapPlayer = (x) => ({
+      name: (x.player && x.player.name) || "",
+      number: (x.player && x.player.number) ?? null,
+      pos: (x.player && x.player.pos) || "",
+    });
+    const teams = (d.response || []).map((tm) => ({
+      name: (tm.team && tm.team.name) || "",
+      logo: (tm.team && tm.team.logo) || "",
+      formation: tm.formation || "",
+      coach: (tm.coach && tm.coach.name) || "",
+      startXI: (tm.startXI || []).map(mapPlayer).filter((p) => p.name),
+      subs: (tm.substitutes || []).map(mapPlayer).filter((p) => p.name),
+    }));
+    if (!teams.some((tm) => tm.startXI.length))
+      return json({ fixture: Number(fid), teams: [] }, 200, 0); // not posted yet
+    const res = json({ fixture: Number(fid), teams }, 200, 60);
+    ctx.waitUntil(cache.put(ckey, res.clone()));
+    return res;
+  } catch (_) {
+    return json({ error: "failed" }, 200, 0);
+  }
+}
+
 // ───────── Squads tab: a nation's full roster by country name ─────────
 // api-football first (player photos + ages); if it's unavailable / out of
 // quota, fall back to Wikipedia (free, unlimited; gives club but no photos).

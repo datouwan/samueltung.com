@@ -584,6 +584,32 @@
   .sqname{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sqclub{color:var(--muted);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sqage{margin-left:auto;color:var(--muted);font-size:12px;flex:0 0 auto;font-variant-numeric:tabular-nums}
+
+  /* line-up window — both teams side by side */
+  .lubox{width:min(720px,100%)}
+  .lutitle{font-family:var(--serif);font-size:18px;text-align:center;margin:0 0 4px;display:flex;
+    align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+  .lutitle .vs{color:var(--muted);font-family:var(--sans);font-weight:600;font-size:13px}
+  .lutap{color:var(--muted);font-size:12px;text-align:center;margin:0 0 14px}
+  .lucols{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px}
+  .lucol{min-width:0}
+  .lucol.clicked .luhead h4{color:var(--accent)}
+  .luhead{display:flex;align-items:center;gap:9px;margin:0 0 2px}
+  .luhead img{width:26px;height:26px;object-fit:contain;flex:0 0 auto}
+  .luhead h4{font-family:var(--serif);font-size:17px;margin:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lusub{color:var(--muted);font-size:12px;margin:0 0 6px;min-height:1px}
+  .luchead{font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+    margin:0 0 2px;border-top:1px solid var(--line);padding-top:9px}
+  .lurow{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13.5px;border-bottom:1px solid var(--paper-2)}
+  .lurow:last-child{border-bottom:none}
+  .lunum{min-width:20px;text-align:center;font-family:var(--serif);font-weight:700;color:var(--accent);flex:0 0 auto}
+  .luname{font-weight:600;cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .luname:hover{color:var(--accent);text-decoration:underline}
+  .lupos{margin-left:auto;font-size:9.5px;font-weight:800;color:var(--muted);background:var(--paper-2);
+    border-radius:6px;padding:1px 5px;flex:0 0 auto}
+  .luload,.luempty{color:var(--muted);font-size:13.5px;padding:6px 0;text-align:center}
+  @media(max-width:560px){.lucols{grid-template-columns:1fr;gap:0}
+    .lucol+.lucol .luhead{border-top:1px solid var(--line);padding-top:12px}}
 </style>
 <script>
   // set theme before paint to avoid a flash
@@ -697,6 +723,14 @@
   </div>
 </div>
 
+<!-- floating line-up window (both teams) -->
+<div id="lineupModal" class="smodal" hidden>
+  <div class="sbox lubox">
+    <button class="sclose" onclick="closeLineup()" aria-label="Close">×</button>
+    <div class="sbody"><div id="luBody"></div></div>
+  </div>
+</div>
+
 <script>
 /* ───────── i18n: English / 中文 / Español ───────── */
 const I18N = {
@@ -740,6 +774,9 @@ const I18N = {
     tab_squads:'Squads', squads_note:'Tap a country to see its full World Cup squad.', squads_pick:'Pick a country above to see its squad.',
     squad_loading:'Loading squad…', squad_none:'Squad not available yet for this team.', squad_tap:'Tap a player for their card',
     squad_busy:'Live data is busy right now (daily limit) — please try again later.',
+    lineup_tip:'Show line-up', starting_xi:'Starting XI', substitutes:'Substitutes', coach_lbl:'Coach',
+    lineup_loading:'Loading line-up…', lineup_none:'Line-up not published yet.', lineup_tap:'tap a player for their card',
+    squad_fallback:'Line-up not posted yet — showing full squads. Tap a player for their card.',
     pos_gk:'Goalkeepers', pos_def:'Defenders', pos_mid:'Midfielders', pos_fwd:'Forwards',
     news_unavail:'News unavailable right now. Try again shortly.', news_fail:'Couldn’t load news.',
   },
@@ -784,6 +821,9 @@ const I18N = {
     tab_squads:'球员名单', squads_note:'点击国家查看其完整世界杯阵容。', squads_pick:'请在上方选择一个国家以查看其阵容。',
     squad_loading:'加载阵容中…', squad_none:'暂无该队阵容。', squad_tap:'点击球员查看资料',
     squad_busy:'实时数据当前繁忙（已达每日上限），请稍后再试。',
+    lineup_tip:'查看阵容', starting_xi:'首发阵容', substitutes:'替补', coach_lbl:'主教练',
+    lineup_loading:'加载阵容中…', lineup_none:'阵容尚未公布。', lineup_tap:'点击球员查看资料',
+    squad_fallback:'首发名单尚未公布 — 显示完整大名单。点击球员查看资料。',
     pos_gk:'门将', pos_def:'后卫', pos_mid:'中场', pos_fwd:'前锋',
     news_unavail:'暂时无法加载新闻，请稍后重试。', news_fail:'无法加载新闻。',
   },
@@ -828,6 +868,9 @@ const I18N = {
     tab_squads:'Plantillas', squads_note:'Toca un país para ver su plantilla completa del Mundial.', squads_pick:'Elige un país arriba para ver su plantilla.',
     squad_loading:'Cargando plantilla…', squad_none:'Plantilla aún no disponible para este equipo.', squad_tap:'Toca a un jugador para ver su ficha',
     squad_busy:'Los datos en vivo están ocupados ahora (límite diario) — inténtalo más tarde.',
+    lineup_tip:'Ver alineación', starting_xi:'Once inicial', substitutes:'Suplentes', coach_lbl:'Entrenador',
+    lineup_loading:'Cargando alineación…', lineup_none:'Alineación aún no publicada.', lineup_tap:'toca a un jugador para ver su ficha',
+    squad_fallback:'Alineación aún no publicada — mostrando plantillas completas. Toca a un jugador para ver su ficha.',
     pos_gk:'Porteros', pos_def:'Defensas', pos_mid:'Centrocampistas', pos_fwd:'Delanteros',
     news_unavail:'Noticias no disponibles ahora. Inténtalo en breve.', news_fail:'No se pudieron cargar las noticias.',
   },
@@ -1279,12 +1322,12 @@ function renderMapLive(live){
     const cardStyle = `border:2px solid transparent;background:linear-gradient(#1c1b19,#1c1b19) padding-box,`
       + `linear-gradient(90deg,${hc} 0%,${hc} 42%,${ac} 58%,${ac} 100%) border-box;box-shadow:0 4px 16px rgba(0,0,0,.45)`;
     const pill = L.divIcon({className:'', iconSize:null,
-      html:`<div class="pill-wrap${sLL?' at-venue':''}"><div class="live-score-pill${goal?' goal':''}" style="${cardStyle}">`
+      html:`<div class="pill-wrap${sLL?' at-venue':''}"><div class="live-score-pill${goal?' goal':''}" style="${cardStyle}" title="${esc(t('lineup_tip'))}">`
         +`<img src="${flagUrl(h.iso)}" alt="" style="box-shadow:0 0 0 2px ${hc}"><span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
         +`<img src="${flagUrl(a.iso)}" alt="" style="box-shadow:0 0 0 2px ${ac}"><span class="lv" style="color:#c9d1d9">${lv}</span></div></div>`});
-    const fit = sLL ? L.latLngBounds([hp,ap,sLL]) : L.latLngBounds([hp,ap]);
+    // click the live card → both line-ups (or full squads if not posted yet)
     const mk = L.marker(cardAt,{icon:pill,zIndexOffset:1600})
-      .on('click',()=>map.flyToBounds(fit.pad(0.4),{maxZoom:5}))
+      .on('click',()=> openLineup(m.fixtureId || null, i, 0))
       .addTo(liveLayer);
     liveCards.push({mk, latlng:cardAt, bv: sLL?-50:0});
   });
@@ -1806,6 +1849,102 @@ function renderSquad(box, name, d){
     + `<p class="statnote">${t('squad_tap')}</p><div class="sqgrid">${cards}</div>`;
 }
 window.openSquad = openSquad;
+
+/* ───────── Live line-up window (both teams) ───────── */
+// Clicking a live card opens both sides' starting XI + subs (lazy fetch on
+// click — no cost to page load or polling). If the line-up isn't posted yet, we
+// fall back to both teams' full squads. `liveIdx`/`side` index into currentLive
+// so we never quote team names (apostrophes) inside inline onclick.
+const luModal = document.getElementById('lineupModal');
+let lineupSeq = 0;
+function lineupColumn(lu, team, clicked){
+  const sub = [lu.formation, lu.coach ? `${t('coach_lbl')}: ${lu.coach}` : ''].filter(Boolean).join(' · ');
+  const logo = (lu.logo || team.crest) ? `<img src="${esc(lu.logo || team.crest)}" alt="">` : '';
+  const row = p => `<div class="lurow"><span class="lunum">${p.number!=null?esc(String(p.number)):''}</span>`
+    + `<span class="luname plink" data-name="${esc(p.name)}" data-nat="${esc(team.name)}" onclick="openPlayer(this)">${esc(p.name)}</span>`
+    + (p.pos?`<span class="lupos">${esc(p.pos)}</span>`:'') + `</div>`;
+  let html = `<div class="lucol${clicked?' clicked':''}">`
+    + `<div class="luhead">${logo}<h4>${esc(tn(lu.name || team.name))}</h4></div>`
+    + `<p class="lusub">${esc(sub)}</p>`
+    + `<div class="luchead">${t('starting_xi')}</div>` + lu.startXI.map(row).join('');
+  if(lu.subs && lu.subs.length) html += `<div class="luchead">${t('substitutes')}</div>` + lu.subs.map(row).join('');
+  return html + `</div>`;
+}
+// fallback column: the team's full squad (shared cache with the Squads tab)
+async function fetchSquad(name){
+  const key = norm(name);
+  if(squadCache[key]) return squadCache[key];
+  try{
+    const d = await fetch(`/api/squad?team=${encodeURIComponent(name)}`).then(r=>r.json());
+    if(d && !d.error && d.players && d.players.length){ squadCache[key] = d; return d; }
+  }catch(e){}
+  return null;
+}
+function squadColumn(sq, team, clicked){
+  const logo = (team.crest) ? `<img src="${esc(team.crest)}" alt="">` : '';
+  let inner = '';
+  if(!sq || !sq.players || !sq.players.length){
+    inner = `<div class="luempty">${t('lineup_none')}</div>`;
+  } else {
+    const byPos = {};
+    sq.players.forEach(p=>{ (byPos[p.position]=byPos[p.position]||[]).push(p); });
+    const grp = (label, list)=>{
+      list.sort((a,b)=> (a.number==null?99:a.number)-(b.number==null?99:b.number));
+      return `<div class="luchead">${esc(label)}</div>` + list.map(p=>
+        `<div class="lurow"><span class="lunum">${p.number!=null?esc(String(p.number)):''}</span>`
+        + `<span class="luname plink" data-name="${esc(p.name)}" data-nat="${esc(team.name)}" onclick="openPlayer(this)">${esc(p.name)}</span></div>`
+      ).join('');
+    };
+    const seen = new Set();
+    POS_ORDER.forEach(([pos,k])=>{ if(byPos[pos]){ inner += grp(t(k), byPos[pos]); seen.add(pos); } });
+    Object.keys(byPos).forEach(pos=>{ if(!seen.has(pos)) inner += grp(pos||'—', byPos[pos]); });
+  }
+  return `<div class="lucol${clicked?' clicked':''}"><div class="luhead">${logo}<h4>${esc(tn(team.name))}</h4></div>`
+    + `<p class="lusub"></p>` + inner + `</div>`;
+}
+async function openLineup(fid, liveIdx, side){
+  const m = currentLive[liveIdx];
+  if(!m) return;
+  const seq = ++lineupSeq;
+  luModal.hidden = false;
+  luModal.querySelector('.sbox').scrollTop = 0;
+  const body = document.getElementById('luBody');
+  const title = `<div class="lutitle">${esc(tn(m.home.name))} <span class="vs">vs</span> ${esc(tn(m.away.name))}</div>`;
+  body.innerHTML = title + `<div class="luload">${t('lineup_loading')}</div>`;
+
+  // 1) live starting line-ups (needs an api-football fixture id)
+  let teams = null;
+  if(fid){
+    try{
+      const d = await fetch(`/api/lineups?fixture=${fid}`).then(r=>r.json());
+      if(seq!==lineupSeq || luModal.hidden) return;
+      if(d && d.teams && d.teams.some(x=> x.startXI && x.startXI.length)) teams = d.teams;
+    }catch(e){}
+  }
+  if(teams){
+    const find = (tm, idx) => teams.find(x=> norm(x.name)===norm(tm.name)) || teams[idx] || null;
+    const ok = lu => lu && lu.startXI && lu.startXI.length;
+    const col = (lu, team, clicked) => ok(lu)
+      ? lineupColumn(lu, team, clicked)
+      : `<div class="lucol${clicked?' clicked':''}"><div class="luhead">`
+        + ((team.crest)?`<img src="${esc(team.crest)}" alt="">`:'') + `<h4>${esc(tn(team.name))}</h4></div>`
+        + `<div class="luempty">${t('lineup_none')}</div></div>`;
+    body.innerHTML = title + `<p class="lutap">${t('lineup_tap')}</p>`
+      + `<div class="lucols">` + col(find(m.home,0), m.home, side===0) + col(find(m.away,1), m.away, side===1) + `</div>`;
+    return;
+  }
+
+  // 2) no live line-up yet — fall back to both teams' full squads
+  const [sqH, sqA] = await Promise.all([fetchSquad(m.home.name), fetchSquad(m.away.name)]);
+  if(seq!==lineupSeq || luModal.hidden) return;
+  if(!sqH && !sqA){ body.innerHTML = title + `<div class="luempty">${t('lineup_none')}</div>`; return; }
+  body.innerHTML = title + `<p class="lutap">${t('squad_fallback')}</p>`
+    + `<div class="lucols">` + squadColumn(sqH, m.home, side===0) + squadColumn(sqA, m.away, side===1) + `</div>`;
+}
+function closeLineup(){ luModal.hidden = true; }
+luModal.addEventListener('click', e=>{ if(e.target===luModal) closeLineup(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLineup(); });
+window.openLineup = openLineup; window.closeLineup = closeLineup;
 langSel.addEventListener('change', ()=>{
   lang = I18N[langSel.value] ? langSel.value : 'en';
   try{ localStorage.setItem('wc-lang', lang); }catch(e){}
