@@ -538,7 +538,9 @@ async function handleWiki(request, env, ctx) {
 // graceful empty payload on failure so the page falls back to curated values.
 async function handleRecords(request, env, ctx) {
   const cache = caches.default;
-  const ckey = new Request("https://wc.cache/records-v1");
+  // short TTL: during the tournament the top-scorers list updates live as goals
+  // go in, so keep it fresh (was 6h, which served stale tallies).
+  const ckey = new Request("https://wc.cache/records-v2");
   const hit = await cache.match(ckey);
   if (hit) return hit;
   try {
@@ -549,7 +551,7 @@ async function handleRecords(request, env, ctx) {
     const topScorers = parseTopScorers(scHtml);
     const teams = parseTeamRecords(recHtml);
     const data = { source: "wikipedia", updated: new Date().toISOString(), topScorers, ...teams };
-    const res = json(data, 200, 21600);
+    const res = json(data, 200, 900);
     ctx.waitUntil(cache.put(ckey, res.clone()));
     return res;
   } catch (e) {

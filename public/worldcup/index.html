@@ -2692,11 +2692,14 @@ async function openPlayer(el){
   document.getElementById('pMeta').textContent = meta.length ? meta.join(' · ')
     : ((wiki && wiki.description) || nat || 'No profile found');
 
-  // All-time World Cup stats from api-football (authoritative — replaces fallback)
+  // All-time World Cup stats. Goals prefer the authoritative all-time top-scorers
+  // figure (from the records table, via data-val "goals" / data-alltime) when the
+  // card was opened from there; otherwise api-football's aggregate.
+  const recGoals = (d.val && /goal/i.test(d.unit||'')) ? d.val : (d.alltime || null);
   if(pf && pf.stats && (pf.stats.apps || pf.stats.goals || pf.stats.assists)){
     const s = pf.stats, more = [];
     if(s.apps) more.push(pstat(s.apps, t('wc_apps')));
-    more.push(pstat(s.goals||0, t('wc_goals')));
+    more.push(pstat(recGoals!=null ? recGoals : (s.goals||0), t('wc_goals')));
     more.push(pstat(s.assists||0, t('wc_assists')));
     if(s.rating) more.push(pstat(s.rating, t('avg_rating')));
     statsEl.innerHTML = more.join('');
