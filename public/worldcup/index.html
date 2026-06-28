@@ -763,7 +763,7 @@ const I18N = {
     loading_stats:'Loading player stats…', loading_news:'Loading World Cup news…', loading_live:'Loading live scores…',
     search_ph:'🔍 Search any player — e.g. Messi, Harry Kane, Vinícius…', search_btn:'Search', search_ing:'Searching…',
     search_none:'No players found for “{q}”.', search_fail:'Search failed — try again.', read_wiki:'Read more on Wikipedia ↗',
-    club_history:'Club career', wc_apps:'WC 2026 apps', wc_goals:'WC 2026 goals', wc_assists:'WC 2026 assists', avg_rating:'avg rating (2026)',
+    club_history:'Club career', wc_apps:'WC apps (all-time)', wc_goals:'WC goals (all-time)', wc_assists:'WC assists (all-time)', avg_rating:'avg WC rating',
     live_now:'Live now', no_live:'No match live', next_live:'Next live', final_scores:'Final scores', no_today:'No live or upcoming match',
     cal_live:'Live', cal_next:'Next', cal_final:'Final',
     col_team:'Team', groups_empty:'No group tables published yet. They’ll appear here once the draw/standings are available from the data feed.',
@@ -811,7 +811,7 @@ const I18N = {
     loading_stats:'正在加载球员统计…', loading_news:'正在加载世界杯新闻…', loading_live:'正在加载实时比分…',
     search_ph:'🔍 搜索任意球员 — 如 梅西、凯恩、维尼修斯…', search_btn:'搜索', search_ing:'搜索中…',
     search_none:'未找到与“{q}”相关的球员。', search_fail:'搜索失败，请重试。', read_wiki:'在维基百科上阅读更多 ↗',
-    club_history:'俱乐部生涯', wc_apps:'2026世界杯出场', wc_goals:'2026世界杯进球', wc_assists:'2026世界杯助攻', avg_rating:'平均评分(2026)',
+    club_history:'俱乐部生涯', wc_apps:'世界杯出场(历史)', wc_goals:'世界杯进球(历史)', wc_assists:'世界杯助攻(历史)', avg_rating:'世界杯平均评分',
     live_now:'正在直播', no_live:'暂无比赛进行', next_live:'下一场', final_scores:'最终比分', no_today:'暂无比赛',
     cal_live:'直播', cal_next:'下一场', cal_final:'完场',
     col_team:'球队', groups_empty:'尚未公布小组积分榜。一旦数据源提供抽签或积分，将显示在此处。',
@@ -859,7 +859,7 @@ const I18N = {
     loading_stats:'Cargando estadísticas de jugadores…', loading_news:'Cargando noticias del Mundial…', loading_live:'Cargando marcadores en vivo…',
     search_ph:'🔍 Busca cualquier jugador — p. ej. Messi, Kane, Vinícius…', search_btn:'Buscar', search_ing:'Buscando…',
     search_none:'No se encontraron jugadores para «{q}».', search_fail:'La búsqueda falló — inténtalo de nuevo.', read_wiki:'Leer más en Wikipedia ↗',
-    club_history:'Trayectoria en clubes', wc_apps:'Part. Mundial 2026', wc_goals:'Goles Mundial 2026', wc_assists:'Asist. Mundial 2026', avg_rating:'valoración media (2026)',
+    club_history:'Trayectoria en clubes', wc_apps:'Part. Mundial (histórico)', wc_goals:'Goles Mundial (histórico)', wc_assists:'Asist. Mundial (histórico)', avg_rating:'valoración media Mundial',
     live_now:'En vivo', no_live:'Sin partidos en vivo', next_live:'Próximo', final_scores:'Resultados finales', no_today:'Sin partidos en vivo ni próximos',
     cal_live:'En vivo', cal_next:'Próximo', cal_final:'Final',
     col_team:'Equipo', groups_empty:'Aún no hay tablas de grupos. Aparecerán aquí cuando el proveedor de datos publique el sorteo o la clasificación.',
@@ -2652,13 +2652,12 @@ async function openPlayer(el){
   const extractEl = document.getElementById('pExtract'); extractEl.textContent = '';
   const wikiEl = document.getElementById('pWiki'); wikiEl.hidden = true; wikiEl.removeAttribute('href');
   const statsEl = document.getElementById('pStats');
-  // chips passed in from the caller (e.g. the scorers / records tables)
-  const chips = [];
-  if(d.g!=null && d.g!=='') chips.push(pstat(d.g, t('wc_goals')));
-  if(d.a!=null && d.a!=='' && d.a!=='null') chips.push(pstat(d.a, t('wc_assists')));
-  if(d.alltime) chips.push(pstat(d.alltime, 'all-time WC goals'));
-  if(d.val && d.unit) chips.push(pstat(d.val, d.unit));
-  statsEl.innerHTML = chips.join('');
+  // fallback chips, shown only if api-football has no all-time WC stats — use the
+  // explicit all-time figures from the records tables, never the 2026-only ones.
+  const fallbackChips = [];
+  if(d.alltime) fallbackChips.push(pstat(d.alltime, t('wc_goals')));
+  if(d.val && d.unit) fallbackChips.push(pstat(d.val, d.unit));
+  statsEl.innerHTML = fallbackChips.join('');
 
   // api-football detail: by EXACT id when available (squad / line-up → no wrong
   // matches), else fuzzy by name (scorers / records). Get this first so the
@@ -2693,14 +2692,14 @@ async function openPlayer(el){
   document.getElementById('pMeta').textContent = meta.length ? meta.join(' · ')
     : ((wiki && wiki.description) || nat || 'No profile found');
 
-  // WC stats chips from api-football (don't duplicate caller-supplied goals/assists)
-  if(pf && pf.stats){
+  // All-time World Cup stats from api-football (authoritative — replaces fallback)
+  if(pf && pf.stats && (pf.stats.apps || pf.stats.goals || pf.stats.assists)){
     const s = pf.stats, more = [];
     if(s.apps) more.push(pstat(s.apps, t('wc_apps')));
-    if((d.g==null||d.g==='') && s.goals!=null) more.push(pstat(s.goals, t('wc_goals')));
-    if((d.a==null||d.a===''||d.a==='null') && s.assists!=null) more.push(pstat(s.assists, t('wc_assists')));
+    more.push(pstat(s.goals||0, t('wc_goals')));
+    more.push(pstat(s.assists||0, t('wc_assists')));
     if(s.rating) more.push(pstat(s.rating, t('avg_rating')));
-    if(more.length) statsEl.innerHTML = chips.concat(more).join('');
+    statsEl.innerHTML = more.join('');
   }
 
   // bio extract + Wikipedia link

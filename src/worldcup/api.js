@@ -298,17 +298,93 @@ async function fetchClubs(id, headers, nationality) {
       .sort((a, b) => b.to - a.to || b.from - a.from);
   } catch (_) { return []; }
 }
-function buildPlayer(p, wcBlocks, clubs) {
+function buildPlayer(p, stats, clubs, position) {
   const fullName = [p.firstname, p.lastname].filter(Boolean).join(" ") || p.name || "";
-  const pos = (wcBlocks && wcBlocks[0] && wcBlocks[0].games && wcBlocks[0].games.position) || p.position || "";
   return {
     name: p.name, fullName, firstname: p.firstname, lastname: p.lastname,
     photo: p.photo || "", nationality: p.nationality || "",
     club: clubs[0] ? clubs[0].name : "", clubs, currentClub: clubs[0] ? { name: clubs[0].name, logo: clubs[0].logo } : null,
-    stats: aggWcStats(wcBlocks),
+    stats,
     birthDate: (p.birth && p.birth.date) || "", birthPlace: (p.birth && p.birth.place) || "",
-    age: p.age ?? null, height: p.height || "", weight: p.weight || "", position: pos, number: p.number ?? null,
+    age: p.age ?? null, height: p.height || "", weight: p.weight || "", position: position || p.position || "", number: p.number ?? null,
   };
+}
+// All-time World Cup career: api-football keys stats by season, so we fetch the
+// World Cup (league 1) for each tournament year and aggregate. Coverage is ~2006
+// onward; years with no data simply contribute nothing. Runs the years in
+// parallel. Returns the (newest) player object, aggregated stats, and position.
+const WC_YEARS = [2026, 2022, 2018, 2014, 2010, 2006];
+// Fetch one player id's WC seasons, keyed by season (so two ids can be merged
+// without double-counting). `complete` is false if any year fetch was throttled/
+// failed (an under-count we must not cache).
+async function wcBlocksFor(id, headers) {
+  const results = await Promise.all(WC_YEARS.map((y) =>
+    fetch(`${AF}/players?id=${id}&season=${y}&league=${WC_LEAGUE}`, { headers })
+      .then((r) => (r.ok ? r.json() : { _fail: true })).catch(() => ({ _fail: true }))
+  ));
+  let player = null, complete = true;
+  const bySeason = {};
+  for (const d of results) {
+    if (!d || d._fail) { complete = false; continue; }
+    const e = d.errors;
+    if (Array.isArray(e) ? e.length : e && Object.keys(e).length) { complete = false; continue; }
+    const resp = (d.response || [])[0];
+    if (!resp) continue;
+    if (!player && resp.player) player = resp.player;
+    for (const b of (resp.statistics || [])) {
+      if (b.league && b.league.id === WC_LEAGUE && b.league.season != null) bySeason[b.league.season] = b;
+    }
+  }
+  return { player, bySeason, complete };
+}
+// Resolve a player's canonical api-football id from surname + nationality.
+async function resolveProfileId(surname, nat, headers) {
+  const term = String(surname || "").normalize("NFD").replace(/[̀-ͯ]/g, "");
+  if (term.length < 3) return null;
+  try {
+    const r = await fetch(`${AF}/players/profiles?search=${encodeURIComponent(term)}`, { headers });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const e = d.errors;
+    if (Array.isArray(e) ? e.length : e && Object.keys(e).length) return null;
+    let best = null, bestScore = -1;
+    for (const rr of d.response || []) {
+      const p = rr.player; if (!p) continue;
+      const hay = norm(`${p.firstname || ""} ${p.lastname || ""} ${p.name || ""}`);
+      if (!hay.includes(norm(surname))) continue;
+      let score = 1; if (nat && norm(p.nationality) === norm(nat)) score += 3;
+      if (score > bestScore) { bestScore = score; best = p; }
+    }
+    return best ? best.id : null;
+  } catch (_) { return null; }
+}
+// All-time WC career for a player id. Because api-football ids can change across
+// tournaments, we also resolve the canonical profile id (by name + nationality)
+// and MERGE its seasons — but only fetch the extra id when it differs from the
+// one we were given (so stable-id players cost nothing extra). `skipAlt` skips
+// that step (used by the name path, whose id is already the canonical one).
+async function wcCareer(id, headers, skipAlt) {
+  const a = await wcBlocksFor(id, headers);
+  const bySeason = { ...a.bySeason };
+  let player = a.player, complete = a.complete;
+  if (!skipAlt) {
+    // search by the player's common/display name (last token) — matches how the
+    // name path resolves it (e.g. "Neymar", not the long legal lastname)
+    const dn = (player && player.name) || "";
+    const surname = dn.split(/\s+/).pop() || (player && player.lastname) || "";
+    const nat = (player && player.nationality) || "";
+    const altId = surname ? await resolveProfileId(surname, nat, headers) : null;
+    if (altId && String(altId) !== String(id)) {
+      const b = await wcBlocksFor(altId, headers);
+      if (!b.complete) complete = false;
+      for (const s in b.bySeason) if (!bySeason[s]) bySeason[s] = b.bySeason[s];
+      if (!player && b.player) player = b.player;
+    }
+  }
+  const blocks = Object.values(bySeason);
+  let position = "";
+  for (const b of blocks) { if (b.games && b.games.position) { position = b.games.position; break; } }
+  return { player, position, stats: aggWcStats(blocks), complete };
 }
 async function handlePlayer(request, env, ctx) {
   const url = new URL(request.url);
@@ -322,21 +398,16 @@ async function handlePlayer(request, env, ctx) {
 
   // ── exact lookup by api-football player id (squad / line-up clicks) ──
   if (/^\d+$/.test(id)) {
-    const ckey = new Request(`https://wc.cache/player5-id-${id}`);
+    const ckey = new Request(`https://wc.cache/player7-id-${id}`);
     const hit = await cache.match(ckey);
     if (hit) return hit;
     try {
-      const pr = await fetch(`${AF}/players?id=${id}&season=${WC_SEASON}`, { headers });
-      if (!pr.ok) return json({ error: "upstream" }, 200, 0);
-      const pd = await pr.json();
-      const e = pd && pd.errors;
-      if (Array.isArray(e) ? e.length : e && Object.keys(e).length) return json({ error: "rate_limited" }, 200, 0);
-      const resp = (pd.response || [])[0];
-      if (!resp || !resp.player) return json({ error: "not_found" }, 200, 0);
-      const wc = (resp.statistics || []).filter((b) => b.league && b.league.id === WC_LEAGUE);
-      const clubs = await fetchClubs(id, headers, resp.player.nationality);
-      const res = json(buildPlayer(resp.player, wc, clubs), 200, 86400);
-      ctx.waitUntil(cache.put(ckey, res.clone()));
+      const car = await wcCareer(id, headers);
+      if (!car.player) return json({ error: "not_found" }, 200, 0);
+      const clubs = await fetchClubs(id, headers, car.player.nationality);
+      // only cache a COMPLETE aggregate; a partial (throttled) one stays uncached
+      const res = json(buildPlayer(car.player, car.stats, clubs, car.position), 200, car.complete ? 86400 : 0);
+      if (car.complete) ctx.waitUntil(cache.put(ckey, res.clone()));
       return res;
     } catch (_) {
       return json({ error: "failed" }, 200, 0);
@@ -347,7 +418,7 @@ async function handlePlayer(request, env, ctx) {
   const last = name.split(/\s+/).pop().toLowerCase();
   const term = last.normalize("NFD").replace(/[̀-ͯ]/g, ""); // ASCII surname for search
   if (term.length < 3) return json({ error: "short" }, 200, 0);
-  const ckey = new Request(`https://wc.cache/player5-${term}-${norm(nat)}`);
+  const ckey = new Request(`https://wc.cache/player7-${term}-${norm(nat)}`);
   const cached = await cache.match(ckey);
   if (cached) return cached;
   try {
@@ -373,13 +444,10 @@ async function handlePlayer(request, env, ctx) {
     }
     if (!best) return json({ error: "not_found" }, 200, 0);
     const clubs = await fetchClubs(best.id, headers, best.nationality);
-    let wcBlocks = [];
-    try {
-      const sr = await fetch(`${AF}/players?id=${best.id}&season=${WC_SEASON}&league=${WC_LEAGUE}`, { headers });
-      if (sr.ok) wcBlocks = (((await sr.json()).response || [])[0] || {}).statistics || [];
-    } catch (_) { /* stats optional */ }
-    const res = json(buildPlayer(best, wcBlocks, clubs), 200, 86400);
-    ctx.waitUntil(cache.put(ckey, res.clone()));
+    const car = await wcCareer(best.id, headers, true); // best.id is already canonical
+    // only cache a COMPLETE aggregate; a partial (throttled) one stays uncached
+    const res = json(buildPlayer(best, car.stats, clubs, car.position), 200, car.complete ? 86400 : 0);
+    if (car.complete) ctx.waitUntil(cache.put(ckey, res.clone()));
     return res;
   } catch (_) {
     return json({ error: "failed" }, 200, 0);
