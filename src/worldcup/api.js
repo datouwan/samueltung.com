@@ -672,6 +672,41 @@ async function handleSquad(request, env, ctx) {
   return json({ error: "not_found" }, 200, 0);
 }
 
+// The 48 qualified nations (kept in sync with the frontend TEAMS list). Used to
+// pre-warm api-football squads so every team consistently serves with photos.
+const WC_TEAM_NAMES = [
+  "United States", "Canada", "Mexico", "Austria", "Belgium", "Bosnia & Herzegovina",
+  "Croatia", "Czechia", "England", "France", "Germany", "Netherlands", "Norway",
+  "Portugal", "Scotland", "Spain", "Sweden", "Switzerland", "Türkiye", "Argentina",
+  "Brazil", "Colombia", "Ecuador", "Paraguay", "Uruguay", "Algeria", "Cape Verde",
+  "DR Congo", "Côte d'Ivoire", "Egypt", "Ghana", "Morocco", "Senegal", "South Africa",
+  "Tunisia", "Australia", "Iran", "Iraq", "Japan", "Jordan", "South Korea", "Qatar",
+  "Saudi Arabia", "Uzbekistan", "Curaçao", "Haiti", "Panama", "New Zealand",
+];
+// Pre-fetch every nation's api-football squad and cache it (24h) so the Squads
+// tab always serves real player photos instead of the photo-less Wikipedia
+// fallback. Run on a cron. Sequential with a small gap to stay within the
+// per-minute limit; teams that error (rate-limited) are simply retried next run.
+export async function warmSquads(env) {
+  if (!env.APIFOOTBALL_KEY) return;
+  const cache = caches.default;
+  let ok = 0;
+  for (const name of WC_TEAM_NAMES) {
+    try {
+      const af = await apiFootballSquad(name, env);
+      if (af) {
+        await cache.put(
+          new Request(`https://wc.cache/squad-${norm(name)}`),
+          json({ source: "api-football", ...af }, 200, 86400)
+        );
+        ok++;
+      }
+    } catch (_) { /* rate-limited / transient — caught next run */ }
+    await new Promise((r) => setTimeout(r, 250)); // ~4 req/s, well under 300/min
+  }
+  return ok;
+}
+
 async function wikiPageHtml(page) {
   const r = await fetch(
     `https://en.wikipedia.org/w/api.php?action=parse&format=json&page=${page}&prop=text&formatversion=2`,
