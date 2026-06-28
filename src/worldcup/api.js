@@ -266,29 +266,90 @@ function parseRss(xml, feed) {
   return items;
 }
 
-// Player bio + photo from api-football's profiles endpoint (free plan allows it,
-// no season filter). Cached 24h per surname — bios are static, so this barely
-// touches the daily quota. Returns 200 with {error} on failure so the page can
-// still show the stats it already has.
+// Player detail (bio + club career + World Cup stats) from api-football.
+// PREFERRED: lookup by exact player id (?id=) — squad / line-up cards pass it,
+// so we never mis-match an abbreviated name to the wrong player. FALLBACK: fuzzy
+// name search (?name=&nat=) for the scorers / records tables. Cached 24h.
+function aggWcStats(blocks) {
+  if (!blocks || !blocks.length) return null;
+  let apps = 0, goals = 0, assists = 0, minutes = 0, rSum = 0, rN = 0;
+  for (const b of blocks) {
+    const g = b.games || {};
+    apps += g.appearences || 0; minutes += g.minutes || 0;
+    goals += (b.goals && b.goals.total) || 0;
+    assists += (b.goals && b.goals.assists) || 0;
+    const rt = parseFloat(b.rating);
+    if (Number.isFinite(rt)) { rSum += rt; rN++; }
+  }
+  return { apps, goals, assists, minutes, rating: rN ? +(rSum / rN).toFixed(2) : null };
+}
+async function fetchClubs(id, headers, nationality) {
+  try {
+    const tr = await fetch(`${AF}/players/teams?player=${id}`, { headers });
+    if (!tr.ok) return [];
+    const td = await tr.json();
+    return (td.response || [])
+      .filter((x) => x.team && norm(x.team.name) !== norm(nationality || ""))
+      .map((x) => {
+        const s = (x.seasons || []).filter((n) => typeof n === "number");
+        return { name: x.team.name, logo: x.team.logo || "", from: s.length ? Math.min(...s) : null, to: s.length ? Math.max(...s) : null };
+      })
+      .filter((c) => c.from != null)
+      .sort((a, b) => b.to - a.to || b.from - a.from);
+  } catch (_) { return []; }
+}
+function buildPlayer(p, wcBlocks, clubs) {
+  const fullName = [p.firstname, p.lastname].filter(Boolean).join(" ") || p.name || "";
+  const pos = (wcBlocks && wcBlocks[0] && wcBlocks[0].games && wcBlocks[0].games.position) || p.position || "";
+  return {
+    name: p.name, fullName, firstname: p.firstname, lastname: p.lastname,
+    photo: p.photo || "", nationality: p.nationality || "",
+    club: clubs[0] ? clubs[0].name : "", clubs, currentClub: clubs[0] ? { name: clubs[0].name, logo: clubs[0].logo } : null,
+    stats: aggWcStats(wcBlocks),
+    birthDate: (p.birth && p.birth.date) || "", birthPlace: (p.birth && p.birth.place) || "",
+    age: p.age ?? null, height: p.height || "", weight: p.weight || "", position: pos, number: p.number ?? null,
+  };
+}
 async function handlePlayer(request, env, ctx) {
   const url = new URL(request.url);
+  const id = (url.searchParams.get("id") || "").trim();
   const name = (url.searchParams.get("name") || "").trim();
   const nat = (url.searchParams.get("nat") || "").trim();
-  if (!name) return json({ error: "no_name" }, 400, 0);
+  if (!/^\d+$/.test(id) && !name) return json({ error: "no_name" }, 400, 0);
   if (!env.APIFOOTBALL_KEY) return json({ error: "no_key" }, 200, 0);
-
-  const last = name.split(/\s+/).pop().toLowerCase();
-  // api-football's search expects ASCII, so strip accents (Mbappé -> mbappe)
-  const term = last.normalize("NFD").replace(/[̀-ͯ]/g, "");
-  if (term.length < 3) return json({ error: "short" }, 200, 0);
-
-  // cache the final (small) result per surname+nationality; never cache errors
+  const headers = { "x-apisports-key": env.APIFOOTBALL_KEY };
   const cache = caches.default;
-  const ckey = new Request(`https://wc.cache/player4-${term}-${norm(nat)}`);
+
+  // ── exact lookup by api-football player id (squad / line-up clicks) ──
+  if (/^\d+$/.test(id)) {
+    const ckey = new Request(`https://wc.cache/player5-id-${id}`);
+    const hit = await cache.match(ckey);
+    if (hit) return hit;
+    try {
+      const pr = await fetch(`${AF}/players?id=${id}&season=${WC_SEASON}`, { headers });
+      if (!pr.ok) return json({ error: "upstream" }, 200, 0);
+      const pd = await pr.json();
+      const e = pd && pd.errors;
+      if (Array.isArray(e) ? e.length : e && Object.keys(e).length) return json({ error: "rate_limited" }, 200, 0);
+      const resp = (pd.response || [])[0];
+      if (!resp || !resp.player) return json({ error: "not_found" }, 200, 0);
+      const wc = (resp.statistics || []).filter((b) => b.league && b.league.id === WC_LEAGUE);
+      const clubs = await fetchClubs(id, headers, resp.player.nationality);
+      const res = json(buildPlayer(resp.player, wc, clubs), 200, 86400);
+      ctx.waitUntil(cache.put(ckey, res.clone()));
+      return res;
+    } catch (_) {
+      return json({ error: "failed" }, 200, 0);
+    }
+  }
+
+  // ── fuzzy lookup by name (scorers / records / search) ──
+  const last = name.split(/\s+/).pop().toLowerCase();
+  const term = last.normalize("NFD").replace(/[̀-ͯ]/g, ""); // ASCII surname for search
+  if (term.length < 3) return json({ error: "short" }, 200, 0);
+  const ckey = new Request(`https://wc.cache/player5-${term}-${norm(nat)}`);
   const cached = await cache.match(ckey);
   if (cached) return cached;
-
-  const headers = { "x-apisports-key": env.APIFOOTBALL_KEY };
   try {
     const r = await fetch(`${AF}/players/profiles?search=${encodeURIComponent(term)}`, { headers });
     if (!r.ok) return json({ error: "upstream" }, 200, 0);
@@ -296,83 +357,28 @@ async function handlePlayer(request, env, ctx) {
     const errs = data && data.errors;
     if (Array.isArray(errs) ? errs.length : errs && Object.keys(errs).length)
       return json({ error: "rate_limited" }, 200, 0);
-
-    // token-based match: api-football names can be compound (e.g. lastname
-    // "Messi Cuccittini"), so build a haystack and count how many of our name
-    // tokens appear in it. Surname must be present; nationality breaks ties.
     const tokens = name.toLowerCase().split(/\s+/).map(norm).filter((t) => t.length >= 2);
     const surname = norm(last);
     const first = tokens[0] || "";
     let best = null, bestScore = 0;
-    for (const r of data.response || []) {
-      const p = r.player; if (!p) continue;
+    for (const rr of data.response || []) {
+      const p = rr.player; if (!p) continue;
       const hay = norm(`${p.firstname || ""} ${p.lastname || ""} ${p.name || ""}`);
       if (!hay.includes(surname)) continue; // surname is mandatory
       const natMatch = nat && norm(p.nationality) === norm(nat);
-      // for multi-word names, the first name (or nationality) must also match,
-      // so "Gerd Müller" can't silently fall back to "Thomas Müller"
       if (tokens.length > 1 && first && !hay.includes(first) && !natMatch) continue;
       let score = tokens.reduce((n, t) => n + (hay.includes(t) ? 2 : 0), 0);
       if (natMatch) score += 3;
       if (score > bestScore) { bestScore = score; best = p; }
     }
     if (!best) return json({ error: "not_found" }, 200, 0);
-
-    // full club history from career teams (national team excluded), newest first
-    let clubs = [];
-    try {
-      const tr = await fetch(`${AF}/players/teams?player=${best.id}`, { headers });
-      if (tr.ok) {
-        const td = await tr.json();
-        clubs = (td.response || [])
-          .filter((x) => x.team && norm(x.team.name) !== norm(best.nationality))
-          .map((x) => {
-            const seasons = (x.seasons || []).filter((s) => typeof s === "number");
-            return {
-              name: x.team.name, logo: x.team.logo || "",
-              from: seasons.length ? Math.min(...seasons) : null,
-              to: seasons.length ? Math.max(...seasons) : null,
-            };
-          })
-          .filter((c) => c.from != null)
-          .sort((a, b) => b.to - a.to || b.from - a.from);
-      }
-    } catch (_) { /* clubs are optional */ }
-
-    // World Cup 2026 stats (Pro plan): appearances / goals / assists / rating.
-    // Filtered to the WC league + season so the numbers are tournament-specific.
-    let stats = null;
-    let currentClub = clubs[0] ? { name: clubs[0].name, logo: clubs[0].logo } : null;
+    const clubs = await fetchClubs(best.id, headers, best.nationality);
+    let wcBlocks = [];
     try {
       const sr = await fetch(`${AF}/players?id=${best.id}&season=${WC_SEASON}&league=${WC_LEAGUE}`, { headers });
-      if (sr.ok) {
-        const sd = await sr.json();
-        const blocks = (((sd.response || [])[0]) || {}).statistics || [];
-        if (blocks.length) {
-          let apps = 0, goals = 0, assists = 0, minutes = 0, rSum = 0, rN = 0;
-          for (const b of blocks) {
-            const g = b.games || {};
-            apps += g.appearences || 0;
-            minutes += g.minutes || 0;
-            goals += (b.goals && b.goals.total) || 0;
-            assists += (b.goals && b.goals.assists) || 0;
-            const rt = parseFloat(b.rating);
-            if (Number.isFinite(rt)) { rSum += rt; rN++; }
-          }
-          stats = { apps, goals, assists, minutes, rating: rN ? +(rSum / rN).toFixed(2) : null };
-        }
-      }
+      if (sr.ok) wcBlocks = (((await sr.json()).response || [])[0] || {}).statistics || [];
     } catch (_) { /* stats optional */ }
-
-    const res = json({
-      name: best.name, firstname: best.firstname, lastname: best.lastname,
-      photo: best.photo || "", nationality: best.nationality || "",
-      club: clubs[0] ? clubs[0].name : "", clubs, currentClub, stats,
-      birthDate: (best.birth && best.birth.date) || "", birthPlace: (best.birth && best.birth.place) || "",
-      birthCountry: (best.birth && best.birth.country) || "",
-      age: best.age ?? null, height: best.height || "", weight: best.weight || "",
-      position: best.position || "", number: best.number ?? null,
-    }, 200, 86400);
+    const res = json(buildPlayer(best, wcBlocks, clubs), 200, 86400);
     ctx.waitUntil(cache.put(ckey, res.clone()));
     return res;
   } catch (_) {
@@ -508,6 +514,7 @@ async function handleLineups(request, env, ctx) {
     if (Array.isArray(e) ? e.length : e && Object.keys(e).length)
       return json({ error: "rate_limited" }, 200, 0);
     const mapPlayer = (x) => ({
+      id: (x.player && x.player.id) || null,
       name: (x.player && x.player.name) || "",
       number: (x.player && x.player.number) ?? null,
       pos: (x.player && x.player.pos) || "",
@@ -571,11 +578,30 @@ async function apiFootballSquad(name, env) {
   const e = d && d.errors;
   if (Array.isArray(e) ? e.length : e && Object.keys(e).length) throw new Error("rate_limited");
   const squad = (d.response || [])[0];
-  const players = ((squad && squad.players) || []).map((p) => ({
-    name: p.name || "", number: p.number ?? null, position: p.position || "",
-    age: p.age ?? null, club: "", photo: p.photo || "",
+  let players = ((squad && squad.players) || []).map((p) => ({
+    id: p.id || null, name: p.name || "", number: p.number ?? null,
+    position: p.position || "", age: p.age ?? null, club: "", photo: p.photo || "",
   })).filter((p) => p.name);
   if (!players.length) return null;
+
+  // api-football gives abbreviated names ("S. Repi"); upgrade to full names from
+  // the Wikipedia squad, matched by shirt number AND surname (so we never attach
+  // the wrong full name to a face). Unmatched players keep the abbreviated name.
+  try {
+    const all = await getAllSquads();
+    const wt = all[norm(name)];
+    if (wt && wt.players && wt.players.length) {
+      const byNum = {};
+      wt.players.forEach((w) => { if (w.number != null) byNum[w.number] = w; });
+      const lastOf = (s) => norm(String(s).split(/\s+/).pop());
+      players = players.map((p) => {
+        const w = p.number != null ? byNum[p.number] : null;
+        if (w && lastOf(w.name) === lastOf(p.name)) return { ...p, name: w.name, club: w.club || p.club };
+        return p;
+      });
+    }
+  } catch (_) { /* full-name upgrade is best-effort */ }
+
   return { team: (squad.team && squad.team.name) || name, logo: (squad.team && squad.team.logo) || "", players };
 }
 // Wikipedia squads: parse the "2026 FIFA World Cup squads" article once for all
@@ -644,7 +670,7 @@ async function handleSquad(request, env, ctx) {
   if (!name) return json({ error: "no_team" }, 400, 0);
 
   const cache = caches.default;
-  const ckey = new Request(`https://wc.cache/squad-${norm(name)}`);
+  const ckey = new Request(`https://wc.cache/squad-v2-${norm(name)}`);
   const hit = await cache.match(ckey);
   if (hit) return hit;
 
@@ -696,7 +722,7 @@ export async function warmSquads(env) {
       const af = await apiFootballSquad(name, env);
       if (af) {
         await cache.put(
-          new Request(`https://wc.cache/squad-${norm(name)}`),
+          new Request(`https://wc.cache/squad-v2-${norm(name)}`),
           json({ source: "api-football", ...af }, 200, 86400)
         );
         ok++;

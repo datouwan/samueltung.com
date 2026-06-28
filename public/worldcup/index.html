@@ -1840,7 +1840,7 @@ function renderSquad(box, name, d){
   const groupHtml = (label, list)=>{
     list.sort((a,b)=> (a.number==null?99:a.number)-(b.number==null?99:b.number));
     return `<div class="sqgroup"><div class="sqgh">${esc(label)} · ${list.length}</div>`
-      + list.map(p=>`<div class="sqrow" data-name="${esc(p.name)}" data-nat="${esc(name)}" onclick="openPlayer(this)">`
+      + list.map(p=>`<div class="sqrow" data-name="${esc(p.name)}" data-nat="${esc(name)}"${p.id?` data-id="${esc(String(p.id))}"`:''}${p.photo?` data-photo="${esc(p.photo)}"`:''} onclick="openPlayer(this)">`
         + `<span class="sqnum">${p.number!=null?esc(String(p.number)):''}</span>`
         + (p.photo?`<img class="sqphoto" src="${esc(p.photo)}" alt="">`:`<span class="sqphoto sqph">👤</span>`)
         + `<span class="sqmeta"><span class="sqname">${esc(p.name)}</span>`
@@ -1867,7 +1867,7 @@ function lineupColumn(lu, team, clicked){
   const sub = [lu.formation, lu.coach ? `${t('coach_lbl')}: ${lu.coach}` : ''].filter(Boolean).join(' · ');
   const logo = (lu.logo || team.crest) ? `<img src="${esc(lu.logo || team.crest)}" alt="">` : '';
   const row = p => `<div class="lurow"><span class="lunum">${p.number!=null?esc(String(p.number)):''}</span>`
-    + `<span class="luname plink" data-name="${esc(p.name)}" data-nat="${esc(team.name)}" onclick="openPlayer(this)">${esc(p.name)}</span>`
+    + `<span class="luname plink" data-name="${esc(p.name)}" data-nat="${esc(team.name)}"${p.id?` data-id="${esc(String(p.id))}"`:''} onclick="openPlayer(this)">${esc(p.name)}</span>`
     + (p.pos?`<span class="lupos">${esc(p.pos)}</span>`:'') + `</div>`;
   let html = `<div class="lucol${clicked?' clicked':''}">`
     + `<div class="luhead">${logo}<h4>${esc(tn(lu.name || team.name))}</h4></div>`
@@ -1898,7 +1898,7 @@ function squadColumn(sq, team, clicked){
       list.sort((a,b)=> (a.number==null?99:a.number)-(b.number==null?99:b.number));
       return `<div class="luchead">${esc(label)}</div>` + list.map(p=>
         `<div class="lurow"><span class="lunum">${p.number!=null?esc(String(p.number)):''}</span>`
-        + `<span class="luname plink" data-name="${esc(p.name)}" data-nat="${esc(team.name)}" onclick="openPlayer(this)">${esc(p.name)}</span></div>`
+        + `<span class="luname plink" data-name="${esc(p.name)}" data-nat="${esc(team.name)}"${p.id?` data-id="${esc(String(p.id))}"`:''}${p.photo?` data-photo="${esc(p.photo)}"`:''} onclick="openPlayer(this)">${esc(p.name)}</span></div>`
       ).join('');
     };
     const seen = new Set();
@@ -2634,7 +2634,10 @@ async function openPlayer(el){
   pModal.querySelector('.sbox').scrollTop = 0;
   document.getElementById('pName').textContent = name;
   document.getElementById('pMeta').textContent = nat + ' · ' + t('loading_word');
-  pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg');
+  // If the caller gave us a known-correct headshot (squad / line-up), show it
+  // immediately so the card never flashes a wrong/placeholder face.
+  if(d.photo){ pPhoto.style.backgroundImage = `url('${d.photo}')`; pPhoto.classList.remove('noimg'); }
+  else { pPhoto.style.backgroundImage = 'none'; pPhoto.classList.add('noimg'); }
   const clubsEl = document.getElementById('pClubs'); clubsEl.hidden = true; clubsEl.innerHTML = '';
   const extractEl = document.getElementById('pExtract'); extractEl.textContent = '';
   const wikiEl = document.getElementById('pWiki'); wikiEl.hidden = true; wikiEl.removeAttribute('href');
@@ -2647,17 +2650,24 @@ async function openPlayer(el){
   if(d.val && d.unit) chips.push(pstat(d.val, d.unit));
   statsEl.innerHTML = chips.join('');
 
-  // Wikipedia (photo + bio, free) and api-football (club career + WC stats, Pro)
-  // fetched together. Each is independent, so one failing still shows the rest.
-  const [wiki, p] = await Promise.all([
-    fetch(`/api/wiki?q=${encodeURIComponent(name)}`).then(r=>r.json()).then(w=>(w.results||[])[0]||null).catch(()=>null),
-    fetch(`/api/player?name=${encodeURIComponent(name)}&nat=${encodeURIComponent(nat)}`).then(r=>r.json()).catch(()=>null),
-  ]);
-  if(pModal.hidden) return; // closed meanwhile
+  // api-football detail: by EXACT id when available (squad / line-up → no wrong
+  // matches), else fuzzy by name (scorers / records). Get this first so the
+  // Wikipedia bio can be searched by the player's FULL name.
+  const pq = d.id ? `/api/player?id=${encodeURIComponent(d.id)}`
+                  : `/api/player?name=${encodeURIComponent(name)}&nat=${encodeURIComponent(nat)}`;
+  const p = await fetch(pq).then(r=>r.json()).catch(()=>null);
+  if(pModal.hidden) return;
   const pf = (p && !p.error) ? p : null;
+  const fullName = (pf && pf.fullName) || name;
+  if(pf && pf.fullName) document.getElementById('pName').textContent = pf.fullName;
 
-  // photo: Wikipedia first, else the api-football headshot
-  const photo = (wiki && wiki.thumbnail) || (pf && pf.photo) || '';
+  // Wikipedia bio/photo, searched by the full name for accuracy
+  const wiki = await fetch(`/api/wiki?q=${encodeURIComponent(fullName)}`).then(r=>r.json()).then(w=>(w.results||[])[0]||null).catch(()=>null);
+  if(pModal.hidden) return;
+
+  // photo precedence: the caller's exact headshot, then api-football's exact
+  // headshot, then Wikipedia's (name-matched, so least certain)
+  const photo = d.photo || (pf && pf.photo) || (wiki && wiki.thumbnail) || '';
   if(photo){ pPhoto.style.backgroundImage = `url('${photo}')`; pPhoto.classList.remove('noimg'); }
 
   // meta line: position · age · current club (from api-football), else wiki blurb
