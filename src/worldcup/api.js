@@ -2,7 +2,7 @@
 // All /api/* endpoints used by public/worldcup/index.html live here; src/index.js
 // is just the Worker entry that routes to handleWorldCupApi() below.
 //
-//   GET /api/wc       ->  { updated, source, groups[], matches[], live[], scorers[] }
+//   GET /api/wc       ->  { updated, source, groups[], matches[], live[], scorers[], koSched[] }
 //   GET /api/news     ->  { updated, items[] }              (publisher RSS)
 //   GET /api/player   ->  player bio + club history          (api-football)
 //   GET /api/events   ->  goal events for one fixture        (api-football)
@@ -91,17 +91,34 @@ async function handleWC(request, env, ctx) {
   const DAY = 86400000, now = Date.now();
   const from = new Date(now - DAY).toISOString().slice(0, 10);
   const to = new Date(now + DAY).toISOString().slice(0, 10);
+  // wide window (covers the whole knockout stage) for schedule kickoff times
+  const schedTo = new Date(now + 32 * DAY).toISOString().slice(0, 10);
 
-  let standings, matchesRaw, scorersRaw;
+  let standings, matchesRaw, scorersRaw, schedRaw;
   try {
-    [standings, matchesRaw, scorersRaw] = await Promise.all([
+    [standings, matchesRaw, scorersRaw, schedRaw] = await Promise.all([
       cachedJson(`${FD}/standings`, fdHeaders, FD_TTL, "fd-standings"),
       cachedJson(`${FD}/matches?dateFrom=${from}&dateTo=${to}`, fdHeaders, FD_TTL, `fd-matches-${from}`),
       cachedJson(`${FD}/scorers?limit=60`, fdHeaders, 300, "fd-scorers-60").catch(() => null),
+      // Wide fixture window (long-cached) purely to feed the schedule kickoff
+      // times: the live matches query above is only ±1 day, so on its own it
+      // can't time the whole knockout bracket. Best-effort — null if it fails.
+      cachedJson(`${FD}/matches?dateFrom=${from}&dateTo=${schedTo}`, fdHeaders, 600, `fd-matches-wide-${from}`).catch(() => null),
     ]);
   } catch (err) {
     return json({ error: "upstream", message: String(err) }, 502, 0);
   }
+
+  // Compact knockout schedule (kickoff time + status), so the calendar can show
+  // R32/R16/QF/SF/Final times that fall outside the live ±1-day window.
+  const koSched = (schedRaw?.matches || [])
+    .filter((m) => m.stage && m.stage !== "GROUP_STAGE")
+    .map((m) => ({
+      h: m.homeTeam?.shortName || m.homeTeam?.name || "TBD",
+      a: m.awayTeam?.shortName || m.awayTeam?.name || "TBD",
+      utc: m.utcDate,
+      st: m.status,
+    }));
 
   const groups = (standings.standings || [])
     .filter((s) => s.type === "TOTAL" && s.group)
@@ -199,7 +216,7 @@ async function handleWC(request, env, ctx) {
     penalties: s.penalties ?? null,
   }));
 
-  return json({ updated: new Date().toISOString(), source, groups, matches, live, scorers });
+  return json({ updated: new Date().toISOString(), source, groups, matches, live, scorers, koSched });
 }
 
 // World Cup news from publisher RSS feeds (free, keyless). Cached ~10 min.
