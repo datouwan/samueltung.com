@@ -124,7 +124,8 @@
   <div class="grid">
     <div class="card"><h4>🗺️ Interactive map</h4><p>All 48 nations as flag markers, colored by confederation.
       A "Teams / Stadiums" toggle switches between teams and the 16 host stadiums. Live games draw animated
-      flight-path arcs to the host stadium with a floating score card.</p></div>
+      flight-path arcs to the host stadium with a floating score card. Once the knockout stage begins,
+      eliminated nations' flags <b>grey out</b> and the legend crosses out 48 to show the <b>32</b> still in.</p></div>
     <div class="card"><h4>🔴 Live bar &amp; scores</h4><p>Sticky ticker of in-play games (accurate minute + score),
       next kickoffs, and a finished-scores strip. Goals flash when a score increments between polls.</p></div>
     <div class="card"><h4>👥 Live line-ups</h4><p>Click a live card → both teams' Starting XI &amp; subs with
@@ -134,7 +135,8 @@
     <div class="card"><h4>📊 Group stage</h4><p>Live group tables (P/W/D/L/GD/Pts) with qualification
       highlighting and a "LIVE" badge on groups with a game in play.</p></div>
     <div class="card"><h4>📅 Schedule</h4><p>Full fixture calendar overlaying live status/scores, auto-scrolling
-      to the live or next game.</p></div>
+      to the live or next game. Knockout ties show their real <b>kickoff time</b> (local), pinned from the feed
+      since the bracket source carries only a date.</p></div>
     <div class="card"><h4>🏆 Knockout bracket</h4><p>The full Round-of-32 → Final tree parsed from Wikipedia,
       filling in teams and scores as the tournament progresses.</p></div>
     <div class="card"><h4>🥉 3rd-place race</h4><p>Live table of the best third-placed teams and their projected
@@ -155,7 +157,7 @@
   <table>
     <thead><tr><th>Endpoint</th><th>Purpose</th><th>Source</th><th>Cache</th></tr></thead>
     <tbody>
-      <tr><td><code>/api/wc</code></td><td>Standings, fixtures, live scores &amp; minute, scorers</td><td>football-data + api-football</td><td>~15–30s</td></tr>
+      <tr><td><code>/api/wc</code></td><td>Standings, fixtures, live scores &amp; minute, scorers, knockout kickoff schedule</td><td>football-data + api-football</td><td>~15–30s</td></tr>
       <tr><td><code>/api/lineups</code></td><td>Both teams' XI + subs for a fixture (lazy, on click)</td><td>api-football</td><td>~60s</td></tr>
       <tr><td><code>/api/squad</code></td><td>A nation's full squad by name</td><td>api-football → Wikipedia</td><td>6–24h</td></tr>
       <tr><td><code>/api/events</code></td><td>Goal events for one fixture</td><td>api-football</td><td>~45s</td></tr>
@@ -179,6 +181,25 @@
       used wherever possible to conserve the metered API.</p></div>
   </div>
 
+  <h2><span class="em">📐</span>Codebase at a glance</h2>
+  <p>Deliberately small and dependency-light: a hand-written page plus a thin edge API, no framework and
+  no build step. The whole thing is ~6,000 lines across 15 files. The page was recently split into
+  markup/logic, styles, and data — so each stays small and easy to scan.</p>
+  <table>
+    <thead><tr><th>Part</th><th>Size</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>App <code>public/worldcup/index.html</code></td><td>~1,970 lines</td><td>Markup + vanilla JS; Leaflet the only runtime dependency</td></tr>
+      <tr><td>Styles <code>worldcup.css</code></td><td>~610 lines</td><td>Split out of the page's <code>&lt;style&gt;</code> block</td></tr>
+      <tr><td>Static data <code>data.js</code></td><td>~340 lines</td><td>Pure reference tables (teams, schedule, venues, i18n, kits), loaded before the app</td></tr>
+      <tr><td>Edge API <code>src/worldcup/api.js</code> + <code>src/index.js</code></td><td>~1,080 lines</td><td>Worker request router + 9 cached endpoint handlers</td></tr>
+      <tr><td>Build report <code>report.html</code></td><td>~310 lines</td><td>This page</td></tr>
+      <tr><td>API endpoints</td><td>9</td><td><code>/api/wc · lineups · squad · events · player · bracket · records · wiki · news</code></td></tr>
+      <tr><td>Upstream data sources</td><td>4</td><td>football-data, api-football, Wikipedia, publisher RSS</td></tr>
+      <tr><td>Languages · frameworks · build tools</td><td>3 · 0 · 0</td><td>EN / 中文 / ES; no React/Vue, no bundler</td></tr>
+      <tr><td>Domain data baked in</td><td>48 + 16</td><td>48 qualified teams &amp; 16 host stadiums (coords, aliases, schedule)</td></tr>
+    </tbody>
+  </table>
+
   <h2><span class="em">🏗️</span>Architecture notes</h2>
   <ul class="clean">
     <li><b>Edge-cached fan-in.</b> Each upstream has its own cache key &amp; TTL, so the page can poll often while
@@ -190,6 +211,9 @@
       football-data's delayed feed), so the site keeps working if the paid API is unavailable.</li>
     <li><b>Cross-source name matching.</b> A shared <code>norm()</code> + alias map reconciles spellings
       ("Korea Republic" ↔ "South Korea", "Ivory Coast" ↔ "Côte d'Ivoire") across every provider.</li>
+    <li><b>Separation without a build step.</b> Styles (<code>worldcup.css</code>) and pure reference data
+      (<code>data.js</code>) live in their own files; <code>data.js</code> loads first as a classic script so its
+      tables sit in the global scope the app reads from — smaller files, still zero bundler.</li>
   </ul>
 
   <h2><span class="em">💡</span>Engineering learnings</h2>
@@ -234,8 +258,24 @@
       lookups and cross-source matching — so translation never breaks logic.</p>
   </div>
 
+  <div class="lesson">
+    <h4>Syntax-checking an inline script isn't enough — run it</h4>
+    <p>The whole app is one inline <code>&lt;script&gt;</code> that runs top-to-bottom at load, so a single
+      runtime error there aborts everything and freezes the page on "Loading…". A legend tweak read a
+      <code>let</code> declared ~1,200 lines below it — a temporal-dead-zone <code>ReferenceError</code> that a
+      syntax check happily passes. The fix: hoist shared state above its first use, and before deploying,
+      actually <b>execute</b> the script in a stubbed-browser harness to catch load-time errors, not just parse it.</p>
+    <span class="took">Lesson: for a load-time script, "it parses" ≠ "it runs".</span>
+  </div>
+
   <h2><span class="em">🧭</span>Progress so far</h2>
   <ul class="timeline">
+    <li><b>Page split for maintainability</b> — pulled CSS into <code>worldcup.css</code> and the static data tables
+      into <code>data.js</code>, cutting the page from ~2,900 to ~1,970 lines with no behavior change. <span class="d">current</span></li>
+    <li><b>Knockout-stage map</b> — eliminated nations grey out (group-stage casualties + knockout losers, derived
+      from the bracket); legend crosses out 48 → 32. <span class="d">knockout</span></li>
+    <li><b>Knockout kickoff times</b> — schedule now times every R32 tie, pinned from a wide fixture window since the
+      bracket source carries only a date. <span class="d">schedule</span></li>
     <li><b>Live line-ups</b> — click a team to see both squads side by side. <span class="d">click-to-line-up feature</span></li>
     <li><b>Chinese country names</b> — full localization on language switch. <span class="d">i18n</span></li>
     <li><b>Squads tab</b> — full roster per nation, api-football with Wikipedia fallback. <span class="d">new tab</span></li>
@@ -243,7 +283,7 @@
     <li><b>Theme polish</b> — theme-aware live bar; light theme locked to "stone"; picker removed. <span class="d">design</span></li>
     <li><b>Performance fix</b> — replaced <code>live=all</code> with the WC-only query; added fetch timeout; tuned poll to 15s. <span class="d">stability</span></li>
     <li><b>Stable checkpoints</b> — tagged <code>wc-stable</code> and <code>wc-lineups</code>. <span class="d">git</span></li>
-    <li><b>Live line-ups, the fast way</b> — re-added on the lightweight base; load path verified unchanged. <span class="d">current</span></li>
+    <li><b>Live line-ups, the fast way</b> — re-added on the lightweight base; load path verified unchanged. <span class="d">line-ups</span></li>
   </ul>
 
   <h2><span class="em">🔭</span>Possible next steps</h2>
