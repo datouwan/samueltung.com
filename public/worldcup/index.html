@@ -510,11 +510,13 @@ function liveKitColors(m){
   let hc = m.homeColor || cc[ha] || kitColor(m.home.name);
   let ac = m.awayColor || cc[aa] || kitColor(m.away.name);
   if(m.homeColor || m.awayColor) kitCache[pk] = Object.assign({}, cc, {[ha]: m.homeColor||cc[ha], [aa]: m.awayColor||cc[aa]});
-  // a near-white kit (e.g. a team in its away whites) is invisible on the light
-  // basemap and washes out the card border — fall back to the team's static
-  // brand color, same as kitColor() does for near-white shirts.
-  if(hexLum(hc) >= 205) hc = kitColor(m.home.name);
-  if(hexLum(ac) >= 205) ac = kitColor(m.away.name);
+  // The feed sometimes reports a near-white kit. Only honor it when the team
+  // actually plays in white (their static brand primary is near-white too, e.g.
+  // USA) — otherwise it's an away/alt kit or bad data (e.g. Bosnia, who wear
+  // blue), so fall back to the team's static brand primary instead.
+  const brand = k => (KIT[k] || ['#888'])[0];
+  if(hexLum(hc) >= 205 && hexLum(brand(ha)) < 205) hc = brand(ha);
+  if(hexLum(ac) >= 205 && hexLum(brand(aa)) < 205) ac = brand(aa);
   return {hc, ac};
 }
 // `primary` overrides the static shirt color with the kit worn today
