@@ -190,10 +190,19 @@ async function handleWC(request, env, ctx) {
   matches.forEach((m) => { groupByPair[pairKey(m.home.name, m.away.name)] = m.group; });
 
   const fdLive = matches.filter((m) => LIVE_FD.includes(m.status));
+  // football-data's free feed can lag well past kickoff (still TIMED at 19:13
+  // for a 19:00 game), which would keep api-football gated off exactly when a
+  // match goes live. So also open the gate whenever a not-finished match's
+  // scheduled kickoff has passed within the last ~3.5h (covers ET + pens).
+  const maybeLive = matches.some((m) => {
+    if (m.status === "FINISHED") return false;
+    const ko = Date.parse(m.utcDate);
+    return ko <= now && now - ko < 3.5 * 3600000;
+  });
 
-  // Only spend api-football requests when something is actually live.
+  // Only spend api-football requests when something is (or should be) live.
   let live = null, source = "football-data";
-  if (fdLive.length && env.APIFOOTBALL_KEY) {
+  if ((fdLive.length || maybeLive) && env.APIFOOTBALL_KEY) {
     try {
       // Query ONLY the World Cup fixtures for today + yesterday (UTC). This is a
       // tiny payload (a handful of fixtures) — far lighter and faster than the
