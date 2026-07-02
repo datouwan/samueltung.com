@@ -76,6 +76,45 @@ async function cachedJson(url, headers, ttl, keyStr) {
   return data;
 }
 
+// The kit colors a fixture's teams are wearing today, as { "Team Name": "#hex" }.
+// api-football carries them on lineups, but the free tier is rate-limited and
+// the colors don't change during a match — so fetch ONCE and cache the extracted
+// colors for hours. Crucially we never cache an empty/rate-limited result, so a
+// throttled poll just retries next time instead of poisoning the cache. Returns
+// {} when unavailable; the page then keeps a team's static brand color.
+// Read already-resolved kit colors from cache only (no upstream call), so the
+// live path never blocks on api-football. Returns the {name:#hex} map or null.
+async function readKitColors(fid) {
+  const hit = await caches.default.match(new Request(`https://wc.cache/kit-${fid}`));
+  return hit ? hit.json() : null;
+}
+async function fixtureColors(fid, afHeaders) {
+  const cache = caches.default;
+  const key = new Request(`https://wc.cache/kit-${fid}`);
+  const hit = await cache.match(key);
+  if (hit) return hit.json();
+  try {
+    const r = await fetch(`${AF}/fixtures/lineups?fixture=${fid}`, { headers: afHeaders });
+    if (!r.ok) return {};
+    const d = await r.json();
+    const resp = (d && d.response) || [];
+    if (!resp.length) return {}; // rate-limited or not posted yet — don't cache
+    const out = {};
+    resp.forEach((t) => {
+      const nm = t.team && t.team.name;
+      const p = t.team && t.team.colors && t.team.colors.player && t.team.colors.player.primary;
+      if (nm && p) out[nm] = String(p).startsWith("#") ? p : "#" + p;
+    });
+    if (!Object.keys(out).length) return {};
+    await cache.put(key, new Response(JSON.stringify(out), {
+      headers: { "content-type": "application/json", "cache-control": "max-age=10800" },
+    }));
+    return out;
+  } catch (_) {
+    return {};
+  }
+}
+
 async function handleWC(request, env, ctx) {
   const token = env.FOOTBALL_DATA_TOKEN;
   if (!token) {
@@ -192,7 +231,26 @@ async function handleWC(request, env, ctx) {
             away: { name: an, crest: f.teams.away.logo || "", score: f.goals.away },
           };
         });
-      if (mapped.length) { live = mapped; source = "api-football"; }
+      if (mapped.length) {
+        // Tint each side with the kit the team is ACTUALLY wearing today, not
+        // its static brand color (e.g. Japan in white, not their usual blue).
+        // api-football lineups carry team.colors.player.primary; cache per
+        // fixture (colors are fixed for the match) so this is ~1 call per live
+        // game, not per poll. Best-effort — the page falls back to static kits.
+        await Promise.all(mapped.map(async (mm) => {
+          if (!mm.fixtureId) return;
+          const cols = await readKitColors(mm.fixtureId);
+          if (cols) {
+            if (cols[mm.home.name]) mm.homeColor = cols[mm.home.name];
+            if (cols[mm.away.name]) mm.awayColor = cols[mm.away.name];
+          } else if (ctx) {
+            // not resolved yet — warm the cache off the hot path (free tier is
+            // rate-limited; one success sticks for the match, then the page caches it)
+            ctx.waitUntil(fixtureColors(mm.fixtureId, afHeaders));
+          }
+        }));
+        live = mapped; source = "api-football";
+      }
     } catch (_) {
       // fall through to football-data below
     }

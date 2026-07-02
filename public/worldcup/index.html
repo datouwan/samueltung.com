@@ -51,9 +51,9 @@
 
 <section class="groups-wrap">
   <div class="tabs">
-    <button class="tab active" data-tab="groups" data-i18n="tab_groups">Group stage</button>
-    <button class="tab" data-tab="schedule" data-i18n="tab_schedule">Schedule</button>
+    <button class="tab active" data-tab="schedule" data-i18n="tab_schedule">Schedule</button>
     <button class="tab" data-tab="bracket" data-i18n="tab_bracket">Bracket</button>
+    <button class="tab" data-tab="groups" data-i18n="tab_groups">Group stage</button>
     <button class="tab" data-tab="thirds" data-i18n="tab_thirds">3rd place</button>
     <button class="tab" data-tab="bet" data-i18n="tab_bet">Bet</button>
     <button class="tab" data-tab="country" data-i18n="tab_country">Country stats</button>
@@ -62,10 +62,10 @@
     <button class="tab" data-tab="news" data-i18n="tab_news">News</button>
     <span class="upd" id="updated"></span>
   </div>
-  <div class="groups tabpane" id="groups" data-pane="groups">
+  <div class="groups tabpane" id="groups" data-pane="groups" hidden>
     <div class="state-note" data-i18n="loading_groups">Loading group standings…</div>
   </div>
-  <div class="tabpane" id="schedulePane" data-pane="schedule" hidden>
+  <div class="tabpane" id="schedulePane" data-pane="schedule">
     <div class="state-note" data-i18n="loading_sched">Loading match schedule…</div>
   </div>
   <div class="tabpane" id="bracketPane" data-pane="bracket" hidden>
@@ -273,20 +273,30 @@ function canonTeam(name){
   return k;
 }
 
+// Once we've resolved a match's host stadium, remember it by team pair. The
+// free football-data fallback (and some polls) report no venue, and the static
+// FIXTURE_VENUES map only covers the group stage — so without this, a knockout
+// match's arcs snap back to a straight country-to-country line every time the
+// venue is momentarily missing (e.g. at half-time). The cache keeps them anchored.
+const venueCache = {};
 // resolve any match to a host stadium: explicit feed venue first, then the
-// built-in fixture map by team pair.
+// built-in fixture map by team pair, then the last venue we saw for this match.
 function matchStadium(m){
   if(!m) return null;
+  const a = m.home && canonTeam(m.home.name), b = m.away && canonTeam(m.away.name);
+  const key = (a && b) ? a+'|'+b : null;
+  let s = null;
   if(m.venue){
     const vi = venueInfo(typeof m.venue==='string' ? {name:m.venue} : m.venue);
-    if(vi && vi.s) return vi.s;
+    if(vi && vi.s) s = vi.s;
   }
-  if(m.home && m.away){
-    const a = canonTeam(m.home.name), b = canonTeam(m.away.name);
+  if(!s && a && b){
     const n = FIXTURE_VENUES[a+'|'+b] || FIXTURE_VENUES[b+'|'+a];
-    if(n){ const s = stadiumByName[norm(n)]; if(s) return s; }
+    if(n){ const st = stadiumByName[norm(n)]; if(st) s = st; }
   }
-  return null;
+  if(!s && key) s = venueCache[key] || venueCache[b+'|'+a] || null; // reuse last known
+  if(s && key) venueCache[key] = s;
+  return s;
 }
 
 /* ───────── Stadiums-only map view ───────── */
@@ -333,6 +343,11 @@ const liveLayer = L.layerGroup().addTo(map);
 let liveMarked = [];
 let liveStadiumEls = [];
 let liveCards = []; // floating score cards, for screen-space declutter
+// The kit each team is wearing today comes from api-football; the free
+// football-data fallback carries no colors, so remember them per match (keyed
+// by the unordered team pair) and reuse them on colorless polls — otherwise the
+// kit flickers back to the team's static brand color.
+const kitCache = {};
 const flagUrl = iso => `https://flagcdn.com/w40/${iso}.png`;
 
 function clearMapLive(){
@@ -409,7 +424,8 @@ function renderMapLive(live){
     const h = markersByName[canonTeam(m.home.name)], a = markersByName[canonTeam(m.away.name)];
     if(!h || !a) return;
     const hp = h.marker.getLatLng(), ap = a.marker.getLatLng();
-    const hc = kitColor(m.home.name), ac = kitColor(m.away.name); // team kit colors
+    // the kit each side is actually wearing today (feed → cached → static)
+    const {hc, ac} = liveKitColors(m);
     const goal = isFreshGoal(m);
     const lv = goal ? '⚽ GOAL!' : liveState(m);
     // resolve the host stadium from static fixtures (instant) — the free feed
@@ -484,19 +500,33 @@ function kitColor(name){
 // a contrasting halo for an arc so it stays visible on any basemap: light glow
 // behind dark lines (the dark-mode problem), dark glow behind light lines.
 function haloColor(col){ return hexLum(col) < 140 ? 'rgba(255,255,255,.6)' : 'rgba(12,10,8,.42)'; }
-function kitSvg(name){
-  const [k1,k2] = KIT[norm(name)] || ['#888','#bbb'];
+// Resolve the kit colors each side wears for a live match: the feed's per-match
+// colors first, then the last colors we cached for this match, then the team's
+// static brand color. Shared by the map arcs/card and the live-bar jersey so
+// they agree, and it refreshes the cache so colorless polls keep the kit.
+function liveKitColors(m){
+  const ha = canonTeam(m.home.name), aa = canonTeam(m.away.name);
+  const pk = [ha,aa].sort().join('|'), cc = kitCache[pk] || {};
+  const hc = m.homeColor || cc[ha] || kitColor(m.home.name);
+  const ac = m.awayColor || cc[aa] || kitColor(m.away.name);
+  if(m.homeColor || m.awayColor) kitCache[pk] = Object.assign({}, cc, {[ha]: m.homeColor||cc[ha], [aa]: m.awayColor||cc[aa]});
+  return {hc, ac};
+}
+// `primary` overrides the static shirt color with the kit worn today
+function kitSvg(name, primary){
+  const [k1d,k2] = KIT[norm(name)] || ['#888','#bbb'];
+  const k1 = primary || k1d;
   return `<svg class="kit" viewBox="0 0 28 26" width="18" height="17" aria-hidden="true">`
     +`<path d="M10 2 L4 5 L1.5 11 L5 13.5 L6.5 11.5 L6.5 24 L21.5 24 L21.5 11.5 L23 13.5 L26.5 11 L24 5 L18 2 L16 4.5 C14.5 6 13.5 6 12 4.5 Z" fill="${k1}" stroke="rgba(0,0,0,.55)" stroke-width="1" stroke-linejoin="round"/>`
     +`<path d="M10 2 L12 4.5 C13.5 6 14.5 6 16 4.5 L18 2 L16.4 1.4 C14.8 3.6 13.2 3.6 11.6 1.4 Z" fill="${k2}"/>`
     +`<path d="M4 5 L1.5 11 L5 13.5 L6.5 11.5 Z" fill="${k2}"/>`
     +`<path d="M24 5 L26.5 11 L23 13.5 L21.5 11.5 Z" fill="${k2}"/></svg>`;
 }
-function teamCard(t, reversed){
+function teamCard(t, reversed, override){
   const flag = t.crest ? `<img src="${esc(t.crest)}" alt="">` : '';
   const name = `<span class="cn">${esc(tn(t.name))}</span>`;
-  const kit = kitSvg(t.name);
-  const col = kitColor(t.name); // tint each side with its team's kit color
+  const kit = kitSvg(t.name, override);
+  const col = override || kitColor(t.name); // tint each side with its team's kit color
   return `<span class="tcard" style="border-bottom:2px solid ${col}">`
     + (reversed ? (name + flag + kit) : (kit + flag + name)) + `</span>`;
 }
@@ -541,13 +571,14 @@ function liveState(m){
 
 function liveCard(m,i){
   const goal = isFreshGoal(m);
+  const {hc, ac} = liveKitColors(m); // today's kit, same source as the map
   const vi = venueInfo(m.venue);
   const vchip = vi ? `<span class="vchip" title="Stadium info" onclick="event.stopPropagation();openStadiumByIdx(${i})">🏟️ ${esc(vi.name)}</span>` : '';
   return `<span class="lgame tap${goal?' goal':''}" title="Show on map" data-h="${esc(m.home.name)}" data-a="${esc(m.away.name)}"`
     + ` onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
-    + teamCard(m.home,false)
+    + teamCard(m.home,false,hc)
     + `<span class="sc">${fmtScore(m.home.score)}–${fmtScore(m.away.score)}</span>`
-    + teamCard(m.away,true)
+    + teamCard(m.away,true,ac)
     + (goal?`<span class="goalbadge">⚽ GOAL!</span>`:`<span class="min">${liveState(m)}</span>`)
     + (m.group?`<span class="grp">Grp ${esc(m.group)}</span>`:'') + vchip + `</span>`;
 }
@@ -687,7 +718,11 @@ function renderSchedule(matches){
     + `<span class="cal-legend"><span class="cl live">${t('cal_live')}</span><span class="cl next">${t('cal_next')}</span><span class="cl fin">${t('cal_final')}</span></span></div>`
     + `<div class="calhead">${WD.map(w=>`<div class="cal-wd">${esc(w)}</div>`).join('')}</div>`
     + `<div class="cal">${cells}</div>`;
+  // Schedule is the default tab now (group stage over) — on the first render
+  // while it's visible, jump to the live/next game instead of the calendar top.
+  if(!schedFirstScroll && !pane.hidden){ schedFirstScroll = true; scrollScheduleToToday(); }
 }
+let schedFirstScroll = false;
 // ── knockout fixtures for the calendar (parsed from the live bracket) ──
 const KO_MON = {january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
 const RND_SHORT = {R32:'R32',R16:'R16',QF:'QF',SF:'SF','3P':'3rd',F:'Final'};
@@ -706,7 +741,7 @@ function shortSlot(s){
   return s || '?';
 }
 function koSide(tm){
-  if(tm && tm.code) return {iso: CODE2ISO[tm.code]||'', label: tm.code, full: tm.code};
+  if(tm && tm.code) return {iso: CODE2ISO[tm.code]||'', label: tm.code, full: CODE2NAME[tm.code] || tm.code};
   const slot = (tm && tm.slot) || '';
   return {iso:'', label: shortSlot(slot), full: slotLabel(slot)};
 }
@@ -745,7 +780,7 @@ function calEventKO(it){
   // kickoff time once the feed has pinned it; else LIVE/minute or FT
   const time = it.timed ? new Date(it.t).toLocaleTimeString(locale(), {hour:'2-digit',minute:'2-digit'}) : '';
   const tag = it.live ? (it.minute!=null?esc(it.minute)+"'":'LIVE') : (fin ? 'FT' : esc(time));
-  const title = `${it.hSide.full} vs ${it.aSide.full} · ${rl}` + (it.v?` · ${it.v}`:'');
+  const title = `${tn(it.hSide.full)} vs ${tn(it.aSide.full)} · ${rl}` + (it.v?` · ${it.v}`:'');
   return `<button class="cev ko${it.live?' live':''}${fin?' fin':''}" title="${esc(title)}" onclick="goBracket()">`
     + `<span class="cev-top"><span>${tag}</span><span class="cev-g">${esc(rl)}</span></span>`
     + `<span class="cev-tm">${side(it.hSide)}<b class="cev-mid">${mid}</b>${side(it.aSide)}</span>`
@@ -758,7 +793,7 @@ function calEvent(it, isNext){
   const tag = it.live ? (it.minute!=null?esc(it.minute)+"'":'LIVE') : (it.fin?'FT':esc(time));
   const fl = (iso,code)=>`<img class="cf" src="https://flagcdn.com/w20/${iso}.png" alt=""><span>${esc(code)}</span>`;
   return `<button class="cev${it.live?' live':''}${it.fin?' fin':''}${isNext?' next':''}"`
-    + ` title="${esc(it.hn)} vs ${esc(it.an)} · Group ${it.g} · ${esc(it.v)}"`
+    + ` title="${esc(tn(it.hn))} vs ${esc(tn(it.an))} · Group ${it.g} · ${esc(it.v)}"`
     + ` data-h="${esc(it.hn)}" data-a="${esc(it.an)}" onclick="focusLiveMatch(this.dataset.h,this.dataset.a)">`
     + `<span class="cev-top"><span>${tag}</span><span class="cev-g">${it.g}</span></span>`
     + `<span class="cev-tm">${fl(it.hi,it.hc)}<b class="cev-mid">${mid}</b>${fl(it.ai,it.ac)}</span>`

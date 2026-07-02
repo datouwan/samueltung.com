@@ -324,7 +324,7 @@ const WC_SCHEDULE = [{"iso":"2026-06-11T19:00:00Z","d":"2026-06-11","g":"A","hc"
 /* KIT */
 const KIT = {
   unitedstates:['#ffffff','#0a3161'], canada:['#d52b1e','#ffffff'], mexico:['#006847','#ffffff'],
-  austria:['#ED2939','#ffffff'], belgium:['#e30613','#fdda24'], bosniaherzegovina:['#002395','#ffd100'],
+  austria:['#ED2939','#ffffff'], belgium:['#e30613','#fdda24'], bosniaherzegovina:['#002f6c','#ffd100'],
   croatia:['#ff0000','#ffffff'], czechia:['#d7141a','#ffffff'], england:['#ffffff','#001489'],
   france:['#002395','#ffffff'], germany:['#ffffff','#1e3a8a'], netherlands:['#f36c21','#ffffff'],
   norway:['#ba0c2f','#00205b'], portugal:['#c8102e','#006847'], scotland:['#0c2074','#ffffff'],
