@@ -22,5 +22,9 @@
   "routes": [
     { "pattern": "samueltung.com",     "custom_domain": true },
     { "pattern": "www.samueltung.com", "custom_domain": true }
-  ]
+  ],
+
+  // Keep api-football squads warm in cache (every 6h) so the Squads tab always
+  // serves real player photos instead of the photo-less Wikipedia fallback.
+  "triggers": { "crons": ["0 */6 * * *"] }
 }
