@@ -507,9 +507,14 @@ function haloColor(col){ return hexLum(col) < 140 ? 'rgba(255,255,255,.6)' : 'rg
 function liveKitColors(m){
   const ha = canonTeam(m.home.name), aa = canonTeam(m.away.name);
   const pk = [ha,aa].sort().join('|'), cc = kitCache[pk] || {};
-  const hc = m.homeColor || cc[ha] || kitColor(m.home.name);
-  const ac = m.awayColor || cc[aa] || kitColor(m.away.name);
+  let hc = m.homeColor || cc[ha] || kitColor(m.home.name);
+  let ac = m.awayColor || cc[aa] || kitColor(m.away.name);
   if(m.homeColor || m.awayColor) kitCache[pk] = Object.assign({}, cc, {[ha]: m.homeColor||cc[ha], [aa]: m.awayColor||cc[aa]});
+  // a near-white kit (e.g. a team in its away whites) is invisible on the light
+  // basemap and washes out the card border — fall back to the team's static
+  // brand color, same as kitColor() does for near-white shirts.
+  if(hexLum(hc) >= 205) hc = kitColor(m.home.name);
+  if(hexLum(ac) >= 205) ac = kitColor(m.away.name);
   return {hc, ac};
 }
 // `primary` overrides the static shirt color with the kit worn today
