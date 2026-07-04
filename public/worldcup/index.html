@@ -51,8 +51,8 @@
 
 <section class="groups-wrap">
   <div class="tabs">
-    <button class="tab active" data-tab="schedule" data-i18n="tab_schedule">Schedule</button>
-    <button class="tab" data-tab="bracket" data-i18n="tab_bracket">Bracket</button>
+    <button class="tab active" data-tab="bracket" data-i18n="tab_bracket">Bracket</button>
+    <button class="tab" data-tab="schedule" data-i18n="tab_schedule">Schedule</button>
     <button class="tab" data-tab="groups" data-i18n="tab_groups">Group stage</button>
     <button class="tab" data-tab="thirds" data-i18n="tab_thirds">3rd place</button>
     <button class="tab" data-tab="bet" data-i18n="tab_bet">Bet</button>
@@ -65,10 +65,10 @@
   <div class="groups tabpane" id="groups" data-pane="groups" hidden>
     <div class="state-note" data-i18n="loading_groups">Loading group standings…</div>
   </div>
-  <div class="tabpane" id="schedulePane" data-pane="schedule">
+  <div class="tabpane" id="schedulePane" data-pane="schedule" hidden>
     <div class="state-note" data-i18n="loading_sched">Loading match schedule…</div>
   </div>
-  <div class="tabpane" id="bracketPane" data-pane="bracket" hidden>
+  <div class="tabpane" id="bracketPane" data-pane="bracket">
     <div class="state-note" data-i18n="loading_bracket">Loading knockout bracket…</div>
   </div>
   <div class="tabpane" id="thirdsPane" data-pane="thirds" hidden>
@@ -216,10 +216,12 @@ function relabelMarkers(){
 }
 
 const counts = TEAMS.reduce((a,[,,,,c])=>(a[c]=(a[c]||0)+1,a),{});
-// Declared here (not with the rest of the bracket state lower down) because the
-// legend renders at page load and reads it via koEntrantIsos() — a `let` below
-// would be in the temporal dead zone and throw, halting the whole script.
+// Declared here (not lower down with the bracket functions) because the legend
+// renders at page load and reads lastBracket via koEntrantIsos(), and loadBracket()
+// runs at load for the default tab — a `let` below would be in the temporal dead
+// zone and throw, halting the whole script.
 let lastBracket = null;
+let bracketLoaded = false, bracketAt = 0, bracketFetching = null;
 const legend = L.control({position:'bottomright'});
 let legendEl = null;
 // Legend title + per-confederation counts. Before the knockout it reads
@@ -439,7 +441,7 @@ function renderMapLive(live){
     if(sLL){
       // flight-path arcs: each nation curves in and "lands" at the host stadium,
       // each drawn in that team's own kit color.
-      [[hp,hc],[ap,ac]].forEach(([p,col])=>{
+      [[hp,arcVisible(hc)],[ap,arcVisible(ac)]].forEach(([p,col])=>{
         const arc = curvePts(p, sLL, 0.22);
         // NO halo/casing under the arc — bare dashed lines only (user preference;
         // a halo has been added and removed before, do not reintroduce it)
@@ -454,8 +456,8 @@ function renderMapLive(live){
     } else {
       // no venue coords — fall back to a direct link, split home→away kit color
       const mp = L.latLng((hp.lat+ap.lat)/2,(hp.lng+ap.lng)/2);
-      L.polyline([hp,mp],{color:hc,weight:2.8,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
-      L.polyline([mp,ap],{color:ac,weight:2.8,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
+      L.polyline([hp,mp],{color:arcVisible(hc),weight:2.8,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
+      L.polyline([mp,ap],{color:arcVisible(ac),weight:2.8,opacity:.95,dashArray:'6 8',className:'liveline'}).addTo(liveLayer);
     }
 
     // the live score card — each side tinted with its team's kit color: a
@@ -502,6 +504,16 @@ function kitColor(name){
 // a contrasting halo for an arc so it stays visible on any basemap: light glow
 // behind dark lines (the dark-mode problem), dark glow behind light lines.
 function haloColor(col){ return hexLum(col) < 140 ? 'rgba(255,255,255,.6)' : 'rgba(12,10,8,.42)'; }
+// chroma = max−min channel spread; whitish = light AND unsaturated. Light but
+// colorful alt kits (teal/yellow) are NOT whitish — don't regress that.
+function hexChroma(c){ const n=String(c).replace('#',''); if(n.length<6) return 0;
+  const v=[n.slice(0,2),n.slice(2,4),n.slice(4,6)].map(x=>parseInt(x,16));
+  return Math.max(...v)-Math.min(...v); }
+function isWhitish(c){ return hexLum(c) >= 205 && hexChroma(c) < 36; }
+// a whitish kit is real (Morocco wore white in the 2026 R16) but a white dashed
+// arc vanishes on the light basemap — draw THOSE arcs in a visible light gray.
+// Jersey icons and card borders keep the true white (their dark stroke/background carry it).
+function arcVisible(c){ return isWhitish(c) ? '#c7ccd4' : c; }
 // RGB distance between two hex colors (0–441); accepts #rgb and #rrggbb.
 function hexDist(a,b){
   const p = h => { let n=String(h).replace('#',''); if(n.length===3) n=n.replace(/./g,c=>c+c);
@@ -520,16 +532,14 @@ function liveKitColors(m){
   let hc = m.homeColor || cc[ha] || kitColor(m.home.name);
   let ac = m.awayColor || cc[aa] || kitColor(m.away.name);
   if(m.homeColor || m.awayColor) kitCache[pk] = Object.assign({}, cc, {[ha]: m.homeColor||cc[ha], [aa]: m.awayColor||cc[aa]});
-  // The feed sometimes reports a near-white kit. Only honor it when the team
-  // actually plays in white (their static brand primary is near-white too, e.g.
-  // USA) — otherwise it's an away/alt kit or bad data (e.g. Bosnia, who wear
-  // blue), so fall back to the team's static brand primary instead.
-  const brand = k => (KIT[k] || ['#888'])[0];
-  if(hexLum(hc) >= 205 && hexLum(brand(ha)) < 205) hc = brand(ha);
-  if(hexLum(ac) >= 205 && hexLum(brand(aa)) < 205) ac = brand(aa);
-  // Same-color clash (Spain red vs Austria red, Portugal vs Croatia): in a real
-  // match one side changes shirt, so mirror that — flip the away side to its
-  // kit accent (usually the change color); if that still clashes, flip home.
+  // Feed colors are vetted server-side now (Sportradar's scout-confirmed
+  // per-match jerseys first; api-football's bogus whites/clashes dropped
+  // before they reach us), so TRUST a white from the feed — Morocco really
+  // wore white in the 2026 R16. Do not re-add a "white must be wrong" check.
+  // Same-color clash (Spain red vs Austria red, Portugal vs Croatia): only the
+  // brand-color fallback can still produce this (real per-match feeds can't) —
+  // in a real match one side changes shirt, so mirror that: flip the away side
+  // to its kit accent (usually the change color); if that still clashes, flip home.
   if(hexDist(hc, ac) < 80){
     const hAcc = (KIT[ha] || [])[1], aAcc = (KIT[aa] || [])[1];
     if(aAcc && hexDist(hc, aAcc) >= 80) ac = aAcc;
@@ -1185,6 +1195,8 @@ const initialTab = (location.hash||'').replace('#','');
 if(['news','stats','groups','schedule','bracket','thirds','bet','country','squads'].includes(initialTab)){
   const t = document.querySelector(`.tab[data-tab="${initialTab}"]`); if(t) t.click();
 }
+// Bracket is the default tab — load it now unless a deep link switched away.
+if(!panes.bracket.hidden) loadBracket();
 
 // player search — fuzzy, via Wikipedia, with a results dropdown
 const pSearchInput = document.getElementById('pSearchInput');
@@ -1397,7 +1409,7 @@ function applyEliminations(){
   });
   updateLegend(); // keep the legend's "48 → 32" count in sync with the bracket
 }
-let bracketLoaded = false, bracketAt = 0, bracketFetching = null; // lastBracket declared earlier
+// bracketLoaded / bracketAt / bracketFetching are declared up top with lastBracket.
 // Fetch + cache the knockout bracket once. Shared by the Bracket tab and the
 // Schedule calendar (which folds the knockout fixtures in). Throttled to 5 min;
 // pass force=true to bypass. Resolves to the rounds array (or null on failure).

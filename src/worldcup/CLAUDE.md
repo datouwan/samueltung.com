@@ -23,6 +23,31 @@ Deployed cadence (Pro): `AF_TTL` ≈ 15s, `FD_TTL` = 30s, squad cache 24h, Wikip
    back to football-data (no fixtureId) and was slow.
 2. The client has an 8s AbortController fetch timeout; keep the backend responses fast and
    cached so it isn't tripped.
+3. api-football returns HTTP **200 with an `errors` payload** when the per-minute limit is hit.
+   `cachedJson` must never cache those (they'd poison every poll for the TTL), and the live
+   fixtures queries pass `{isBad, lastGoodTtl}` so a throttled minute serves the last good
+   snapshot instead of silently dropping to football-data (which loses kit colors + minute).
+   `?debug=1` on `/api/wc` returns a `dbg` object showing why live fell back.
+
+## Live kit colors — source order (fixtureColors, cached `kit4-<fid>` 3h; bump KIT_KEY on logic changes)
+1. **Sportradar gismo** (`lsc.fn.sportradar.com/common/.../gismo`, keyless — the feed behind
+   their Live Match Tracker widgets). `match_info/<id>` → `data.jerseys.{home,away}.player.base`
+   with a `real:true` scout-confirmed flag; only `real` jerseys are accepted. Match id comes from
+   `sport_matches/1/<date>/0` filtered to World Cup tournaments (skip "SRL" simulated clones).
+   Verified live (2026 R16): only source that knew Canada wore BLACK vs Morocco in WHITE while
+   Sofascore was blocked and api-football said red/red brand colors.
+2. **Sofascore** event lineups `playerColor.primary` — 403s datacenter AND residential IPs since
+   ~Jul 2026; kept as best-effort in case the block lifts.
+3. **api-football** lineups `team.colors.player.primary` — usually static brand colors, NOT the
+   match kit. Sanitized hard: scramble detection (real shirt in `player.number` when outfield
+   number ≈ own GK shirt — Portugal 2026 R32), whitish colors dropped (bogus placeholders),
+   and the whole result rejected when both teams' colors clash (dist < 80 = brand data for a
+   clash pairing, impossible in a real match).
+4. Nothing → the page falls back to static brand colors in `public/worldcup/data.js` KIT.
+The frontend TRUSTS feed colors including white (vetting is server-side now). White kits stay
+white on jersey icons/cards; only map ARCS swap whitish → light gray (`arcVisible`) so dashed
+lines stay visible on the light basemap. "Whitish" = light AND unsaturated (chroma < 36) —
+light-but-colorful alt kits (teal/yellow) are real; don't regress that.
 
 ## Endpoints
 - `/api/wc` — standings, schedule, live fixtures, knockout schedule (`koSched`).

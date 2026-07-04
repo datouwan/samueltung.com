@@ -59,60 +59,247 @@ function json(data, status = 200, maxAge = 12) {
 
 // Fetch + JSON with an independent edge cache keyed by `keyStr`, so each
 // upstream has its own TTL regardless of how often the page polls.
-async function cachedJson(url, headers, ttl, keyStr) {
+// opts.isBad(data): api-football returns HTTP 200 with an `errors` payload when
+// throttled — those must never be cached (they'd poison every poll for `ttl`).
+// opts.lastGoodTtl: also keep the last good payload under a longer TTL and
+// serve it when a fetch fails or comes back bad, so one throttled minute
+// doesn't drop the whole feature (live kit colors, match minute).
+async function cachedJson(url, headers, ttl, keyStr, opts) {
   const cache = caches.default;
   const key = new Request("https://wc.cache/" + encodeURIComponent(keyStr));
   const hit = await cache.match(key);
   if (hit) return hit.json();
-  const r = await fetch(url, { headers });
-  if (!r.ok) throw new Error(`HTTP ${r.status} ${url}`);
-  const data = await r.json();
+  const lgKey = opts && opts.lastGoodTtl
+    ? new Request("https://wc.cache/" + encodeURIComponent(keyStr) + "-lastgood")
+    : null;
+  const lastGood = async () => {
+    const lg = lgKey && (await cache.match(lgKey));
+    return lg ? lg.json() : null;
+  };
+  let data;
+  try {
+    const r = await fetch(url, { headers });
+    if (!r.ok) throw new Error(`HTTP ${r.status} ${url}`);
+    data = await r.json();
+  } catch (e) {
+    const lg = await lastGood();
+    if (lg) return lg;
+    throw e;
+  }
+  if (opts && opts.isBad && opts.isBad(data)) {
+    const lg = await lastGood();
+    return lg || data; // never cache a bad payload
+  }
+  const body = JSON.stringify(data);
   await cache.put(
     key,
-    new Response(JSON.stringify(data), {
+    new Response(body, {
       headers: { "content-type": "application/json", "cache-control": `max-age=${ttl}` },
     })
   );
+  if (lgKey) {
+    await cache.put(lgKey, new Response(body, {
+      headers: { "content-type": "application/json", "cache-control": `max-age=${opts.lastGoodTtl}` },
+    }));
+  }
   return data;
 }
 
 // The kit colors a fixture's teams are wearing today, as { "Team Name": "#hex" }.
-// api-football carries them on lineups, but the free tier is rate-limited and
-// the colors don't change during a match — so fetch ONCE and cache the extracted
-// colors for hours. Crucially we never cache an empty/rate-limited result, so a
-// throttled poll just retries next time instead of poisoning the cache. Returns
-// {} when unavailable; the page then keeps a team's static brand color.
+// Colors don't change during a match, so resolve ONCE per fixture and cache for
+// hours; never cache an empty result so a failed attempt just retries later.
+// Source order: Sportradar gismo (scouted per-match jerseys, `real:true` flag —
+// verified correct: Canada black / Morocco white R16 while everyone else said
+// red/red) → Sofascore (editor-set per-match; 403s datacenter AND residential
+// IPs as of Jul 2026 — kept as best-effort) → api-football lineups (usually
+// static brand colors, NOT the match kit — sanitized hard, see afKitColors)
+// → nothing, and the page keeps the team's static brand color.
 // Read already-resolved kit colors from cache only (no upstream call), so the
-// live path never blocks on api-football. Returns the {name:#hex} map or null.
+// live path never blocks on upstreams. Returns the {name:#hex} map or null.
+// Key is versioned (kit4) — bump it when the pipeline changes so stale wrong
+// colors from the old logic don't outlive a deploy.
+const KIT_KEY = "kit4";
 async function readKitColors(fid) {
-  const hit = await caches.default.match(new Request(`https://wc.cache/kit-${fid}`));
+  const hit = await caches.default.match(new Request(`https://wc.cache/${KIT_KEY}-${fid}`));
   return hit ? hit.json() : null;
 }
-async function fixtureColors(fid, afHeaders) {
-  const cache = caches.default;
-  const key = new Request(`https://wc.cache/kit-${fid}`);
-  const hit = await cache.match(key);
-  if (hit) return hit.json();
+
+// RGB distance between two hex colors (0–441), tolerant of missing '#'.
+function hexDist(a, b) {
+  const p = (h) => {
+    let n = String(h || "").replace("#", "");
+    if (n.length === 3) n = n.replace(/./g, (c) => c + c);
+    return [parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)];
+  };
+  const [r1, g1, b1] = p(a), [r2, g2, b2] = p(b);
+  if ([r1, g1, b1, r2, g2, b2].some(isNaN)) return 441;
+  return Math.hypot(r1 - r2, g1 - g2, b1 - b2);
+}
+
+// Perceived luminance (0–255) and chroma (max−min channel spread) of a hex
+// color — same formulas as the frontend's hexLum/chroma so "whitish" means the
+// same thing on both sides: light AND unsaturated.
+function hexLum(hex) {
+  const n = String(hex || "").replace("#", "");
+  if (n.length < 6) return 128;
+  return 0.299 * parseInt(n.slice(0, 2), 16) + 0.587 * parseInt(n.slice(2, 4), 16) + 0.114 * parseInt(n.slice(4, 6), 16);
+}
+function hexChroma(hex) {
+  const n = String(hex || "").replace("#", "");
+  if (n.length < 6) return 0;
+  const v = [n.slice(0, 2), n.slice(2, 4), n.slice(4, 6)].map((x) => parseInt(x, 16));
+  return Math.max(...v) - Math.min(...v);
+}
+const whitish = (c) => hexLum(c) >= 205 && hexChroma(c) < 36;
+
+// Sportradar gismo — the open feed behind their embeddable Live Match Tracker
+// widgets (lsc.fn.sportradar.com works keyless; ls.fn.sportradar.com 403s).
+// match_info carries the jersey each side actually wears, scouted per match,
+// with a `real:true` flag once confirmed. This is the only source that knew
+// Canada wore black vs Morocco in white (2026 R16) — make it the primary.
+const SR = "https://lsc.fn.sportradar.com/common/en/Etc:UTC/gismo";
+const SR_HDRS = {
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+  accept: "application/json",
+};
+const srJerseys = (x) => ((((x || {}).doc || [])[0] || {}).data || {}).jerseys || {};
+// Only accept a jersey Sportradar marks real (scout-confirmed for THIS match);
+// unflagged ones are the same brand-default guesswork api-football serves.
+const srBase = (side) => {
+  const p = side && side.player;
+  return p && p.real && p.base ? (String(p.base).startsWith("#") ? p.base : "#" + p.base) : null;
+};
+async function srKitColors(hn, an, dates) {
+  for (const d of dates) {
+    let list;
+    try {
+      // All soccer for the day (~600KB) — cached, and only parsed until the
+      // per-fixture kit cache sticks, so the cost is a few warm-up polls.
+      list = await cachedJson(`${SR}/sport_matches/1/${d}/0`, SR_HDRS, 900, `sr-ev-${d}`);
+    } catch (_) { continue; }
+    const matches = [];
+    const sport = ((((list.doc || [])[0] || {}).data || {}).sport) || {};
+    for (const rc of sport.realcategories || []) {
+      for (const t of rc.tournaments || []) {
+        const tn = String(t.name || "");
+        // skip "World Cup SRL" — simulated-reality clones of the real fixtures
+        if (!/world cup/i.test(tn) || /SRL/i.test(tn)) continue;
+        matches.push(...(t.matches || []));
+      }
+    }
+    const teams = (m) => m.teams || {};
+    let flip = false;
+    let m = matches.find((x) => norm((teams(x).home || {}).name) === norm(hn) && norm((teams(x).away || {}).name) === norm(an));
+    if (!m) { m = matches.find((x) => norm((teams(x).home || {}).name) === norm(an) && norm((teams(x).away || {}).name) === norm(hn)); flip = !!m; }
+    if (!m) continue;
+    let info;
+    try {
+      // isBad: don't cache match_info until at least one jersey is scout-
+      // confirmed, so pre-kickoff placeholder data just retries next poll.
+      info = await cachedJson(`${SR}/match_info/${m._id}`, SR_HDRS, 3600, `sr-info-${m._id}`, {
+        isBad: (x) => { const j = srJerseys(x); return !srBase(j.home) && !srBase(j.away); },
+      });
+    } catch (_) { return null; }
+    const j = srJerseys(info);
+    let hc = srBase(j.home), ac = srBase(j.away);
+    if (flip) { const t = hc; hc = ac; ac = t; }
+    if (!hc && !ac) return null;
+    const out = {};
+    if (hc) out[hn] = hc;
+    if (ac) out[an] = ac;
+    return out;
+  }
+  return null;
+}
+
+// Sofascore: find the event by date + team names, then read the lineups'
+// playerColor.primary — the jersey each side actually wears, set per match.
+// Blocked (403) from datacenter IPs and, as of Jul 2026, residential ones too —
+// strictly best-effort, kept in case the block is lifted.
+const SOFA = "https://api.sofascore.com/api/v1";
+const SOFA_HDRS = {
+  "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+  accept: "application/json",
+};
+async function sofaKitColors(hn, an, dates) {
+  for (const d of dates) {
+    let list;
+    try {
+      list = await cachedJson(`${SOFA}/sport/football/scheduled-events/${d}`, SOFA_HDRS, 900, `sofa-ev-${d}`);
+    } catch (_) { continue; }
+    const evs = (list.events || []).filter((e) => e.homeTeam && e.awayTeam);
+    let flip = false;
+    let ev = evs.find((e) => norm(e.homeTeam.name) === norm(hn) && norm(e.awayTeam.name) === norm(an));
+    if (!ev) { ev = evs.find((e) => norm(e.homeTeam.name) === norm(an) && norm(e.awayTeam.name) === norm(hn)); flip = !!ev; }
+    if (!ev) continue;
+    try {
+      const r = await fetch(`${SOFA}/event/${ev.id}/lineups`, { headers: SOFA_HDRS });
+      if (!r.ok) return null;
+      const lu = await r.json();
+      const hex = (c) => (c && c.primary ? (String(c.primary).startsWith("#") ? c.primary : "#" + c.primary) : null);
+      let hc = hex(lu && lu.home && lu.home.playerColor), ac = hex(lu && lu.away && lu.away.playerColor);
+      if (flip) { const t = hc; hc = ac; ac = t; }
+      if (!hc && !ac) return null;
+      const out = {};
+      if (hc) out[hn] = hc;
+      if (ac) out[an] = ac;
+      return out;
+    } catch (_) { return null; }
+  }
+  return null;
+}
+
+// api-football lineups fallback. team.colors.player.primary is sometimes the
+// WRONG field: the real shirt can sit in player.number instead (verified live:
+// Portugal 2026 R32 — primary said dark red, the team wore the light teal that
+// appeared as number + GK color). Detect that scramble by its impossible
+// signature — outfield "number" ≈ own GK shirt — and prefer number then.
+async function afKitColors(fid, afHeaders) {
   try {
     const r = await fetch(`${AF}/fixtures/lineups?fixture=${fid}`, { headers: afHeaders });
-    if (!r.ok) return {};
+    if (!r.ok) return null;
     const d = await r.json();
     const resp = (d && d.response) || [];
-    if (!resp.length) return {}; // rate-limited or not posted yet — don't cache
+    if (!resp.length) return null; // rate-limited or not posted yet
     const out = {};
     resp.forEach((t) => {
       const nm = t.team && t.team.name;
-      const p = t.team && t.team.colors && t.team.colors.player && t.team.colors.player.primary;
-      if (nm && p) out[nm] = String(p).startsWith("#") ? p : "#" + p;
+      const c = t.team && t.team.colors, p = c && c.player, g = c && c.goalkeeper;
+      if (!nm || !p || !p.primary) return;
+      let shirt = p.primary;
+      if (p.number && g && g.primary &&
+          hexDist(p.number, g.primary) < 70 && hexDist(p.number, p.primary) > 120) shirt = p.number;
+      shirt = String(shirt).startsWith("#") ? shirt : "#" + shirt;
+      // api-football's whites are usually bogus placeholders (Bosnia "white"
+      // while wearing blue) — drop them; a real white kit reaches the page via
+      // Sportradar, which we trust with whites.
+      if (whitish(shirt)) return;
+      out[nm] = shirt;
     });
-    if (!Object.keys(out).length) return {};
-    await cache.put(key, new Response(JSON.stringify(out), {
-      headers: { "content-type": "application/json", "cache-control": "max-age=10800" },
-    }));
-    return out;
+    // Two "kits" the referee couldn't tell apart = static brand colors for a
+    // clash pairing (Canada red vs Morocco red), not what anyone is wearing.
+    const vals = Object.values(out);
+    if (vals.length === 2 && hexDist(vals[0], vals[1]) < 80) return null;
+    return Object.keys(out).length ? out : null;
   } catch (_) {
-    return {};
+    return null;
   }
+}
+
+async function fixtureColors(fid, afHeaders, hn, an, dates) {
+  const cache = caches.default;
+  const key = new Request(`https://wc.cache/${KIT_KEY}-${fid}`);
+  const hit = await cache.match(key);
+  if (hit) return hit.json();
+  let out = null;
+  if (hn && an) out = await srKitColors(hn, an, dates || []);
+  if (!out && hn && an) out = await sofaKitColors(hn, an, dates || []);
+  if (!out) out = await afKitColors(fid, afHeaders);
+  if (!out) return {};
+  await cache.put(key, new Response(JSON.stringify(out), {
+    headers: { "content-type": "application/json", "cache-control": "max-age=10800" },
+  }));
+  return out;
 }
 
 async function handleWC(request, env, ctx) {
@@ -202,6 +389,9 @@ async function handleWC(request, env, ctx) {
 
   // Only spend api-football requests when something is (or should be) live.
   let live = null, source = "football-data";
+  // Diagnostics for the api-football branch, returned only with ?debug=1 —
+  // shows why live fell back to football-data (throttle, gate, mapping).
+  const dbg = { fdLive: fdLive.length, maybeLive, hasKey: !!env.APIFOOTBALL_KEY };
   if ((fdLive.length || maybeLive) && env.APIFOOTBALL_KEY) {
     try {
       // Query ONLY the World Cup fixtures for today + yesterday (UTC). This is a
@@ -213,14 +403,28 @@ async function handleWC(request, env, ctx) {
       const dToday = new Date(now).toISOString().slice(0, 10);
       const dYest = new Date(now - DAY).toISOString().slice(0, 10);
       const base = `${AF}/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}`;
-      const [a, b] = await Promise.all([
-        cachedJson(`${base}&date=${dToday}`, afHeaders, AF_TTL, `af-fix-${dToday}`).catch(() => null),
-        cachedJson(`${base}&date=${dYest}`, afHeaders, AF_TTL, `af-fix-${dYest}`).catch(() => null),
-      ]);
-      const noErr = (x) => {
+      const hasErrs = (x) => {
         const e = x && x.errors;
-        return x && !(Array.isArray(e) ? e.length : e && Object.keys(e).length);
+        return !!(Array.isArray(e) ? e.length : e && Object.keys(e).length);
       };
+      // Never cache api-football's 200-with-errors throttle payloads, and bridge
+      // throttled windows with the last good snapshot (a ~minutes-old fixture
+      // list still carries the right kit colors and a near-right minute — far
+      // better than dropping to football-data, which has neither).
+      const afOpts = { isBad: hasErrs, lastGoodTtl: 600 };
+      // The latest kickoff slot is ~04:00 UTC; with ET + pens nothing from
+      // yesterday can still be live after ~08:00 UTC — skip that query (and its
+      // api-football quota) for most of the day.
+      const needYest = new Date(now).getUTCHours() < 8;
+      const [a, b] = await Promise.all([
+        cachedJson(`${base}&date=${dToday}`, afHeaders, AF_TTL, `af-fix-${dToday}`, afOpts).catch((e) => { dbg.errT = String(e); return null; }),
+        needYest
+          ? cachedJson(`${base}&date=${dYest}`, afHeaders, AF_TTL, `af-fix-${dYest}`, afOpts).catch((e) => { dbg.errY = String(e); return null; })
+          : null,
+      ]);
+      dbg.aErrs = a && a.errors; dbg.bErrs = b && b.errors;
+      dbg.aCount = a && a.response && a.response.length; dbg.bCount = b && b.response && b.response.length;
+      const noErr = (x) => x && !hasErrs(x);
       const fixtures = [].concat(noErr(a) ? a.response || [] : [], noErr(b) ? b.response || [] : []);
       const LIVE_AF = ["1H", "HT", "2H", "ET", "BT", "P", "LIVE", "SUSP", "INT"];
       const mapped = fixtures
@@ -253,14 +457,16 @@ async function handleWC(request, env, ctx) {
             if (cols[mm.home.name]) mm.homeColor = cols[mm.home.name];
             if (cols[mm.away.name]) mm.awayColor = cols[mm.away.name];
           } else if (ctx) {
-            // not resolved yet — warm the cache off the hot path (free tier is
-            // rate-limited; one success sticks for the match, then the page caches it)
-            ctx.waitUntil(fixtureColors(mm.fixtureId, afHeaders));
+            // not resolved yet — warm the cache off the hot path (one success
+            // sticks for the whole match, then every poll reads it from cache)
+            ctx.waitUntil(fixtureColors(mm.fixtureId, afHeaders, mm.home.name, mm.away.name, [dToday, dYest]));
           }
         }));
         live = mapped; source = "api-football";
       }
-    } catch (_) {
+      dbg.mapped = mapped.length; dbg.statuses = fixtures.map((f) => f.fixture && f.fixture.status && f.fixture.status.short);
+    } catch (e) {
+      dbg.thrown = String(e && e.stack || e);
       // fall through to football-data below
     }
   }
@@ -283,7 +489,8 @@ async function handleWC(request, env, ctx) {
     penalties: s.penalties ?? null,
   }));
 
-  return json({ updated: new Date().toISOString(), source, groups, matches, live, scorers, koSched });
+  const wantDbg = new URL(request.url).searchParams.has("debug");
+  return json({ updated: new Date().toISOString(), source, groups, matches, live, scorers, koSched, ...(wantDbg ? { dbg } : {}) });
 }
 
 // World Cup news from publisher RSS feeds (free, keyless). Cached ~10 min.
