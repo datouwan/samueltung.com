@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YURA — Component architecture</title>
+<meta name="description" content="Component and parts breakdown for Yura: assemblies, electronics architecture, power budget, safety split, and software mapping.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪼</text></svg>">
+<style>
+  :root{
+    --ground:#0B0E1A;
+    --surface:#141A2E;
+    --surface-2:#1B2340;
+    --line:#242C4A;
+    --ink:#E9EAF4;
+    --muted:#8B92AF;
+    --glow:#6FE7D2;
+    --ember:#E8926B;
+    --serif: Charter, "Bitstream Charter", Cambria, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{background:var(--ground);}
+  body{
+    background:var(--ground);color:var(--ink);
+    font-family:var(--serif);font-size:17px;line-height:1.65;margin:0;
+  }
+  .wrap{max-width:46rem;margin:0 auto;padding:0 1.25rem 6rem;}
+  p{margin:0 0 1.1em;}
+  a{color:var(--glow);}
+
+  .tabs{
+    display:flex;gap:.5rem;flex-wrap:wrap;padding-top:1.6rem;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .tabs a{color:var(--muted);text-decoration:none;padding:.45rem .9rem;border:1px solid var(--line);border-radius:999px;}
+  .tabs a:hover{color:var(--ink);}
+  .tabs a.on{color:var(--glow);border-color:var(--glow);}
+
+  header{padding:2.6rem 0 .5rem;}
+  .kicker{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--glow);margin:0 0 .6rem;
+  }
+  h1{
+    font-family:var(--sans);font-weight:800;font-size:clamp(2rem,6vw,2.8rem);
+    line-height:1.05;letter-spacing:-.02em;margin:0 0 .9rem;text-wrap:balance;
+  }
+  .dek{font-size:1.12rem;line-height:1.5;color:var(--muted);max-width:38rem;margin:0;}
+  .dek strong{color:var(--ink);font-weight:600;}
+
+  section{margin-top:3.8rem;}
+  h2{
+    font-family:var(--sans);font-weight:800;font-size:1.45rem;letter-spacing:-.01em;
+    line-height:1.15;margin:0 0 .35rem;text-wrap:balance;
+  }
+  h3{font-family:var(--sans);font-weight:700;font-size:1.05rem;margin:2rem 0 .5rem;}
+  .sec-label{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 .9rem;
+  }
+  .sec-label b{color:var(--glow);font-weight:400;}
+
+  /* exploded system stack */
+  .stack{display:grid;gap:.5rem;margin:1.5rem 0 0;}
+  .stack .asm{
+    border:1px solid var(--line);border-radius:12px;background:var(--surface);
+    padding:.9rem 1.1rem;
+  }
+  .stack .asm.dockrow{border-style:dashed;background:transparent;}
+  .asm h4{
+    font-family:var(--sans);font-size:.98rem;font-weight:700;margin:0 0 .15rem;
+    display:flex;gap:.7rem;align-items:baseline;flex-wrap:wrap;
+  }
+  .asm h4 .tag{
+    font-family:var(--mono);font-weight:400;font-size:.66rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--glow);
+  }
+  .asm p{margin:0 0 .3rem;color:var(--muted);font-size:.92rem;}
+  .chip{
+    display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.03em;
+    padding:.18rem .55rem;border:1px solid var(--line);border-radius:999px;
+    color:var(--muted);background:var(--surface-2);margin:.15rem .2rem 0 0;white-space:nowrap;
+  }
+
+  .tbl{overflow-x:auto;margin:1.4rem 0 0;border:1px solid var(--line);border-radius:12px;}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem;}
+  th{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);text-align:left;font-weight:400;
+    padding:.7rem .9rem;border-bottom:1px solid var(--line);background:var(--surface);
+  }
+  td{padding:.6rem .9rem;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  td:first-child{font-family:var(--sans);font-weight:600;}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr.hl td{background:rgba(111,231,210,.06);}
+  .us{color:var(--glow);}
+
+  .fig{margin:1.6rem 0 0;}
+  .fig a{display:block;}
+  .fig img{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--line);}
+  .figcap{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:.6rem 0 0;
+  }
+
+  .note{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:1rem 1.2rem;margin:1.5rem 0 0;font-size:.95rem;color:var(--muted);
+  }
+  .note b{color:var(--ink);}
+
+  .risks{margin:1.2rem 0 0;padding:0;list-style:none;display:grid;gap:1rem;}
+  .risks li{padding-left:1.1rem;border-left:2px solid var(--ember);}
+  .risks li.up{border-left-color:var(--glow);}
+  .risks b{font-family:var(--sans);font-size:.98rem;display:block;}
+  .risks span{color:var(--muted);font-size:.94rem;}
+
+  .foot{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);}
+
+  :focus-visible{outline:2px solid var(--glow);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <nav class="tabs" aria-label="Yura pages">
+    <a href="/ailab/pet/">Concept / Design</a>
+    <a href="/ailab/pet/market/">Market</a>
+    <a href="/ailab/pet/components/" class="on" aria-current="page">Components</a>
+  </nav>
+
+  <header>
+    <p class="kicker">Yura · component architecture v0.1 · July 2026</p>
+    <h1>What's under the fur</h1>
+    <p class="dek">Seven assemblies, one hard rule: <strong>the safety MCU owns the motors, the SoC owns the mind, and nothing hard sits within reach of a squeeze.</strong> Concept-stage architecture — candidate parts named so they can be argued with, not a locked BOM.</p>
+  </header>
+
+  <section>
+    <p class="sec-label"><b>01</b> · System</p>
+    <h2>The exploded stack</h2>
+    <p>Top to bottom, in the order you'd take Yura apart. The pelt unzips first; every assembly below it is a replaceable module — screws and connectors, no structural glue.</p>
+    <div class="fig">
+      <a href="../images/blueprint/exploded.jpg" target="_blank" rel="noopener">
+        <img src="../images/blueprint/exploded.jpg" width="1536" height="1024" alt="Exploded-view engineering blueprint of Yura on a dark indigo ground with cyan line work: frond assembly, head/gaze module, furry pelt, soft-shell body with twelve numbered touch zones, core electronics stack, drive base, and the mossy Nest dock, with dimensions in millimeters">
+      </a>
+      <p class="figcap">Exploded view — 228 mm stack, Ø210 mm base · tap to open full size</p>
+    </div>
+    <div class="stack">
+      <div class="asm">
+        <h4>Frond assembly ×2 <span class="tag">A · the signature</span></h4>
+        <p>Silicone-cored stalks, fiber-optic light pipe, 2-axis micro-actuation per frond. The emotional display.</p>
+      </div>
+      <div class="asm">
+        <h4>Head / gaze module <span class="tag">B</span></h4>
+        <p>2-axis neck, wide-FoV camera behind the fur brow with mechanical shutter, passive bead eyes, mic array ring.</p>
+      </div>
+      <div class="asm">
+        <h4>Pelt <span class="tag">C · zip-off</span></h4>
+        <p>30 mm plush pile, fully passive — no wiring in the washable layer. Wraps everything below the frond tips.</p>
+      </div>
+      <div class="asm">
+        <h4>Soft-shell body <span class="tag">D</span></h4>
+        <p>Compliant shell carrying touch electrodes, breathing mechanism, warmth pad, purr driver, speaker.</p>
+      </div>
+      <div class="asm">
+        <h4>Core electronics <span class="tag">E</span></h4>
+        <p>Mainboard (SoC + NPU), safety MCU, power system, radios. The only rigid mass, suspended center-low.</p>
+      </div>
+      <div class="asm">
+        <h4>Drive base <span class="tag">F</span></h4>
+        <p>Three omniwheel modules behind compliant fur flaps, floor sensing, bumper ring.</p>
+      </div>
+      <div class="asm dockrow">
+        <h4>Nest dock <span class="tag">G · off-body</span></h4>
+        <p>Charging crater with IR homing beacon. Where Yura sleeps and dreams.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>02</b> · Assemblies</p>
+    <h2>Parts breakdown</h2>
+    <div class="fig">
+      <a href="../images/blueprint/cutaway.jpg" target="_blank" rel="noopener">
+        <img src="../images/blueprint/cutaway.jpg" width="1536" height="1024" loading="lazy" alt="Cutaway blueprint of Yura: the left half soft fur, the right half peeled away to reveal the glowing schematic interior — head/gaze module with camera, electronics stack, battery, and three omniwheels in the drive base, each labeled with leader lines">
+      </a>
+      <p class="figcap">Cutaway — how the assemblies pack inside the fur · tap to open full size</p>
+    </div>
+
+    <h3>A · Frond assembly (×2)</h3>
+    <p>Each frond is a molded silicone stalk over a spring-steel core, driven at its root by a 2-axis micro-gimbal. Light comes from an addressable RGB LED at the base firing into a fiber-optic bundle that terminates in a molded tip diffuser — no electronics above the root, so a chewed or snagged frond is a $4 replaceable part, not a board repair.</p>
+    <span class="chip">2× metal-gear micro servo (quiet-tuned) per frond</span>
+    <span class="chip">SK6812-mini RGB at root</span>
+    <span class="chip">fiber-optic bundle + tip diffuser</span>
+    <span class="chip">spring-steel core, silicone overmold</span>
+    <span class="chip">snap-fit root mount</span>
+    <div class="fig">
+      <a href="../images/blueprint/frond-detail.jpg" target="_blank" rel="noopener">
+        <img src="../images/blueprint/frond-detail.jpg" width="1536" height="1024" loading="lazy" alt="Detail blueprint of a single frond module: side section view showing the frosted tip diffuser, flexible silicone stalk over a spring-steel core, fiber-optic bundle, RGB LED source, and 2-axis micro-gimbal at the root, plus an inset of the tip glowing in four mood colors and an enlarged root assembly view">
+      </a>
+      <p class="figcap">Frond module detail — section view, root gimbal, and the four-color mood tip · tap to open full size</p>
+    </div>
+
+    <h3>B · Head / gaze module</h3>
+    <p>The 2-axis neck carries gaze — the single most life-giving motion, so it gets the best servos in the build. The camera hides behind a fur brow with a solenoid-driven mechanical shutter flag; when Yura sleeps, the shutter is physically closed, not just software-off.</p>
+    <span class="chip">2× coreless metal-gear servo (pan/tilt)</span>
+    <span class="chip">5 MP 120° camera, MIPI-CSI, IR-cut</span>
+    <span class="chip">solenoid shutter flag</span>
+    <span class="chip">2× glass bead eyes (passive)</span>
+    <span class="chip">4× PDM MEMS mic ring</span>
+
+    <h3>C · Pelt</h3>
+    <p>Deliberately dumb: the washable layer carries zero electronics. Touch sensing lives on the shell beneath it, tuned to read through 30 mm of pile. Colorway and pelt-series SKUs are pure soft goods — the entire accessory line requires no electrical qualification.</p>
+    <span class="chip">30 mm plush pile, anti-pill</span>
+    <span class="chip">concealed zipper, fur-baffled</span>
+    <span class="chip">elastic hem at drive skirt</span>
+    <span class="chip">machine washable, line dry</span>
+
+    <h3>D · Soft-shell body</h3>
+    <p>A compliant TPU-and-foam shell over a minimal frame. Twelve capacitive electrode zones are printed on the shell surface (conductive coating), read by a single touch controller. The breathing mechanism is a slow cam on a micro gear motor; the warmth pad is a self-regulating PTC film with an independent thermal fuse.</p>
+    <span class="chip">TPU/foam compliant shell</span>
+    <span class="chip">12-zone printed capacitive array + controller</span>
+    <span class="chip">breathing cam on micro gear motor</span>
+    <span class="chip">PTC warmth film + thermal fuse</span>
+    <span class="chip">LRA purr driver</span>
+    <span class="chip">28 mm full-range speaker + passive radiator</span>
+
+    <h3>E · Core electronics</h3>
+    <p>One mainboard, one safety MCU, one battery. The SoC is phone-class with an NPU big enough for on-device face recognition, speaker ID, and wake-free voice activity — the offline-complete instinct layer. The MCU is the reflex arc and the only thing allowed to enable motor power.</p>
+    <span class="chip">SoC: RK3588S / QCS6490-class, ~10 TOPS NPU</span>
+    <span class="chip">4 GB LPDDR4X · 32 GB eMMC</span>
+    <span class="chip">Wi-Fi 6 + BT5 module</span>
+    <span class="chip">safety MCU: STM32G4-class</span>
+    <span class="chip">3.7 V 5,000 mAh Li-ion + BMS/fuel gauge</span>
+    <span class="chip">USB-C service port + dock pogo pads</span>
+    <span class="chip">IMU (BMI270-class) · ambient light · dock IR receiver</span>
+
+    <h3>F · Drive base</h3>
+    <p>Three omniwheel modules — N20 gear motors with magnetic encoders on TPU-hubbed wheels — give the signature glide with no steering geometry. The wheels sit behind <em>compliant fur flaps that simply go limp when lifted</em>: the lift experience Lovot pioneered, achieved passively, without an active retraction mechanism (see the patent caution on the Market page). Two downward time-of-flight sensors watch for edges and stairs.</p>
+    <span class="chip">3× N20 gear motor + magnetic encoder</span>
+    <span class="chip">3× 48 mm TPU-hub omniwheel</span>
+    <span class="chip">triple H-bridge driver w/ current sense</span>
+    <span class="chip">2× VL53L4-class floor ToF</span>
+    <span class="chip">compliant wheel flaps (passive)</span>
+    <span class="chip">soft bumper ring</span>
+
+    <h3>G · Nest dock</h3>
+    <p>A weighted crater the drive base settles into — self-docking via IR beacon, charging via pogo pads. Styled as a mossy stone so it reads as habitat, not charger.</p>
+    <span class="chip">pogo charge pads (5 V / 2 A)</span>
+    <span class="chip">IR homing beacon</span>
+    <span class="chip">USB-C PD wall supply</span>
+    <span class="chip">felt-lined crater, weighted base</span>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>03</b> · Electronics</p>
+    <h2>Buses, signals, and power</h2>
+    <div class="tbl"><table>
+      <tr><th>Bus / signal</th><th>Connects</th><th>Notes</th></tr>
+      <tr><td>MIPI-CSI</td><td>Camera → SoC</td><td>Raw video never leaves the SoC; frames are processed and discarded on-device</td></tr>
+      <tr><td>PDM / I2S</td><td>Mic ring → SoC · SoC → codec/amp → speaker</td><td>VAD and speaker ID run on the NPU; no wake word needed</td></tr>
+      <tr><td>I2C</td><td>ToF ×2, IMU, ambient light, touch controller, fuel gauge</td><td>Single bus, address-mapped; IMU also mirrored to MCU via SPI for reflexes</td></tr>
+      <tr><td>PWM</td><td>MCU → 6 servos (neck ×2, fronds ×4) + LED driver</td><td>Expression actuation is MCU-timed so it never stutters under SoC load</td></tr>
+      <tr><td>UART + GPIO</td><td>SoC ⇄ safety MCU</td><td>Intent messages down, sensor summaries up; heartbeat both ways, hardware watchdog</td></tr>
+      <tr class="hl"><td class="us">Motor enable rail</td><td class="us">MCU → H-bridges</td><td class="us">The one non-negotiable: only the safety MCU can energize motion</td></tr>
+    </table></div>
+
+    <h3>Power budget</h3>
+    <div class="tbl"><table>
+      <tr><th>Load</th><th class="num">Typical</th><th class="num">Peak</th></tr>
+      <tr><td>SoC + NPU + radios</td><td class="num">2.5 W</td><td class="num">6 W</td></tr>
+      <tr><td>Drive motors</td><td class="num">1.5 W roaming</td><td class="num">4 W</td></tr>
+      <tr><td>Servos (neck + fronds)</td><td class="num">0.4 W</td><td class="num">1.5 W</td></tr>
+      <tr><td>Frond LEDs + audio</td><td class="num">0.5 W</td><td class="num">1.2 W</td></tr>
+      <tr><td>Warmth pad (duty-cycled)</td><td class="num">0.8 W</td><td class="num">2 W</td></tr>
+      <tr class="hl"><td class="us">System</td><td class="num us">≈ 3.5–4 W average</td><td class="num us">18.5 Wh pack → ≈ 5 h roaming ✓</td></tr>
+    </table></div>
+    <p class="note"><b>Sanity check:</b> the 5,000 mAh · 3.7 V pack (18.5 Wh) supports the concept page's ~5 h roaming claim at ~3.5–4 W average draw, with sleep-on-nest drawing under 0.3 W.</p>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>04</b> · Safety split</p>
+    <h2>Two brains, one owner per risk</h2>
+    <ul class="risks">
+      <li class="up"><b>The MCU owns motion.</b><span>Motor power is enabled only by the safety MCU. Edge detection (ToF), fall detection (IMU), stall current, and lift detection each cut the rail in &lt;10 ms — regardless of what the SoC is doing, including crashing.</span></li>
+      <li class="up"><b>The MCU owns heat.</b><span>The warmth pad is PTC (self-limiting) with an independent thermal fuse; the MCU duty-cycles it and kills it on any sensor disagreement.</span></li>
+      <li class="up"><b>The SoC owns privacy.</b><span>Camera frames and raw audio terminate at the SoC. What leaves the device is text transcripts and opaque person-IDs — and only when the cognition subscription is active. The camera shutter is a physical flag the user can verify by eye.</span></li>
+      <li><b>Watchdog rule.</b><span>If the SoC heartbeat stops, the MCU parks Yura, droops the fronds, and glows dim blue — a crash looks like falling asleep, never like a seizure.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>05</b> · Software map</p>
+    <h2>Where each behavior lives</h2>
+    <div class="tbl"><table>
+      <tr><th>Layer</th><th>Runs on</th><th>Components</th></tr>
+      <tr><td>Reflex</td><td>MCU · RTOS</td><td>Touch response, startle, edge/fall/lift handling, motor arbitration, servo timing, watchdog</td></tr>
+      <tr><td>Instinct</td><td>SoC · embedded Linux</td><td>Mood engine (valence/arousal/energy/social), drive scheduler, face recognition, speaker ID, VAD + transcription, navigation, gaze planner, song synthesizer</td></tr>
+      <tr><td>Cognition</td><td>Cloud · optional</td><td>LLM appraisal of transcripts → animal-vocabulary intents; nightly dream consolidation → people graph, routine model, personality drift; dream journal generation</td></tr>
+      <tr><td>Companion app</td><td>Phone</td><td>Dream journal, memory inspect/delete, privacy toggles, pelt registration, firmware updates</td></tr>
+    </table></div>
+    <p class="note"><b>Update posture:</b> the MCU firmware is safety-certified and changes rarely; the SoC stack updates over the air; the cloud layer ships continuously. The end-of-life pledge (final firmware unlocks the best local-only brain) is an SoC-side deliverable planned from day one.</p>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>06</b> · Build notes</p>
+    <h2>Design-for-assembly rules</h2>
+    <ul class="risks">
+      <li class="up"><b>The pelt is the service door.</b><span>Unzip → shell exposed; six screws → shell halves open; every assembly connects via keyed connectors. Target: full teardown in under 15 minutes with one driver.</span></li>
+      <li class="up"><b>Fronds are consumables.</b><span>Snap-fit roots, sold as spares. The most-touched, most-chewed part must be the cheapest to replace.</span></li>
+      <li class="up"><b>Soft outside, suspended inside.</b><span>The rigid core hangs on elastomer mounts inside the compliant shell — drop survival and squeeze safety come from the same architecture.</span></li>
+      <li><b>Open question for Phase 1.</b><span>Breathing mechanism noise vs. the near-silent glide — the works-like prototype must validate that the cam drive is inaudible at 1 m in a quiet room, or breathing moves to the haptic driver.</span></li>
+    </ul>
+  </section>
+
+  <p class="foot">YURA · component architecture v0.1 · July 2026 · <a href="/ailab/pet/">concept →</a> · <a href="/ailab/pet/market/">market →</a></p>
+</div>
+
+</body>
+</html>

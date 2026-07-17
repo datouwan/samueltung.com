@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YURA — Market study</title>
+<meta name="description" content="Market sizing and comparable-product analysis for Yura, a smart robot companion pet concept.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪼</text></svg>">
+<style>
+  :root{
+    --ground:#0B0E1A;
+    --surface:#141A2E;
+    --surface-2:#1B2340;
+    --line:#242C4A;
+    --ink:#E9EAF4;
+    --muted:#8B92AF;
+    --glow:#6FE7D2;
+    --ember:#E8926B;
+    --serif: Charter, "Bitstream Charter", Cambria, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{background:var(--ground);}
+  body{
+    background:var(--ground);color:var(--ink);
+    font-family:var(--serif);font-size:17px;line-height:1.65;margin:0;
+  }
+  .wrap{max-width:46rem;margin:0 auto;padding:0 1.25rem 6rem;}
+  p{margin:0 0 1.1em;}
+  a{color:var(--glow);}
+
+  .tabs{
+    display:flex;gap:.5rem;padding-top:1.6rem;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .tabs a{color:var(--muted);text-decoration:none;padding:.45rem .9rem;border:1px solid var(--line);border-radius:999px;}
+  .tabs a:hover{color:var(--ink);}
+  .tabs a.on{color:var(--glow);border-color:var(--glow);}
+
+  header{padding:2.6rem 0 .5rem;}
+  .kicker{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--glow);margin:0 0 .6rem;
+  }
+  h1{
+    font-family:var(--sans);font-weight:800;font-size:clamp(2rem,6vw,2.8rem);
+    line-height:1.05;letter-spacing:-.02em;margin:0 0 .9rem;text-wrap:balance;
+  }
+  .dek{font-size:1.12rem;line-height:1.5;color:var(--muted);max-width:38rem;margin:0;}
+  .dek strong{color:var(--ink);font-weight:600;}
+
+  section{margin-top:3.8rem;}
+  h2{
+    font-family:var(--sans);font-weight:800;font-size:1.45rem;letter-spacing:-.01em;
+    line-height:1.15;margin:0 0 .35rem;text-wrap:balance;
+  }
+  .sec-label{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 .9rem;
+  }
+  .sec-label b{color:var(--glow);font-weight:400;}
+
+  .tbl{overflow-x:auto;margin:1.4rem 0 0;border:1px solid var(--line);border-radius:12px;}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem;}
+  th{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);text-align:left;font-weight:400;
+    padding:.7rem .9rem;border-bottom:1px solid var(--line);background:var(--surface);
+  }
+  td{padding:.6rem .9rem;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  td:first-child{font-family:var(--sans);font-weight:600;}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr.hl td{background:rgba(111,231,210,.06);}
+  .us{color:var(--glow);}
+
+  .note{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:1rem 1.2rem;margin:1.5rem 0 0;font-size:.95rem;color:var(--muted);
+  }
+  .note b{color:var(--ink);}
+
+  .risks{margin:1.2rem 0 0;padding:0;list-style:none;display:grid;gap:1rem;}
+  .risks li{padding-left:1.1rem;border-left:2px solid var(--ember);}
+  .risks li.up{border-left-color:var(--glow);}
+  .risks b{font-family:var(--sans);font-size:.98rem;display:block;}
+  .risks span{color:var(--muted);font-size:.94rem;}
+
+  .sources{margin:1.2rem 0 0;padding-left:1.2rem;font-size:.9rem;color:var(--muted);}
+  .sources li{margin-bottom:.4rem;}
+
+  .foot{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);}
+
+  :focus-visible{outline:2px solid var(--glow);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <nav class="tabs" aria-label="Yura pages">
+    <a href="/ailab/pet/">Concept / Design</a>
+    <a href="/ailab/pet/market/" class="on" aria-current="page">Market</a>
+    <a href="/ailab/pet/components/">Components</a>
+  </nav>
+
+  <header>
+    <p class="kicker">Yura · market study · July 2026</p>
+    <h1>How big is the pond?</h1>
+    <p class="dek">Yura's direct niche is a <strong>~$0.5–0.85 B/year category heading toward $1–2 B by 2030</strong> — small, young, and definitionally fuzzy. But it floats inside a much larger companionship-tech wave, and the unit economics of the products actually shipping tell a sharper story than the analyst totals.</p>
+  </header>
+
+  <section>
+    <p class="sec-label"><b>01</b> · The niche</p>
+    <h2>Pet companion robots: the analyst estimates</h2>
+    <p>Estimates for the dedicated "pet companion robot" category diverge widely — itself a signal that the category is young enough for one breakout product to redraw it.</p>
+    <div class="tbl"><table>
+      <tr><th>Research firm</th><th class="num">Near-term size</th><th class="num">Forecast</th><th class="num">CAGR</th></tr>
+      <tr><td><a href="https://www.databridgemarketresearch.com/reports/global-pet-companion-robots-market">Data Bridge</a></td><td class="num">$783 M (2026)</td><td class="num">—</td><td class="num">~13%</td></tr>
+      <tr><td><a href="https://www.360iresearch.com/library/intelligence/pet-companion-robot">360iResearch</a></td><td class="num">$845 M (2026)</td><td class="num">—</td><td class="num">13.1%</td></tr>
+      <tr><td><a href="https://www.verifiedmarketreports.com/product/pet-companion-robots-market/">Verified Market Reports</a></td><td class="num">—</td><td class="num">$1.93 B (2030)</td><td class="num">12.1%</td></tr>
+      <tr><td><a href="https://www.coherentmarketinsights.com/industry-reports/pet-robot-market">Coherent</a></td><td class="num">$480 M (2025)</td><td class="num">$735 M (2030)</td><td class="num">10.9%</td></tr>
+      <tr><td><a href="https://www.factmr.com/report/pet-companion-robot-market">Fact.MR</a></td><td class="num">—</td><td class="num">$992 M (2030)</td><td class="num">5.3%</td></tr>
+    </table></div>
+    <p class="note"><b>Read:</b> take ~$0.5–0.85 B today and ~$1–2 B by 2030 as the working envelope. The 2.5× spread between the most conservative and most bullish 2030 numbers is normal for a category this early.</p>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>02</b> · The pond it floats in</p>
+    <h2>Companionship tech is the real wave</h2>
+    <p>Zoom out one ring and the numbers get much larger. Social and companion robots broadly are estimated anywhere from <a href="https://market.us/report/ai-companion-robot-market/">$2 B</a> to <a href="https://www.marketresearchfuture.com/reports/social-robots-market-26559">$8 B</a> in 2025 depending on scope. Elder-care assistive robots alone were <a href="https://www.grandviewresearch.com/industry-analysis/elder-care-assistive-robots-market-report">$3.4 B in 2025, projected to reach ~$9.8 B by 2033</a> (14.2% CAGR), with social interaction the largest segment.</p>
+    <p>The demand driver is structural, not a fad: aging populations across Japan, Europe, and North America, and a measurable loneliness epidemic. The clinical evidence is starting to land — Intuition Robotics reported a <a href="https://www.forbes.com/sites/rashishrivastava/2025/10/18/lonely-seniors-are-turning-to-ai-bots-for-companionship/">64% reduction in reported loneliness</a> among elderly users in 2025 trials. Yura is positioned as a consumer pet, but the same product gets pulled into this adjacent, better-funded market — a meaningful expansion path that none of the niche estimates count.</p>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>03</b> · Ground truth</p>
+    <h2>What the shipping products actually sell</h2>
+    <p>Analyst totals aside, today's successful robot pets move tens of thousands of units a year — not millions. This is currently a $5–50 M/year-per-product business.</p>
+    <div class="tbl"><table>
+      <tr><th>Product</th><th class="num">Price</th><th>Evidence</th></tr>
+      <tr><td>Casio Moflin</td><td class="num">$429</td><td>~10,000 units in Japan in its first ~6 months (<a href="https://sherwood.news/business/casio-now-selling-furry-ai-powered-pet-robot-bets-on-loneliness/">Sherwood</a>) — beyond Casio's expectations; sold out repeatedly. US/UK target: just 7,000 more by March 2026 (<a href="https://betanews.com/article/after-selling-out-in-japan-casios-429-moflin-ai-pet-launches-in-us-and-uk/">BetaNews</a>).</td></tr>
+      <tr><td>Lovot (Groove X)</td><td class="num">~$3,000 + sub</td><td>Sales jumped 11× in one year (<a href="https://www.cbsnews.com/news/robo-dogs-therapy-bots-artificial-intelligence/">CBS News</a>, 2022) from a small base; sustains a premium subscription business in Japan.</td></tr>
+      <tr><td>Sony Aibo</td><td class="num">$2,900</td><td>Relaunched 2018 as a low-volume premium line; the category's proof that engineering excellence alone doesn't scale units at $3K.</td></tr>
+      <tr><td>Anki Vector</td><td class="num">$250</td><td>The cautionary tale: strong launch, company folded in 2019 when service costs outran hardware margins.</td></tr>
+    </table></div>
+    <p class="note"><b>The pattern:</b> demand spikes when a product crosses a "feels alive" threshold (Moflin selling out), and companies die when always-on cloud costs outrun a one-time hardware price (Vector). Yura's offline-complete instinct layer + optional subscription is designed directly against that failure mode.</p>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>04</b> · Prior art</p>
+    <h2>Is this design unique?</h2>
+    <p>Surveyed July 2026: no shipping product combines Yura's recipe, but every individual ingredient exists somewhere — and two products get close on specific elements worth designing around.</p>
+    <div class="tbl"><table>
+      <tr><th>Product</th><th>What overlaps</th><th>Where it differs</th></tr>
+      <tr><td><a href="https://www.forbes.com/sites/prakharkhanna/2025/01/07/ces-2025-ropet-can-be-your-emotional-ai-pet-companion-for-299/">Ropet</a> <span style="color:var(--muted);">CES 2025 · $299</span></td><td>Closest silhouette: round fluffy warm-bodied blob; camera-based emotion reading; ~37 °C body warmth</td><td>Big LED cartoon eyes dominate its face; stubby arms; cannot move around; no language understanding</td></tr>
+      <tr><td><a href="https://robotsguide.com/robots/lovot">Lovot</a> <span style="color:var(--muted);">2019 · ~$3,000</span></td><td>Closest feature set: wheels retract when picked up; head-mounted sensor "horn"; body warmth; sells outfits</td><td>Horn is a camera mast, not an expressive organ; LCD screen eyes; 6.6× Yura's price; limited comprehension</td></tr>
+      <tr><td><a href="https://www.casio.com/us/moflin/">Moflin</a> <span style="color:var(--muted);">2024 · $429</span></td><td>Closest philosophy: non-verbal, fur-only expression, evolving personality</td><td>Stationary handheld; senses only touch/sound/motion; understands nothing of what you say</td></tr>
+      <tr><td><a href="https://www.designboom.com/technology/furry-robot-mirumi-clip-on-bags-interact-people-yukai-engineering-ces-2025-01-07-2025/">Mirumi</a> <span style="color:var(--muted);">CES 2025</span></td><td>"Invented soft species" positioning (a robotic yokai); shy non-verbal reactions</td><td>A bag-clip toy, not an autonomous home pet; no glow, no memory, no comprehension</td></tr>
+      <tr><td><a href="https://living.ai/emo/">EMO</a> / <a href="https://www.designboom.com/technology/switchbot-ai-pet-furry-robotic-teddy-bear-talks-displays-emotions-ifa-berlin-2025-09-07-2025/">SwitchBot AI Pet</a></td><td>Light/color as an emotional channel</td><td>Used as screen faces and icons — a display, not a creature's body language</td></tr>
+    </table></div>
+    <p><b>What nobody ships:</b></p>
+    <ul class="risks">
+      <li class="up"><b>Paired expressive glow-fronds as the primary emotional channel.</b><span>Lovot's horn is a sensor mast. No product found uses two slender, swaying, color-shifting antennae with a learnable color language. This is Yura's visual signature — double down on it.</span></li>
+      <li class="up"><b>LLM comprehension that never speaks.</b><span>Loona talks (a chatbot in a robot), Ropet reads moods but not language, Moflin understands nothing. The "sulks on your suitcase" behavior has no shipping equivalent.</span></li>
+      <li class="up"><b>Glide locomotion under a fur skirt.</b><span>Everything mobile in the category visibly rolls or walks.</span></li>
+      <li class="up"><b>Zip-off pelt as species change.</b><span>Lovot sells clothes worn over its body; nobody makes the creature's identity itself swappable and washable.</span></li>
+    </ul>
+    <p style="margin-top:1.4rem;"><b>Design cautions:</b></p>
+    <ul class="risks">
+      <li><b>Lift-retract wheels overlap Lovot directly.</b><span>Groove X patents heavily — run a real patent search before engineering. Consider differentiating the mechanism: wheels behind compliant flaps that go limp on lift rather than actively retracting.</span></li>
+      <li><b>Keep the eyes small, black, and half-hidden.</b><span>The moment Yura gets big expressive eyes it collides with Ropet and half of CES. The mystery is the moat.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>05</b> · Scenarios</p>
+    <h2>What that means for Yura at $449</h2>
+    <p>Three transparent scenarios, using $449 hardware and the optional $9/mo Deep Bond subscription. Attach and retention assumptions are stated so they can be argued with.</p>
+    <div class="tbl"><table>
+      <tr><th>Scenario</th><th class="num">Units / yr</th><th class="num">Hardware rev / yr</th><th class="num">Installed base (yr 2)</th><th class="num">Sub ARR (yr 2)</th></tr>
+      <tr><td>Bear — one holiday cycle</td><td class="num">5,000</td><td class="num">$2.2 M</td><td class="num">8,000 · 25% attach</td><td class="num">$0.2 M</td></tr>
+      <tr class="hl"><td class="us">Base — Moflin parity</td><td class="num us">20,000</td><td class="num us">$9.0 M</td><td class="num us">40,000 · 30% attach</td><td class="num us">$1.3 M</td></tr>
+      <tr><td>Bull — category inflection</td><td class="num">100,000</td><td class="num">$44.9 M</td><td class="num">200,000 · 35% attach</td><td class="num">$7.6 M</td></tr>
+    </table></div>
+    <p>The bull case rests on one thesis: <b>nobody has shipped the genuinely-comprehending pet yet.</b> Toy-adjacent categories historically inflect suddenly when a magic threshold is crossed — Tamagotchi and Furby each sold tens of millions of units in their cycles. If LLM comprehension expressed through a creature (rather than a chatbot) is that threshold, today's ~$800 M category figure is a floor, not a ceiling. That is a bet, not a forecast — which is exactly what the concept's Phase 0 illusion test is designed to check for a few thousand dollars before any tooling is cut.</p>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>06</b> · Unit economics</p>
+    <h2>What Yura costs to build — and where the profit is</h2>
+    <p>Concept-stage estimates at ~20,000 units/year volume, not supplier quotes. Sanity anchor: KEYi's Loona ships a camera + wheels + SoC robot profitably at $450 retail, so a BOM in this range at this price is proven feasible — the fur, fronds, and cuddle chassis are Yura's cost adders over Loona, offset by having no screen.</p>
+    <div class="tbl"><table>
+      <tr><th>Subsystem</th><th class="num">Est. cost / unit</th></tr>
+      <tr><td>Compute</td><td class="num">$40–58 <span style="color:var(--muted);font-weight:400;">— phone-class SoC + NPU module, 4 GB RAM, storage, safety MCU</span></td></tr>
+      <tr><td>Sensors</td><td class="num">$24–32 <span style="color:var(--muted);font-weight:400;">— camera, 4-mic array, 2× ToF, touch sheet, IMU, ambient light</span></td></tr>
+      <tr><td>Actuators</td><td class="num">$41–50 <span style="color:var(--muted);font-weight:400;">— omniwheel drive w/ encoders, neck, 4 frond servos, purr, breathing, warmth</span></td></tr>
+      <tr><td>Power</td><td class="num">$8–12 <span style="color:var(--muted);font-weight:400;">— 4,000 mAh battery, BMS, charging</span></td></tr>
+      <tr><td>Expression</td><td class="num">$7 <span style="color:var(--muted);font-weight:400;">— speaker/amp, fiber optics, RGB</span></td></tr>
+      <tr><td>Body</td><td class="num">$27–38 <span style="color:var(--muted);font-weight:400;">— washable pelt, soft-shell chassis, mechanicals</span></td></tr>
+      <tr><td>Nest dock</td><td class="num">$10–15</td></tr>
+      <tr><td>Build</td><td class="num">$30–43 <span style="color:var(--muted);font-weight:400;">— PCBs, wiring, assembly, test, packaging</span></td></tr>
+      <tr class="hl"><td class="us">BOM total</td><td class="num us">≈ $187–255 → ~$210–260 landed COGS with freight, duty, yield, warranty</td></tr>
+    </table></div>
+    <p><b>Per unit at $449 direct-to-consumer:</b> roughly <b>$190–240 gross profit — a 42–53% gross margin</b>, healthy for consumer hardware. It roughly halves through retail channels (30–40 points to the retailer) — a strong argument for launching D2C, as Lovot did. The Deep Bond subscription is the opposite shape: $9/mo against an estimated $1.50–3.00/mo of cloud cost (cognition is asynchronous and batched by design) — a <b>70–80% margin recurring stream</b>.</p>
+    <div class="tbl"><table>
+      <tr><th>Scenario P&amp;L</th><th class="num">Hardware gross</th><th class="num">Sub gross (yr 2)</th><th class="num">Est. opex</th><th class="num">Operating result</th></tr>
+      <tr><td>Bear — 5k units/yr</td><td class="num">$1.1 M</td><td class="num">$0.15 M</td><td class="num">$3 M+</td><td class="num">−$2 M/yr — fails fast</td></tr>
+      <tr class="hl"><td class="us">Base — 20k units/yr</td><td class="num us">$4.3 M</td><td class="num us">$1.0 M</td><td class="num us">$3.5–4.5 M</td><td class="num us">≈ break-even</td></tr>
+      <tr><td>Bull — 100k units/yr</td><td class="num">$21 M</td><td class="num">$6 M</td><td class="num">$8–12 M</td><td class="num">+$12–18 M (~25–30%)</td></tr>
+    </table></div>
+    <p class="note"><b>Assumptions:</b> $235 COGS midpoint; a lean 12–18 person team, support, and marketing in opex; ~$2–4 M one-time NRE (tooling, molds, FCC/CE certification) before unit one, not shown in the annual figures. <b>The structural read:</b> hardware margin keeps the lights on, but the business lives in the subscription — at scale every point of Deep Bond attach is nearly pure margin, and a non-subscriber costs almost nothing in cloud spend. Matching Moflin (base case) makes Yura sustainable but not yet a business; profitability arrives around 30–40k units/yr or subscription attach above ~40%.</p>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>07</b> · Forces</p>
+    <h2>What moves the number</h2>
+    <ul class="risks">
+      <li class="up"><b>Tailwind — the loneliness economy.</b><span>Aging demographics and post-pandemic isolation are durable, policy-visible drivers; elder-care budgets increasingly pay for companionship tech.</span></li>
+      <li class="up"><b>Tailwind — LLM cost collapse.</b><span>The cognition layer's cloud cost per pet keeps falling, making a $9/mo subscription progressively more profitable — the opposite of Vector's economics.</span></li>
+      <li class="up"><b>Tailwind — Moflin's proof of demand.</b><span>A major consumer brand selling out repeatedly at $429 validates the price point and the "emotional, useless, loved" product thesis.</span></li>
+      <li><b>Headwind — the category graveyard.</b><span>Aibo (twice), Jibo, Vector, Cozmo: launches outnumber survivors. Retention past month three, not launch demand, is the real gate.</span></li>
+      <li><b>Headwind — privacy backlash risk.</b><span>A camera-and-mic creature in the home is one media cycle away from a trust crisis; the on-device/transcript-only architecture is the moat and must be marketed as such.</span></li>
+      <li><b>Headwind — definitional fuzziness.</b><span>The analyst figures above mix therapy seals, robot dogs, and toys; treat all TAM numbers as directional, not bankable.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>08</b> · Sources</p>
+    <h2>Reading list</h2>
+    <ul class="sources">
+      <li><a href="https://www.databridgemarketresearch.com/reports/global-pet-companion-robots-market">Data Bridge — Pet Companion Robots Market</a></li>
+      <li><a href="https://www.360iresearch.com/library/intelligence/pet-companion-robot">360iResearch — Pet Companion Robot Market 2026–2032</a></li>
+      <li><a href="https://www.verifiedmarketreports.com/product/pet-companion-robots-market/">Verified Market Reports — Pet Companion Robots to 2030</a></li>
+      <li><a href="https://www.coherentmarketinsights.com/industry-reports/pet-robot-market">Coherent Market Insights — Pet Robot Market 2026–2033</a></li>
+      <li><a href="https://www.factmr.com/report/pet-companion-robot-market">Fact.MR — Pet Companion Robot Market</a></li>
+      <li><a href="https://www.grandviewresearch.com/industry-analysis/elder-care-assistive-robots-market-report">Grand View Research — Elder Care Assistive Robots 2026–2033</a></li>
+      <li><a href="https://market.us/report/ai-companion-robot-market/">Market.us — AI Companion Robot Market</a></li>
+      <li><a href="https://www.marketresearchfuture.com/reports/social-robots-market-26559">MRFR — Social Robots Market</a></li>
+      <li><a href="https://www.businessresearchinsights.com/market-reports/companion-robots-market-119093">Business Research Insights — Companion Robots Market</a></li>
+      <li><a href="https://sherwood.news/business/casio-now-selling-furry-ai-powered-pet-robot-bets-on-loneliness/">Sherwood — Casio bets on loneliness (Moflin US launch)</a></li>
+      <li><a href="https://betanews.com/article/after-selling-out-in-japan-casios-429-moflin-ai-pet-launches-in-us-and-uk/">BetaNews — Moflin sells out in Japan, launches US/UK</a></li>
+      <li><a href="https://www.cbsnews.com/news/robo-dogs-therapy-bots-artificial-intelligence/">CBS News — Robo-dogs and therapy bots (Lovot sales)</a></li>
+      <li><a href="https://www.forbes.com/sites/rashishrivastava/2025/10/18/lonely-seniors-are-turning-to-ai-bots-for-companionship/">Forbes — Lonely seniors turning to AI companions</a></li>
+      <li><a href="https://www.forbes.com/sites/prakharkhanna/2025/01/07/ces-2025-ropet-can-be-your-emotional-ai-pet-companion-for-299/">Forbes — Ropet at CES 2025</a></li>
+      <li><a href="https://www.engadget.com/home/ropet-is-the-cute-as-hell-emotional-robot-at-ces-2025-that-the-modern-furby-wishes-it-could-be-214046211.html">Engadget — Ropet hands-on</a></li>
+      <li><a href="https://robotsguide.com/robots/lovot">Robots Guide — Lovot (sensor horn, retracting wheels)</a></li>
+      <li><a href="https://www.forbes.com/sites/japan/2019/02/06/a-machine-that-does-nothing-cuddly-lovot-may-be-the-most-innovative-japanese-robot-yet/">Forbes Japan — Lovot design deep-dive</a></li>
+      <li><a href="https://www.designboom.com/technology/furry-robot-mirumi-clip-on-bags-interact-people-yukai-engineering-ces-2025-01-07-2025/">designboom — Yukai Mirumi at CES 2025</a></li>
+      <li><a href="https://www.designboom.com/technology/switchbot-ai-pet-furry-robotic-teddy-bear-talks-displays-emotions-ifa-berlin-2025-09-07-2025/">designboom — SwitchBot AI Pet at IFA 2025</a></li>
+    </ul>
+    <p class="note">Figures compiled from public analyst summaries and press coverage as of July 2026. Estimates vary widely by scope and methodology; treat as directional.</p>
+  </section>
+
+  <p class="foot">YURA · market study v0.1 · July 2026 · <a href="/ailab/pet/">back to concept →</a></p>
+</div>
+
+</body>
+</html>
