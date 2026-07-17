@@ -31,7 +31,7 @@
   a{color:var(--glow);}
 
   .tabs{
-    display:flex;gap:.5rem;padding-top:1.6rem;
+    display:flex;gap:.5rem;flex-wrap:wrap;padding-top:1.6rem;
     font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
   }
   .tabs a{color:var(--muted);text-decoration:none;padding:.45rem .9rem;border:1px solid var(--line);border-radius:999px;}
@@ -104,6 +104,7 @@
     <a href="/ailab/pet/">Concept / Design</a>
     <a href="/ailab/pet/market/" class="on" aria-current="page">Market</a>
     <a href="/ailab/pet/components/">Components</a>
+    <a href="/ailab/pet/hq/">HQ</a>
   </nav>
 
   <header>
@@ -194,23 +195,23 @@
     <div class="tbl"><table>
       <tr><th>Subsystem</th><th class="num">Est. cost / unit</th></tr>
       <tr><td>Compute</td><td class="num">$40–58 <span style="color:var(--muted);font-weight:400;">— phone-class SoC + NPU module, 4 GB RAM, storage, safety MCU</span></td></tr>
-      <tr><td>Sensors</td><td class="num">$24–32 <span style="color:var(--muted);font-weight:400;">— camera, 4-mic array, 2× ToF, touch sheet, IMU, ambient light</span></td></tr>
+      <tr><td>Sensors</td><td class="num">$24–34 <span style="color:var(--muted);font-weight:400;">— mono-split eyes: camera in one IR dome (with privacy eyelid), ToF + IR illuminator in the other; 4-mic array, touch sheet, IMU, ambient light</span></td></tr>
       <tr><td>Actuators</td><td class="num">$41–50 <span style="color:var(--muted);font-weight:400;">— omniwheel drive w/ encoders, neck, 4 frond servos, purr, breathing, warmth</span></td></tr>
       <tr><td>Power</td><td class="num">$8–12 <span style="color:var(--muted);font-weight:400;">— 4,000 mAh battery, BMS, charging</span></td></tr>
       <tr><td>Expression</td><td class="num">$7 <span style="color:var(--muted);font-weight:400;">— speaker/amp, fiber optics, RGB</span></td></tr>
       <tr><td>Body</td><td class="num">$27–38 <span style="color:var(--muted);font-weight:400;">— washable pelt, soft-shell chassis, mechanicals</span></td></tr>
       <tr><td>Nest dock</td><td class="num">$10–15</td></tr>
       <tr><td>Build</td><td class="num">$30–43 <span style="color:var(--muted);font-weight:400;">— PCBs, wiring, assembly, test, packaging</span></td></tr>
-      <tr class="hl"><td class="us">BOM total</td><td class="num us">≈ $187–255 → ~$210–260 landed COGS with freight, duty, yield, warranty</td></tr>
+      <tr class="hl"><td class="us">BOM total</td><td class="num us">≈ $187–257 → ~$210–262 landed COGS with freight, duty, yield, warranty</td></tr>
     </table></div>
-    <p><b>Per unit at $449 direct-to-consumer:</b> roughly <b>$190–240 gross profit — a 42–53% gross margin</b>, healthy for consumer hardware. It roughly halves through retail channels (30–40 points to the retailer) — a strong argument for launching D2C, as Lovot did. The Deep Bond subscription is the opposite shape: $9/mo against an estimated $1.50–3.00/mo of cloud cost (cognition is asynchronous and batched by design) — a <b>70–80% margin recurring stream</b>.</p>
+    <p><b>Per unit at $449 direct-to-consumer:</b> roughly <b>$187–239 gross profit — a 42–53% gross margin</b>, healthy for consumer hardware. (The mono-split eye layout — camera in one eye, depth sensing in the other — was chosen over stereo eyes partly for this: stereo would cost about two margin points.) It roughly halves through retail channels (30–40 points to the retailer) — a strong argument for launching D2C, as Lovot did. The Deep Bond subscription is the opposite shape: $9/mo against an estimated $1.50–3.00/mo of cloud cost (cognition is asynchronous and batched by design) — a <b>70–80% margin recurring stream</b>.</p>
     <div class="tbl"><table>
       <tr><th>Scenario P&amp;L</th><th class="num">Hardware gross</th><th class="num">Sub gross (yr 2)</th><th class="num">Est. opex</th><th class="num">Operating result</th></tr>
-      <tr><td>Bear — 5k units/yr</td><td class="num">$1.1 M</td><td class="num">$0.15 M</td><td class="num">$3 M+</td><td class="num">−$2 M/yr — fails fast</td></tr>
+      <tr><td>Bear — 5k units/yr</td><td class="num">$1.1 M</td><td class="num">$0.15 M</td><td class="num">$3 M+</td><td class="num">−$1.8 M/yr — fails fast</td></tr>
       <tr class="hl"><td class="us">Base — 20k units/yr</td><td class="num us">$4.3 M</td><td class="num us">$1.0 M</td><td class="num us">$3.5–4.5 M</td><td class="num us">≈ break-even</td></tr>
-      <tr><td>Bull — 100k units/yr</td><td class="num">$21 M</td><td class="num">$6 M</td><td class="num">$8–12 M</td><td class="num">+$12–18 M (~25–30%)</td></tr>
+      <tr><td>Bull — 100k units/yr</td><td class="num">$21 M</td><td class="num">$6 M</td><td class="num">$8–12 M</td><td class="num">+$15–19 M (~30%)</td></tr>
     </table></div>
-    <p class="note"><b>Assumptions:</b> $235 COGS midpoint; a lean 12–18 person team, support, and marketing in opex; ~$2–4 M one-time NRE (tooling, molds, FCC/CE certification) before unit one, not shown in the annual figures. <b>The structural read:</b> hardware margin keeps the lights on, but the business lives in the subscription — at scale every point of Deep Bond attach is nearly pure margin, and a non-subscriber costs almost nothing in cloud spend. Matching Moflin (base case) makes Yura sustainable but not yet a business; profitability arrives around 30–40k units/yr or subscription attach above ~40%.</p>
+    <p class="note"><b>Assumptions:</b> $235 COGS midpoint (mono-split eyes); a lean 12–18 person team, support, and marketing in opex; ~$2–4 M one-time NRE (tooling, molds, FCC/CE certification) before unit one, not shown in the annual figures. <b>The structural read:</b> hardware margin keeps the lights on, but the business lives in the subscription — at scale every point of Deep Bond attach is nearly pure margin, and a non-subscriber costs almost nothing in cloud spend. Matching Moflin (base case) makes Yura sustainable but not yet a business; profitability arrives around 30–40k units/yr or subscription attach above ~40%.</p>
   </section>
 
   <section>

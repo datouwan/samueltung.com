@@ -132,6 +132,7 @@
     <a href="/ailab/pet/">Concept / Design</a>
     <a href="/ailab/pet/market/">Market</a>
     <a href="/ailab/pet/components/" class="on" aria-current="page">Components</a>
+    <a href="/ailab/pet/hq/">HQ</a>
   </nav>
 
   <header>
@@ -146,9 +147,9 @@
     <p>Top to bottom, in the order you'd take Yura apart. The pelt unzips first; every assembly below it is a replaceable module — screws and connectors, no structural glue.</p>
     <div class="fig">
       <a href="../images/blueprint/exploded.jpg" target="_blank" rel="noopener">
-        <img src="../images/blueprint/exploded.jpg" width="1536" height="1024" alt="Exploded-view engineering blueprint of Yura on a dark indigo ground with cyan line work: frond assembly, head/gaze module, furry pelt, soft-shell body with twelve numbered touch zones, core electronics stack, drive base, and the mossy Nest dock, with dimensions in millimeters">
+        <img src="../images/blueprint/exploded.jpg" width="1536" height="1024" alt="Exploded-view engineering blueprint of Yura on a dark indigo ground with cyan line work: paired frond front assemblies, mono-split sensor head module (camera eye with privacy eyelid in one IR-transparent dome, ToF depth sensor and IR illuminator in the other), furry pelt with rear zipper, soft-shell body with twelve numbered touch zones, core electronics stack, and omniwheel drive base — beside it the auto-dock nest charging station with funnel guide walls, magnetic alignment ring, pogo charging contacts, and a three-step self-docking approach sequence, with dimensions in millimeters and a docking specifications table">
       </a>
-      <p class="figcap">Exploded view — 228 mm stack, Ø210 mm base · tap to open full size</p>
+      <p class="figcap">Exploded view — 180 mm stack, Ø160 mm base, and the auto-dock nest with self-docking sequence · tap to open full size</p>
     </div>
     <div class="stack">
       <div class="asm">
@@ -157,7 +158,7 @@
       </div>
       <div class="asm">
         <h4>Head / gaze module <span class="tag">B</span></h4>
-        <p>2-axis neck, wide-FoV camera behind the fur brow with mechanical shutter, passive bead eyes, mic array ring.</p>
+        <p>2-axis neck gimbal; the two glossy eyes are the sensor suite — wide-angle camera in one IR-transparent dome, ToF + IR illuminator in the other — plus mic array ring.</p>
       </div>
       <div class="asm">
         <h4>Pelt <span class="tag">C · zip-off</span></h4>
@@ -186,10 +187,10 @@
     <p class="sec-label"><b>02</b> · Assemblies</p>
     <h2>Parts breakdown</h2>
     <div class="fig">
-      <a href="../images/blueprint/cutaway.jpg" target="_blank" rel="noopener">
-        <img src="../images/blueprint/cutaway.jpg" width="1536" height="1024" loading="lazy" alt="Cutaway blueprint of Yura: the left half soft fur, the right half peeled away to reveal the glowing schematic interior — head/gaze module with camera, electronics stack, battery, and three omniwheels in the drive base, each labeled with leader lines">
+      <a href="../images/blueprint/head-detail.jpg" target="_blank" rel="noopener">
+        <img src="../images/blueprint/head-detail.jpg" width="1536" height="1024" loading="lazy" alt="Rev B2 assembly detail blueprint of Yura's head and upper body: the left half soft fur, the right half cut away to show the mono-split eyes, 2-axis neck gimbal, upper control stack, and 3.7 V battery pack — with side-by-side enlarged cross-sections of the camera eye (parted-fur halo, IR-transparent window, mechanical privacy eyelid, wide-angle camera) and the externally identical depth eye (VCSEL ToF sensor, 940 nm IR illuminator ring), and a front-view facial sensing diagram showing the camera field of view overlapping the ToF depth cone">
       </a>
-      <p class="figcap">Cutaway — how the assemblies pack inside the fur · tap to open full size</p>
+      <p class="figcap">Head / upper body detail, Rev B2 — mono-split eyes: camera + privacy eyelid in one dome, ToF + IR in its identical twin · tap to open full size</p>
     </div>
 
     <h3>A · Frond assembly (×2)</h3>
@@ -207,11 +208,11 @@
     </div>
 
     <h3>B · Head / gaze module</h3>
-    <p>The 2-axis neck carries gaze — the single most life-giving motion, so it gets the best servos in the build. The camera hides behind a fur brow with a solenoid-driven mechanical shutter flag; when Yura sleeps, the shutter is physically closed, not just software-off.</p>
+    <p>The 2-axis neck carries gaze — the single most life-giving motion, so it gets the best servos in the build. The eyes are the sensor suite, split asymmetrically: one glossy black eye is a wide-angle camera behind a scratch-resistant, IR-transparent dome; the other — externally identical — carries the VCSEL ToF depth sensor and 940 nm IR illuminator. Each sits in a fur-exclusion eye well whose parted-fur halo keeps the optics clear while preserving the creature look. The camera eye gets a mechanical privacy eyelid: one aperture, physically blindable, verifiable at a glance — asleep means the eyelid is closed, not just software-off. The eye-well mechanicals are identical on both sides, so a second camera (stereo) remains a drop-in upgrade if Phase 1 home testing demands it.</p>
     <span class="chip">2× coreless metal-gear servo (pan/tilt)</span>
-    <span class="chip">5 MP 120° camera, MIPI-CSI, IR-cut</span>
-    <span class="chip">solenoid shutter flag</span>
-    <span class="chip">2× glass bead eyes (passive)</span>
+    <span class="chip">1× micro wide-angle camera (~150° FoV, global shutter) in eye dome</span>
+    <span class="chip">1× VCSEL ToF (0.2–3.0 m) + 940 nm IR illuminator in twin dome</span>
+    <span class="chip">Ø16 mm IR-transparent eye windows · mechanical privacy eyelid on camera eye</span>
     <span class="chip">4× PDM MEMS mic ring</span>
 
     <h3>C · Pelt</h3>

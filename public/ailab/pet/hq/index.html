@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YURA — HQ</title>
+<meta name="description" content="Operating hub for the Yura robot companion pet project: roadmap, scoreboard, workstreams, decisions.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪼</text></svg>">
+<style>
+  :root{
+    --ground:#0B0E1A;
+    --surface:#141A2E;
+    --surface-2:#1B2340;
+    --line:#242C4A;
+    --ink:#E9EAF4;
+    --muted:#8B92AF;
+    --glow:#6FE7D2;
+    --ember:#E8926B;
+    --serif: Charter, "Bitstream Charter", Cambria, Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{background:var(--ground);}
+  body{
+    background:var(--ground);color:var(--ink);
+    font-family:var(--serif);font-size:17px;line-height:1.65;margin:0;
+  }
+  .wrap{max-width:46rem;margin:0 auto;padding:0 1.25rem 6rem;}
+  p{margin:0 0 1.1em;}
+  a{color:var(--glow);}
+
+  .tabs{
+    display:flex;gap:.5rem;padding-top:1.6rem;flex-wrap:wrap;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .tabs a{color:var(--muted);text-decoration:none;padding:.45rem .9rem;border:1px solid var(--line);border-radius:999px;}
+  .tabs a:hover{color:var(--ink);}
+  .tabs a.on{color:var(--glow);border-color:var(--glow);}
+
+  header{padding:2.6rem 0 .5rem;}
+  .kicker{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--glow);margin:0 0 .6rem;
+  }
+  h1{
+    font-family:var(--sans);font-weight:800;font-size:clamp(2rem,6vw,2.8rem);
+    line-height:1.05;letter-spacing:-.02em;margin:0 0 .9rem;text-wrap:balance;
+  }
+  .dek{font-size:1.12rem;line-height:1.5;color:var(--muted);max-width:38rem;margin:0;}
+  .dek strong{color:var(--ink);font-weight:600;}
+
+  section{margin-top:3.8rem;}
+  h2{
+    font-family:var(--sans);font-weight:800;font-size:1.45rem;letter-spacing:-.01em;
+    line-height:1.15;margin:0 0 .35rem;text-wrap:balance;
+  }
+  .sec-label{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 .9rem;
+  }
+  .sec-label b{color:var(--glow);font-weight:400;}
+
+  .tbl{overflow-x:auto;margin:1.4rem 0 0;border:1px solid var(--line);border-radius:12px;}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem;}
+  th{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);text-align:left;font-weight:400;
+    padding:.7rem .9rem;border-bottom:1px solid var(--line);background:var(--surface);
+  }
+  td{padding:.6rem .9rem;border-bottom:1px solid var(--line);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  td:first-child{font-family:var(--sans);font-weight:600;}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr.hl td{background:rgba(111,231,210,.06);}
+  .us{color:var(--glow);}
+
+  .note{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:1rem 1.2rem;margin:1.5rem 0 0;font-size:.95rem;color:var(--muted);
+  }
+  .note b{color:var(--ink);}
+
+  /* HQ-specific */
+  .board{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(10.5rem,1fr));
+    gap:.7rem;margin-top:1.4rem;
+  }
+  .stat{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:.9rem 1rem;
+  }
+  .stat .k{
+    font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 .3rem;
+  }
+  .stat .v{font-family:var(--sans);font-weight:800;font-size:1.3rem;line-height:1.1;margin:0;}
+  .stat .v small{font-family:var(--serif);font-weight:400;font-size:.8rem;color:var(--muted);}
+  .stat.go .v{color:var(--glow);}
+
+  .chip{
+    display:inline-block;font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;
+    text-transform:uppercase;padding:.14rem .55rem;border-radius:999px;
+    border:1px solid var(--line);color:var(--muted);white-space:nowrap;
+  }
+  .chip.now{color:var(--ground);background:var(--glow);border-color:var(--glow);font-weight:700;}
+  .chip.done{color:var(--glow);border-color:var(--glow);}
+  .chip.warn{color:var(--ember);border-color:var(--ember);}
+
+  .phases{list-style:none;margin:1.6rem 0 0;padding:0;display:grid;gap:0;}
+  .phases li{
+    position:relative;padding:0 0 1.6rem 1.9rem;border-left:2px solid var(--line);
+    margin-left:.5rem;
+  }
+  .phases li:last-child{padding-bottom:.2rem;}
+  .phases li::before{
+    content:"";position:absolute;left:-7px;top:.35rem;width:12px;height:12px;border-radius:50%;
+    background:var(--ground);border:2px solid var(--muted);
+  }
+  .phases li.done::before{background:var(--glow);border-color:var(--glow);}
+  .phases li.now::before{background:var(--ground);border-color:var(--glow);box-shadow:0 0 10px rgba(111,231,210,.7);}
+  .phases b{font-family:var(--sans);font-size:1rem;display:block;margin-bottom:.15rem;}
+  .phases .gate{
+    display:block;margin-top:.35rem;font-size:.9rem;color:var(--muted);
+  }
+  .phases .gate b{display:inline;font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--glow);font-weight:400;}
+
+  .log{margin:1.2rem 0 0;padding:0;list-style:none;display:grid;gap:.7rem;font-size:.95rem;}
+  .log li{display:grid;grid-template-columns:6.4rem 1fr;gap:.9rem;}
+  .log time{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);padding-top:.25rem;}
+
+  .foot{margin-top:5rem;padding-top:1.4rem;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);}
+
+  :focus-visible{outline:2px solid var(--glow);outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <nav class="tabs" aria-label="Yura pages">
+    <a href="/ailab/pet/">Concept / Design</a>
+    <a href="/ailab/pet/market/">Market</a>
+    <a href="/ailab/pet/components/">Components</a>
+    <a href="/ailab/pet/hq/" class="on" aria-current="page">HQ</a>
+  </nav>
+
+  <header>
+    <p class="kicker">Yura · HQ · updated 2026-07-17</p>
+    <h1>The road to a real product</h1>
+    <p class="dek">This is the operating hub for Yura as a startup, not a portfolio piece. One page that always answers three questions: <strong>where are we, what's the next gate, and what's blocking it.</strong> Refreshed by the <code style="font-family:var(--mono);font-size:.85em;">/yura-report</code> tool from the project's memory and repo activity.</p>
+  </header>
+
+  <section>
+    <p class="sec-label"><b>01</b> · Scoreboard</p>
+    <h2>Where we are</h2>
+    <div class="board">
+      <div class="stat go"><p class="k">Stage</p><p class="v">Concept <small>dossier v0.1</small></p></div>
+      <div class="stat"><p class="k">Cash spent</p><p class="v">$0</p></div>
+      <div class="stat"><p class="k">Waitlist signups</p><p class="v">— <small>no capture yet (T3)</small></p></div>
+      <div class="stat go"><p class="k">Tools shipped</p><p class="v">1<small> / 5 planned</small></p></div>
+      <div class="stat"><p class="k">Dossier pages</p><p class="v">4</p></div>
+      <div class="stat"><p class="k">Pelt series</p><p class="v">3 <small>+ 5 colorways</small></p></div>
+    </div>
+    <p class="note"><b>North-star gate:</b> the business becomes real at <b>~30–40k units/yr or &gt;40% Deep Bond attach</b> ($449 hardware · $9/mo sub · ~$235 COGS midpoint, mono-split eyes — full model on the <a href="/ailab/pet/market/">Market page</a>). Everything on this page exists to march toward, or invalidate, that number cheaply.</p>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>02</b> · Roadmap</p>
+    <h2>Phases and their gates</h2>
+    <p>Startup discipline for a hardware pet: every phase has a kill-or-continue gate, and each phase is roughly 10× cheaper than the one after it. Fail early, fail cheap.</p>
+    <ul class="phases">
+      <li class="done">
+        <b>Concept dossier <span class="chip done">done · Jul 2026</span></b>
+        Species design, market study, component architecture — the three sibling pages of this hub.
+        <span class="gate"><b>Gate passed:</b> a coherent, differentiated concept with defensible unit economics on paper.</span>
+      </li>
+      <li class="now">
+        <b>Phase 0 — Illusion test <span class="chip now">next</span></b>
+        Wizard-of-Oz puppet: fur shell, fronds, warmth, purr — a human driving the "mind." Show it to strangers.
+        <span class="gate"><b>Gate:</b> do people treat it as alive and ask to keep it? Budget: a few $k, before any tooling is cut.</span>
+      </li>
+      <li>
+        <b>Phase 1 — Works-like breadboard</b>
+        Fronds, glide base, warmth, purr, and the instinct layer running on real electronics — ugly is fine.
+        <span class="gate"><b>Gate:</b> the frond language is readable without explanation; comprehension moments land ("sulks on your suitcase").</span>
+      </li>
+      <li>
+        <b>Phase 2 — Looks-like alphas in homes</b>
+        A handful of hand-built units living with real families for 90+ days.
+        <span class="gate"><b>Gate:</b> retention past month 3 — the metric that killed the category graveyard (Aibo, Jibo, Vector, Cozmo).</span>
+      </li>
+      <li>
+        <b>Phase 3 — EVT / DVT / certification</b>
+        Tooling, molds, FCC/CE. The ~$2–4 M NRE check gets written here and nowhere earlier.
+        <span class="gate"><b>Gate:</b> landed COGS ≤ $260 at 20k/yr volume; safety and privacy architecture audited.</span>
+      </li>
+      <li>
+        <b>Phase 4 — D2C launch</b>
+        Direct-to-consumer first (the Lovot playbook), subscription attached from day one.
+        <span class="gate"><b>Gate:</b> the north star — 30–40k units/yr or &gt;40% attach = a profitable company.</span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>03</b> · Workstreams</p>
+    <h2>Tool suite status</h2>
+    <p>The software side of the startup: tools in the private <b>yura</b> build repo (github.com/datouwan/yura) that make the business measurable. Definitions live in the project memory (CLAUDE.md).</p>
+    <div class="tbl"><table>
+      <tr><th>#</th><th>Tool</th><th>What it buys us</th><th>Status</th></tr>
+      <tr><td>T1</td><td>bom-model</td><td>Live BOM → COGS → margin scenarios; the executable source of truth behind the Market page tables</td><td><span class="chip done">v0 shipped · Jul 17</span></td></tr>
+      <tr class="hl"><td class="us">T3</td><td>waitlist</td><td>Email capture on the dossier — the cheapest real demand signal before Phase 0</td><td><span class="chip">planned · next</span></td></tr>
+      <tr><td>T2</td><td>market-watch</td><td>Tracks Moflin / Loona / Ropet / Lovot prices, stock, and news so the Market page stays true</td><td><span class="chip">planned</span></td></tr>
+      <tr><td>T4</td><td>image-pipeline</td><td>One-command conversion from OneDrive renders to filed dossier images</td><td><span class="chip">planned</span></td></tr>
+      <tr><td>T5</td><td>phase0-kit</td><td>Session logging + analysis for the illusion tests</td><td><span class="chip">planned</span></td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>04</b> · Decisions</p>
+    <h2>Open decisions</h2>
+    <div class="tbl"><table>
+      <tr><th>Decision</th><th>Options on the table</th><th>Needed by</th></tr>
+      <tr><td>Product name</td><td>"Yura" is a working name — keep, or run a naming + trademark screen before anything public</td><td>before waitlist (T3) goes live</td></tr>
+      <tr><td>Phase 0 test design</td><td>What exactly the puppet must do, who the test audience is, and what counts as "treated it as alive"</td><td>before Phase 0 build</td></tr>
+      <tr><td>Base-case wording</td><td>bom-model computes the base case at ≈+$1.3M operating, but the Market page calls it "≈ break-even" — re-word the page, or state the extra costs the wording assumes</td><td>next dossier revision</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <p class="sec-label"><b>05</b> · Log</p>
+    <h2>Milestone log</h2>
+    <ul class="log">
+      <li><time>2026-07-17</time><span><b>Rev B2 blueprints landed</b> — both sheets regenerated with mono-split eyes and corrected title blocks (180 mm / Ø160 / 680 g / 3.7 V / 4,000 mAh). Closes two long-open items: the invented blueprint specs and the stereo art debt. Design pages, spec, model, and art now all agree.</span></li>
+      <li><time>2026-07-17</time><span><b>Vision architecture decided: mono-split eyes.</b> Camera + mechanical privacy eyelid in one IR-transparent dome, ToF + IR illuminator in the other, externally identical; eye wells symmetric so stereo stays a drop-in upgrade. COGS midpoint back to <b>$235</b> (stereo would have cost ~2 margin points); spec, components, market, and bom-model synced.</span></li>
+      <li><time>2026-07-17</time><span>BOM re-costed via bom-model for the stereo eyes: landed COGS midpoint <b>$235 → $245</b>, gross margin 42–53% → 40–51%; Market page synced. Mono-eye option (~$10 back) documented in the vision decision.</span></li>
+      <li><time>2026-07-17</time><span>Blueprints updated: exploded stack now includes the <b>auto-dock nest</b> with self-docking sequence; new <b>Rev B1 head/eye-module sheet</b> replaces the cutaway. The art advances a design fork — eyes as stereo vision system — logged in Decisions (privacy shutter equivalent still needed).</span></li>
+      <li><time>2026-07-17</time><span>Build repo <b>yura</b> created (private on GitHub) and <b>T1 bom-model v0 shipped</b> — the unit economics are now executable, and the tool immediately caught the base-case "break-even" wording contradicting its own arithmetic (see Decisions).</span></li>
+      <li><time>2026-07-17</time><span>HQ stood up. Project memory (CLAUDE.md) written; tool suite T1–T5 defined; internal files excluded from deploy via <code style="font-family:var(--mono);font-size:.85em;">.assetsignore</code>.</span></li>
+      <li><time>2026-07-16</time><span>Concept grew into the three-page dossier: concept/design, market study, component architecture. 22 images across hero, moods, colorways, three pelt series, blueprints.</span></li>
+      <li><time>2026-07-16</time><span>Yura concept page first shipped at /ailab/pet.</span></li>
+    </ul>
+  </section>
+
+  <p class="foot">YURA · HQ · refreshed 2026-07-17 by /yura-report · <a href="/ailab/pet/">concept →</a></p>
+</div>
+
+</body>
+</html>
