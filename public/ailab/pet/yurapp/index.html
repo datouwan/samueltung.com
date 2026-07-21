@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YURA · turntable</title>
+<style>
+  :root { --bg:#06070c; --panel:#0d1017; --line:#1c2230; --ink:#cfd6e4; --dim:#6b7487; --aqua:#6fe7d2; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; background:var(--bg); color:var(--ink);
+    font:14px/1.5 "Segoe UI", system-ui, sans-serif; overflow:hidden; }
+  #stage { position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    cursor:grab; touch-action:none; }
+  #stage.dragging { cursor:grabbing; }
+  #view { max-width:100%; max-height:100%; }
+  #panel { position:fixed; top:0; right:0; bottom:0; width:230px; overflow-y:auto;
+    background:linear-gradient(180deg, rgba(13,16,23,.92), rgba(13,16,23,.85));
+    border-left:1px solid var(--line); padding:18px 16px; backdrop-filter:blur(6px); }
+  #panel h1 { font-size:15px; letter-spacing:.14em; font-weight:600; color:#eef2f8; }
+  #panel h1 span { color:var(--aqua); }
+  #sub { font-size:11px; color:var(--dim); margin:2px 0 16px; }
+  .pelt { display:block; width:100%; text-align:left; padding:7px 10px; margin-bottom:6px;
+    background:transparent; border:1px solid var(--line); border-radius:8px; color:var(--ink);
+    cursor:pointer; font-size:13px; }
+  .pelt:hover { border-color:var(--aqua); }
+  .pelt.on { border-color:var(--aqua); color:var(--aqua);
+    box-shadow:0 0 10px rgba(111,231,210,.25); }
+  .row { margin-top:14px; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--dim); }
+  .row input { accent-color:var(--aqua); }
+  #status { margin-top:14px; font-size:11px; color:#454e60; }
+  .foot { position:absolute; bottom:14px; left:16px; right:16px; font-size:11px; color:#454e60; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="view"></canvas></div>
+<div id="panel">
+  <h1>YURA <span>·</span> turntable</h1>
+  <p id="sub">Cycles renders · drag to spin</p>
+  <div id="pelts"></div>
+  <div class="row"><input type="checkbox" id="spin" checked><label for="spin">auto spin</label></div>
+  <div class="row"><label for="speed">speed</label>
+    <input type="range" id="speed" min="0.02" max="0.6" step="0.02" value="0.12" style="flex:1"></div>
+  <p id="status"></p>
+  <p class="foot">Frames rendered by Blender (apps/yura-blender), served static.
+  Add pelts by editing PELTS_TO_RENDER in turntable.py.</p>
+</div>
+<script src="frames/manifest.js"></script>
+<script>
+(async () => {
+  const canvas = document.getElementById('view');
+  const ctx = canvas.getContext('2d');
+  const stage = document.getElementById('stage');
+  const status = document.getElementById('status');
+
+  // manifest.js works from file:// (no server needed); fetch is the fallback
+  let manifest = window.YURA_MANIFEST;
+  if (!manifest) {
+    try {
+      manifest = await (await fetch('frames/manifest.json')).json();
+    } catch (e) {
+      status.textContent = 'frames/manifest.js not found — run turntable.py first.';
+      return;
+    }
+  }
+  const [W, H] = manifest.size;
+  canvas.width = W; canvas.height = H;
+
+  const cache = {};                 // slug -> array of Image (sparse while loading)
+  let current = null;               // active pelt slug
+  let frame = 0, velocity = 0.12;   // frames per tick when auto-spinning
+  let frames = 0;
+
+  function loadPelt(name) {
+    const info = manifest.pelts[name];
+    frames = info.frames;
+    current = info.slug;
+    if (!cache[current]) {
+      cache[current] = [];
+      let loaded = 0;
+      for (let i = 0; i < info.frames; i++) {
+        const img = new Image();
+        img.src = `frames/${info.slug}/f${String(i).padStart(2, '0')}.webp`;
+        img.onload = () => {
+          loaded++;
+          status.textContent = loaded < info.frames ? `loading ${loaded}/${info.frames}` : '';
+        };
+        cache[current][i] = img;
+      }
+    }
+    document.querySelectorAll('.pelt').forEach(b =>
+      b.classList.toggle('on', b.textContent === name));
+  }
+
+  const peltsDiv = document.getElementById('pelts');
+  for (const name of Object.keys(manifest.pelts)) {
+    const b = document.createElement('button');
+    b.className = 'pelt';
+    b.textContent = name;
+    b.onclick = () => loadPelt(name);
+    peltsDiv.appendChild(b);
+  }
+  loadPelt(Object.keys(manifest.pelts)[0]);
+
+  // drag to rotate, with inertia
+  let dragging = false, lastX = 0, dragVel = 0;
+  const autoBox = document.getElementById('spin');
+  const speedSlider = document.getElementById('speed');
+  speedSlider.oninput = () => velocity = parseFloat(speedSlider.value);
+  stage.addEventListener('pointerdown', e => {
+    dragging = true; lastX = e.clientX; dragVel = 0;
+    stage.classList.add('dragging');
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    lastX = e.clientX;
+    dragVel = -dx * frames / 600;   // full drag across ~600px = one revolution
+    frame += dragVel;
+  });
+  stage.addEventListener('pointerup', e => {
+    dragging = false;
+    stage.classList.remove('dragging');
+  });
+
+  function tick() {
+    requestAnimationFrame(tick);
+    if (!dragging) {
+      if (Math.abs(dragVel) > 0.01) {
+        frame += dragVel;
+        dragVel *= 0.94;            // inertia decay
+      } else if (autoBox.checked) {
+        frame += velocity;
+      }
+    }
+    if (!current || !frames) return;
+    const idx = ((Math.round(frame) % frames) + frames) % frames;
+    const img = cache[current][idx];
+    if (img && img.complete && img.naturalWidth) {
+      ctx.drawImage(img, 0, 0, W, H);
+    }
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
