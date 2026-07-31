@@ -13,13 +13,18 @@ page, and analysis added here should serve that goal. The current business thesi
 - **Cost:** BOM ≈ $191–264 → ~$214–269 landed COGS ($240 midpoint, mono-split eyes +
   auto-dock nest; stereo would add ~$10). Gross ~$180–235/unit (40–52%); subscription
   runs 70–80% margin ($1.50–3.00/mo cloud cost).
-- **Scenarios:** Bear 5k units/yr = −$2M (fails fast). Base 20k/yr (Moflin parity) ≈
-  break-even. Bull 100k/yr = +$12–18M operating. **Profitability gate: ~30–40k units/yr
-  or >40% subscription attach.** ~$2–4M NRE before unit one.
+- **Scenarios:** Bear 5k units/yr = −$1.8M (fails fast). Base 20k/yr (Moflin parity) =
+  +$1.2M at midpoints, spanning break-even (worst-cost corner) to +$2.3M — thin and
+  assumption-sensitive. Bull 100k/yr = +$15–19M operating. **Robust-profitability gate
+  (positive even at the worst-cost corner): ~30–40k units/yr or >40% subscription
+  attach.** ~$2–4M NRE before unit one.
 - **Structural read:** hardware keeps the lights on; the business lives in the
   subscription.
-- **Next physical step:** Phase 0 "illusion test" — prove the magic for a few thousand
-  dollars before cutting any tooling.
+- **Next physical step:** home works-like prototype (Phase 0 puppet dropped 2026-07-30 —
+  Samuel's Moflin is the live reference). Stage A "presence blob" $247–429 → Stage B
+  comprehension +$35–40 (+$5–15/mo API) → Stage C glide +$115–217; $397–686 all-in.
+  Chassis via online print service (no printer at home): MJF PA12 rigid, TPU 95A
+  compliant. Plan on the Proto page; parts in `yura` repo `tools/proto-kit/`.
 - **Key comps:** Moflin ($429, sells out — proof of demand), KEYi Loona ($450 — proof
   the BOM is feasible), Lovot (D2C playbook), and the graveyard (Aibo, Jibo, Vector,
   Cozmo — retention past month 3 is the real gate, not launch demand).
@@ -32,8 +37,10 @@ Password-gated (site-wide Basic Auth in `src/index.js`; secret `SITE_PASSWORD`).
 |---|---|---|
 | Concept / Design | `index.html` | Species fiction, frond language, moods, three nervous systems, spec, positioning, risks, Phase 0 plan |
 | Market study | `market/index.html` | TAM, competitors, uniqueness, $449 scenarios, BOM/unit economics, forces, sources |
+| Prototype plan | `proto/index.html` | Home works-like build: stages A/B/C with gates, parts kit, print-service guidance, safety rules |
 | Components | `components/index.html` | Exploded stack, parts breakdown, buses/power, two-brain split, DFA rules |
 | **HQ** | `hq/index.html` | **The startup operating hub**: scoreboard, phase roadmap with gates, workstream status, open decisions, milestone log |
+| yurapp | `yurapp/index.html` | Drag-to-spin turntable viewer (24 WebP frames × 18 pelts, Cycles renders from the yura repo's `apps/yura-web` pipeline) — an app, not a nav tab |
 
 All three share the same design tokens (indigo `#0B0E1A` ground, aqua `#6FE7D2` glow,
 Charter body, mono labels) and a pill tab nav — **adding a page means updating the nav
@@ -97,7 +104,7 @@ Update the status column here whenever a tool lands or changes.
 | T2 | `market-watch` | Competitor tracker: watch list (Moflin, Loona, Ropet, Lovot, Casio…) → price, availability, news deltas; append-only log so the market page's claims stay current. | planned |
 | T3 | `waitlist` | Demand signal: email-capture endpoint in `src/index.js` + KV, with a signup card on the dossier — the cheapest possible test of real interest before Phase 0. | planned |
 | T4 | `image-pipeline` | Formalize the Pillow conversion rules above into one script: OneDrive source folder in → correctly sized/filed `images/` out. | planned |
-| T5 | `phase0-kit` | Illusion-test support: session log schema + analysis for the Phase 0 puppet tests (what broke the spell, retention proxies). | planned |
+| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. STLs will live in `tools/proto-kit/cad/`. | **v0 shipped** 2026-07-30 |
 
 Priority order is T1 → T3 → T2 (know the economics, measure demand, watch the
 competition); T4/T5 when their moment comes.
@@ -115,6 +122,18 @@ until a tool actually measures it.
 
 Append-only; date + one line each. Newest first.
 
+- 2026-07-30 — **Phase 0 puppet dropped; home-prototype path adopted.** Samuel owns a
+  Moflin (live alive-ness reference), so Phases 0–1 merged into a staged home build:
+  Stage A presence blob → B comprehension → C glide, $397–686 all-in, chassis from an
+  online print service (no printer at home). Proto page shipped as 5th nav tab (nav
+  updated on all pages); T5 re-purposed phase0-kit → **proto-kit v0** in the yura repo.
+  Gate discipline kept: stages judged by someone who isn't Samuel, Moflin in the room.
+  Next blocker: Stage A shell CAD before print order #1.
+- 2026-07-30 — **Base-case wording resolved** (was an open decision since T1 shipped):
+  "≈ break-even" was the worst-cost corner ($269 COGS, $4.5M opex, $3/mo cloud), not
+  the midpoint (+$1.2M). Market §06 now states the corners explicitly (0 → +$2.3M,
+  +$1.2M mid); the 30–40k gate re-worded as *robust* profitability (positive even at
+  the worst corner). bom-model gate line synced in the yura repo.
 - 2026-07-17 — Fixed Rev B2 sheets landed (typos cured, dimension chain 78/28/19);
   new smaller glitches recorded in Known issues. **Auto-dock nest re-costed** —
   it had shipped in the art without a BOM update: nest-dock $10–15 → $14–22,
