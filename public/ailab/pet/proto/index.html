@@ -109,6 +109,50 @@
     font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);}
 
   :focus-visible{outline:2px solid var(--glow);outline-offset:2px;}
+
+  .list-toggle{
+    display:inline-flex;align-items:center;gap:.4rem;margin:1.4rem 0 0;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--glow);background:none;border:1px solid var(--line);border-radius:999px;
+    padding:.5rem 1rem;cursor:pointer;
+  }
+  .list-toggle:hover{border-color:var(--glow);}
+  .shop{display:none;margin-top:1.6rem;}
+  .shop.on{display:block;}
+  .shop-stage{margin-top:2rem;}
+  .shop-stage:first-child{margin-top:0;}
+  .shop-stage h4{
+    font-family:var(--sans);font-weight:700;font-size:.95rem;margin:0 0 .6rem;
+    color:var(--ink);
+  }
+  .shop-list{list-style:none;margin:0;padding:0;display:grid;gap:0;}
+  .shop-item{
+    display:flex;gap:.7rem;align-items:flex-start;padding:.6rem 0;
+    border-bottom:1px solid var(--line);
+  }
+  .shop-item:last-child{border-bottom:none;}
+  .shop-item input[type="checkbox"]{
+    margin-top:.3rem;width:1rem;height:1rem;accent-color:var(--glow);flex:none;cursor:pointer;
+  }
+  .shop-item label{flex:1;cursor:pointer;}
+  .shop-item.checked label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line);}
+  .shop-item .part-name{font-family:var(--sans);font-weight:600;color:var(--ink);}
+  .shop-item.checked .part-name{color:var(--muted);}
+  .shop-item .price{font-family:var(--mono);font-size:.8rem;color:var(--glow);white-space:nowrap;}
+  .shop-item.checked .price{color:var(--muted);}
+  .shop-item .meta{display:block;font-size:.85rem;color:var(--muted);margin-top:.1rem;}
+  .shop-actions{margin-top:1.4rem;display:flex;gap:.6rem;flex-wrap:wrap;}
+  .shop-actions button{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;
+    padding:.4rem .8rem;cursor:pointer;
+  }
+  .shop-actions button:hover{color:var(--ink);border-color:var(--ink);}
+  .shop-progress{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin:1rem 0 0;
+  }
+  .shop-progress b{color:var(--glow);font-weight:400;}
 </style>
 </head>
 <body>
@@ -187,6 +231,59 @@
       <tr class="hl"><td class="us">C</td><td class="us" colspan="2">Stage C total — it glides</td><td class="num us">$115–217</td></tr>
       <tr class="hl"><td class="us">Σ</td><td class="us" colspan="2"><b>All-in, one-time</b></td><td class="num us"><b>$397–686</b></td></tr>
     </table></div>
+
+    <button type="button" class="list-toggle" id="shopToggle" aria-expanded="false" aria-controls="shopList">Open as shopping list</button>
+
+    <div class="shop" id="shopList">
+      <p class="note">Same parts, checkable — for actually ordering. Checks are saved in this browser only (nothing sent anywhere). Also generated straight from <code style="font-family:var(--mono);font-size:.85em;">parts.json</code>: run <code style="font-family:var(--mono);font-size:.85em;">node tools/proto-kit/kit.js --shopping-list</code> in the yura repo for a plain-text or <code style="font-family:var(--mono);font-size:.85em;">--json</code> version.</p>
+
+      <div class="shop-stage">
+        <h4>Stage A — Presence blob</h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-main-brain"><label for="shop-main-brain"><span class="part-name">Raspberry Pi 5 8 GB + PSU + SD</span> <span class="price">$80–100</span><span class="meta">Main brain — cognition, vision, on-device Whisper STT · Raspberry Pi reseller / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-mics"><label for="shop-mics"><span class="part-name">ReSpeaker 2-Mics Pi HAT</span> <span class="price">$15–25</span><span class="meta">Ears — sound direction + wake; 4-mic later if needed · Seeed Studio / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-servo-driver"><label for="shop-servo-driver"><span class="part-name">PCA9685 16-ch servo driver</span> <span class="price">$6–9</span><span class="meta">Fronds · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-frond-servos"><label for="shop-frond-servos"><span class="part-name">5× MG90S micro servo</span> <span class="price">$15–20</span><span class="meta">Fronds — 4 fronds + 1 breathing cam · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-glow-leds"><label for="shop-glow-leds"><span class="part-name">WS2812B strip, 1 m / 60 LED</span> <span class="price">$8–12</span><span class="meta">Glow · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-glow-fiber"><label for="shop-glow-fiber"><span class="part-name">3 mm side-glow fiber optic, 2 m</span> <span class="price">$8–14</span><span class="meta">Glow — inside the frond stems · Amazon / craft &amp; lighting supplier</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-touch-ic"><label for="shop-touch-ic"><span class="part-name">MPR121 capacitive breakout</span> <span class="price">$6–10</span><span class="meta">Touch · Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-touch-fabric"><label for="shop-touch-fabric"><span class="part-name">Conductive fabric + thread zones</span> <span class="price">$8–15</span><span class="meta">Touch — under the pelt · Adafruit / fabric store</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-warmth"><label for="shop-warmth"><span class="part-name">Heater film + NTC + MOSFET + 60 °C thermal fuse</span> <span class="price">$12–20</span><span class="meta">Warmth — thermal fuse in series is non-negotiable under fur · Amazon / Digi-Key</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-purr"><label for="shop-purr"><span class="part-name">ERM/LRA vibration motor + driver</span> <span class="price">$6–12</span><span class="meta">Purr · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-audio"><label for="shop-audio"><span class="part-name">MAX98357 I2S amp + 40 mm speaker</span> <span class="price">$8–12</span><span class="meta">Purr — sound layer only, Yura never speaks · Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-power-a"><label for="shop-power-a"><span class="part-name">USB-C PD power bank</span> <span class="price">$0–30</span><span class="meta">Power — $0 if one's already in the drawer · Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-pelt"><label for="shop-pelt"><span class="part-name">Faux fur + zipper + notions, hand-sewn</span> <span class="price">$20–35</span><span class="meta">Pelt — the first zip-off pelt test · fabric store / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-print-a"><label for="shop-print-a"><span class="part-name">Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A)</span> <span class="price">$40–90</span><span class="meta">Body — batch variants into one order, shipping dominates · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-misc"><label for="shop-misc"><span class="part-name">Wiring, JST kit, standoffs, magnets, heat-shrink</span> <span class="price">$15–25</span><span class="meta">Build · Amazon</span></label></li>
+        </ul>
+      </div>
+
+      <div class="shop-stage">
+        <h4>Stage B — Comprehension</h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-eye-cam"><label for="shop-eye-cam"><span class="part-name">Pi Camera Module 3 Wide</span> <span class="price">$35–40</span><span class="meta">Eyes — the camera eye of the mono-split pair · Raspberry Pi reseller / Adafruit</span></label></li>
+        </ul>
+      </div>
+
+      <div class="shop-stage">
+        <h4>Stage C — Glide</h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-reflex-mcu"><label for="shop-reflex-mcu"><span class="part-name">ESP32 devkit</span> <span class="price">$6–10</span><span class="meta">Instinct MCU — reflexes + motor safety, mirrors the two-brain split · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-drive"><label for="shop-drive"><span class="part-name">3× N20 gear motor w/ encoder</span> <span class="price">$15–24</span><span class="meta">Drive · Pololu / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-motor-driver"><label for="shop-motor-driver"><span class="part-name">2× DRV8833 dual driver</span> <span class="price">$4–8</span><span class="meta">Drive · Adafruit / Pololu</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-wheels"><label for="shop-wheels"><span class="part-name">3× 48 mm omniwheel</span> <span class="price">$12–25</span><span class="meta">Drive · Amazon / robotics supplier</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-tof"><label for="shop-tof"><span class="part-name">VL53L5CX ToF breakout</span> <span class="price">$20–30</span><span class="meta">Eyes — the depth eye of the mono-split pair · Adafruit / SparkFun</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-power-c"><label for="shop-power-c"><span class="part-name">2× 18650 + holder + 2S BMS + buck</span> <span class="price">$18–30</span><span class="meta">Power — untethered at last · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-print-c"><label for="shop-print-c"><span class="part-name">Print order #2 — drive base + dock funnel</span> <span class="price">$40–90</span><span class="meta">Body · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
+        </ul>
+      </div>
+
+      <p class="shop-progress" id="shopProgress"></p>
+      <div class="shop-actions">
+        <button type="button" id="shopReset">Reset checks</button>
+        <button type="button" id="shopPrint">Print</button>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -215,5 +312,55 @@
   <p class="foot">YURA · prototype plan v0.1 · July 2026 · <a href="/ailab/pet/">back to concept →</a></p>
 </div>
 
+<script>
+(function(){
+  var STORE_KEY = 'yura-proto-shopping-list';
+  var toggle = document.getElementById('shopToggle');
+  var list = document.getElementById('shopList');
+  var items = Array.prototype.slice.call(list.querySelectorAll('.shop-item'));
+  var progress = document.getElementById('shopProgress');
+  var resetBtn = document.getElementById('shopReset');
+  var printBtn = document.getElementById('shopPrint');
+
+  var checked;
+  try { checked = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch (e) { checked = {}; }
+
+  function updateProgress(){
+    var done = items.filter(function(li){ return li.classList.contains('checked'); }).length;
+    progress.innerHTML = '<b>' + done + ' / ' + items.length + '</b> checked off';
+  }
+
+  items.forEach(function(li){
+    var box = li.querySelector('input[type="checkbox"]');
+    if (checked[box.id]) { box.checked = true; li.classList.add('checked'); }
+    box.addEventListener('change', function(){
+      li.classList.toggle('checked', box.checked);
+      if (box.checked) checked[box.id] = true; else delete checked[box.id];
+      localStorage.setItem(STORE_KEY, JSON.stringify(checked));
+      updateProgress();
+    });
+  });
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = list.classList.toggle('on');
+    toggle.setAttribute('aria-expanded', open);
+    toggle.textContent = open ? 'Hide shopping list' : 'Open as shopping list';
+  });
+
+  resetBtn.addEventListener('click', function(){
+    checked = {};
+    localStorage.removeItem(STORE_KEY);
+    items.forEach(function(li){
+      li.classList.remove('checked');
+      li.querySelector('input[type="checkbox"]').checked = false;
+    });
+    updateProgress();
+  });
+
+  printBtn.addEventListener('click', function(){ window.print(); });
+})();
+</script>
 </body>
 </html>
