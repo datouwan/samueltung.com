@@ -122,6 +122,13 @@ until a tool actually measures it.
 
 Append-only; date + one line each. Newest first.
 
+- 2026-08-04 — **Checkable shopping list added to the Proto page.** "The kit"
+  table now has an "Open as shopping list" toggle: the same 23 parts as
+  checkboxes grouped by stage, with a vendor-category suggestion per part
+  (Adafruit, Amazon, Pololu, print service, etc.) and check-state saved to
+  localStorage. Mirrored in the yura repo: `proto-kit`'s `kit.js` gained
+  `--shopping-list` (and `--json`), and `parts.json` gained a `vendor` field
+  per part.
 - 2026-07-30 — **Phase 0 puppet dropped; home-prototype path adopted.** Samuel owns a
   Moflin (live alive-ness reference), so Phases 0–1 merged into a staged home build:
   Stage A presence blob → B comprehension → C glide, $397–686 all-in, chassis from an
