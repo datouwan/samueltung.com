@@ -149,7 +149,7 @@
   </nav>
 
   <header>
-    <p class="kicker">Yura · HQ · updated 2026-07-30</p>
+    <p class="kicker">Yura · HQ · updated 2026-08-05</p>
     <h1>The road to a real product</h1>
     <p class="dek">This is the operating hub for Yura as a startup, not a portfolio piece. One page that always answers three questions: <strong>where are we, what's the next gate, and what's blocking it.</strong> Refreshed by the <code style="font-family:var(--mono);font-size:.85em;">/yura-report</code> tool from the project's memory and repo activity.</p>
   </header>
@@ -180,7 +180,7 @@
       </li>
       <li class="now">
         <b>Phase 0/1 — Home works-like prototype <span class="chip now">next</span></b>
-        The wizard-of-Oz puppet is dropped (a Moflin at home already sets the alive-ness bar); Phases 0–1 merge into a staged home build — print-service chassis + hobby boards, $400–690 all-in. Stage A presence blob → Stage B comprehension → Stage C glide. Full plan on the <a href="/ailab/pet/proto/">Proto page</a>.
+        The wizard-of-Oz puppet is dropped (a Moflin at home already sets the alive-ness bar); Phases 0–1 merge into a staged home build — print-service chassis + hobby boards, <b>$424–750 all-in</b> after the 2026-08-05 pre-flight pass. Stage A presence blob ($271–487) → Stage B comprehension → Stage C glide. Full plan on the <a href="/ailab/pet/proto/">Proto page</a>; electronics are cleared to order, print order #1 is held on CAD.
         <span class="gate"><b>Gate:</b> the frond language reads without explanation and a comprehension moment lands ("sulks on your suitcase") — judged by someone who isn't Samuel, with the Moflin in the room.</span>
       </li>
       <li>
@@ -211,7 +211,7 @@
       <tr class="hl"><td class="us">T3</td><td>waitlist</td><td>Email capture on the dossier — the cheapest real demand signal before Phase 0</td><td><span class="chip">planned · next</span></td></tr>
       <tr><td>T2</td><td>market-watch</td><td>Tracks Moflin / Loona / Ropet / Lovot prices, stock, and news so the Market page stays true</td><td><span class="chip">planned</span></td></tr>
       <tr><td>T4</td><td>image-pipeline</td><td>One-command conversion from OneDrive renders to filed dossier images</td><td><span class="chip">planned</span></td></tr>
-      <tr><td>T5</td><td>proto-kit</td><td>Home-prototype parts list, stage gates, and budgets — the executable source behind the Proto page (was phase0-kit)</td><td><span class="chip done">v0 shipped · Jul 30</span></td></tr>
+      <tr><td>T5</td><td>proto-kit</td><td>Home-prototype parts list, stage gates, and budgets — the executable source behind the Proto page. Now also emits a per-stage shopping list with order quantities, and carries PREFLIGHT.md (bus map, power budget, physical fit)</td><td><span class="chip done">v0.2 · Aug 5</span></td></tr>
     </table></div>
   </section>
 
@@ -222,6 +222,9 @@
       <tr><th>Decision</th><th>Options on the table</th><th>Needed by</th></tr>
       <tr><td>Product name</td><td>"Yura" is a working name — keep, or run a naming + trademark screen before anything public</td><td>before waitlist (T3) goes live</td></tr>
       <tr><td>Stage A shell CAD</td><td>Who models it and in what (Fusion 360 personal vs Onshape free); first print order can't go out without STLs — STLs to live in yura repo tools/proto-kit/cad/</td><td>before print order #1</td></tr>
+      <tr class="hl"><td class="us">ReSpeaker HAT on Pi 5</td><td>Driver support on current Pi 5 kernels is unverified and this board has historically been the flakiest part of the stack; fallback is a USB mic array, which also frees the GPIO header and dissolves the cooler/HAT clash below</td><td>before the electronics order</td></tr>
+      <tr><td>Pi 5 cooling vs mic HAT</td><td>The active cooler and a HAT compete for the same space: tall stacking header, low-profile heatsink (at the cost of sustained Whisper throughput), or drop the HAT for USB mics</td><td>before print order #1</td></tr>
+      <tr><td>Frond actuator for production</td><td>Stage A commits to root-mounted sub-micro gimbals because they are far easier to debug on a first build; tendon drive from the body cavity fixes head volume, centre of gravity and servo noise together and is the likely production answer — decide from what Stage A teaches</td><td>Phase 2</td></tr>
     </table></div>
   </section>
 
@@ -229,6 +232,9 @@
     <p class="sec-label"><b>05</b> · Log</p>
     <h2>Milestone log</h2>
     <ul class="log">
+      <li><time>2026-08-05</time><span><b>Pre-flight pass before ordering — five would-have-failed findings.</b> Three on critical path: WS2812B does not drive on a Pi 5 (the RP1 controller broke the PWM/DMA path) and glow <i>is</i> the frond channel, so it became <b>APA102/SK9822</b> over SPI; the heater specified an NTC but <b>the Pi has no ADC</b>, leaving the thermal loop with no feedback at all, so an <b>ADS1115</b> was added; and the mic HAT and MAX98357 both wanted the single I²S bus, so the amp was dropped as redundant. Plus a Pi 5 active cooler (Whisper pegs four cores under fur) and the Pi 5 camera cable, without which the Stage B camera will not physically plug in. Power budget peaks ~50 W, so one 27 W brick does not close it and a stationary Stage A moves to mains. <b>Stage A $247–429 → $271–487, all-in $397–686 → $424–750</b> — half the servo upgrade, half parts the BOM was simply missing. Reasoning in the yura repo's <code style="font-family:var(--mono);font-size:.85em;">PREFLIGHT.md</code>.</span></li>
+      <li><time>2026-08-05</time><span><b>Frond actuation settled for Stage A: root-mounted sub-micro gimbals.</b> Prompted by asking how two MG90S would fit in the head — they wouldn't, comfortably. Sub-micro (4–5 g) is ~¼ the volume and mass at the highest point of a 680 g creature, and quieter, which the aliveness gate cares about. A static-frond Stage A with posture deferred to a Stage A2 A/B test was explored and reverted the same day; posture stays in Stage A. <b>Tendon drive is the likely production answer</b> and is now a tracked decision.</span></li>
+      <li><time>2026-08-04</time><span><b>Proto page gained a shopping list.</b> The kit table now opens as a checkable per-stage list with vendor categories, order quantities separated from build quantities (spares priced on top), and localStorage state — generated from proto-kit's new <code style="font-family:var(--mono);font-size:.85em;">--shopping-list</code> output so the page and the tool cannot drift.</span></li>
       <li><time>2026-07-30</time><span><b>Proto-A blueprint landed</b> — Rev A0 exploded sheet of the Stage A build (printed shell, Pi 5 stack, heater + fuse, zip pelt, frond cross-section), generated clean on the first pass with zero title-block typos; filed to the Proto page.</span></li>
       <li><time>2026-07-30</time><span><b>Phase 0 puppet dropped; home-prototype path adopted.</b> Rationale: a Moflin at home is the live reference, so Phases 0–1 merge into a staged works-like build ($400–690 all-in, print-service chassis + hobby boards). New <b>Proto page</b> shipped as the 5th nav tab; <b>T5 re-purposed phase0-kit → proto-kit, v0 shipped</b> in the yura repo. Next blocker: Stage A shell CAD (see Decisions).</span></li>
       <li><time>2026-07-30</time><span><b>Base-case wording resolved</b> (open since T1 shipped): "≈ break-even" was the worst-cost corner, not the midpoint. Market §06 now states the corners — <b>+$1.2 M mid, spanning break-even ($269 COGS · $4.5 M opex · $3/mo cloud) to +$2.3 M</b> — and the 30–40k gate is re-worded as <i>robust</i> profitability. bom-model gate line synced in the yura repo; market study bumped to v0.2.</span></li>
@@ -245,7 +251,7 @@
     </ul>
   </section>
 
-  <p class="foot">YURA · HQ · refreshed 2026-07-30 by /yura-report · <a href="/ailab/pet/">concept →</a></p>
+  <p class="foot">YURA · HQ · refreshed 2026-08-05 by /yura-report · <a href="/ailab/pet/">concept →</a></p>
 </div>
 
 </body>

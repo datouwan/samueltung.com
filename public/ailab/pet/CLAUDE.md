@@ -107,7 +107,7 @@ Update the status column here whenever a tool lands or changes.
 | T2 | `market-watch` | Competitor tracker: watch list (Moflin, Loona, Ropet, Lovot, Casio…) → price, availability, news deltas; append-only log so the market page's claims stay current. | planned |
 | T3 | `waitlist` | Demand signal: email-capture endpoint in `src/index.js` + KV, with a signup card on the dossier — the cheapest possible test of real interest before Phase 0. | planned |
 | T4 | `image-pipeline` | Formalize the Pillow conversion rules above into one script: OneDrive source folder in → correctly sized/filed `images/` out. | planned |
-| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. STLs will live in `tools/proto-kit/cad/`. | **v0 shipped** 2026-07-30 |
+| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. Also emits a per-stage shopping list (`--shopping-list`) with order vs build quantities, and carries `PREFLIGHT.md` (bus map, power budget, physical fit). STLs will live in `tools/proto-kit/cad/`. | **v0.2** 2026-08-05 |
 
 Priority order is T1 → T3 → T2 (know the economics, measure demand, watch the
 competition); T4/T5 when their moment comes.
