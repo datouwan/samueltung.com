@@ -21,7 +21,8 @@ page, and analysis added here should serve that goal. The current business thesi
 - **Structural read:** hardware keeps the lights on; the business lives in the
   subscription.
 - **Next physical step:** home works-like prototype (Phase 0 puppet dropped 2026-07-30 —
-  Samuel's Moflin is the live reference). Stage A "presence blob" $247–429 → Stage B
+  Samuel's Moflin is the live reference). Stage A "presence blob", **static fronds**,
+  $235–413 → Stage A2 frond motion +$12–16 (deferred, A/B-tested against A) → Stage B
   comprehension +$35–40 (+$5–15/mo API) → Stage C glide +$115–217; $397–686 all-in.
   Chassis via online print service (no printer at home): MJF PA12 rigid, TPU 95A
   compliant. Plan on the Proto page; parts in `yura` repo `tools/proto-kit/`.
@@ -122,6 +123,23 @@ until a tool actually measures it.
 
 Append-only; date + one line each. Newest first.
 
+- 2026-08-05 — **Stage A goes static-frond; posture split out as Stage A2.** Samuel's
+  call: for the prototype the fronds only need to glow and change colour. Stage A
+  drops the 4 frond servos ($247–429 → $235–413); they move to a new **Stage A2**
+  (+$12–16) with its own gate — posture must measurably beat the static build with
+  the same observer, or it hasn't earned its mass, noise or cost. All-in unchanged
+  at $397–686; the servos moved stages, they didn't vanish. Rationale is schedule,
+  not money: no gimbal cavity, no servo mounts, no fiber through a moving joint, so
+  the Stage A shell CAD (the standing blocker on print order #1) gets much simpler.
+  Print order #1 still carries the gimbal cavity + blanking plate so A2 is a drop-in
+  — same trick as the mono-split eye wells keeping stereo a drop-in. **Open:** A2
+  servo class — MG90S (~2 kg·cm, 13.4 g) is heavy-handed and buzzy for a light
+  silicone stalk; sub-micro (4–5 g) or body-mounted tendon drive both beat it on
+  volume, mass and noise. Bench-test frond bend torque before ordering.
+  **Watch:** static fronds delete the posture half of the mood vocabulary
+  ("perked, swaying, curled, drooped") and weaken Stage B, whose gate needs a
+  comprehension moment to land "in body language only." Both gates now run on
+  colour + breathing + purr alone — that is the thing A2 exists to measure.
 - 2026-08-04 — **Checkable shopping list added to the Proto page.** "The kit"
   table now has an "Open as shopping list" toggle: the same 23 parts as
   checkboxes grouped by stage, with a vendor-category suggestion per part

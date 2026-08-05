@@ -180,7 +180,7 @@
   <header>
     <p class="kicker">Yura · prototype plan · July 2026</p>
     <h1>Build it at home first</h1>
-    <p class="dek">The Phase 0 puppet is dropped — there's a Moflin in the house setting the alive-ness bar already. Instead: a <strong>works-like prototype for ~$400–690 all-in</strong>, chassis ordered from an online print service, everything else off-the-shelf dev boards. Three stages, each with a kill-or-continue gate.</p>
+    <p class="dek">The Phase 0 puppet is dropped — there's a Moflin in the house setting the alive-ness bar already. Instead: a <strong>works-like prototype for ~$400–690 all-in</strong>, chassis ordered from an online print service, everything else off-the-shelf dev boards. Four stages, each with a kill-or-continue gate.</p>
   </header>
 
   <section>
@@ -192,11 +192,16 @@
 
   <section>
     <p class="sec-label"><b>02</b> · Stages</p>
-    <h2>Three builds, three gates</h2>
+    <h2>Four builds, four gates</h2>
 
-    <div class="stagehead"><h3 style="margin:0;">Stage A — the presence blob</h3><span class="price">$247–429 · no wheels</span></div>
-    <p class="gate"><b>Gate:</b> side-by-side with the Moflin, fronds + glow + warmth + purr read as a living creature — to someone who isn't Samuel.</p>
-    <p style="margin-top:.7rem;">Printed shell under hand-sewn fur; fronds, glow, warmth, purr, breathing, touch, driven by a Raspberry Pi 5. Mood states react to touch and sound direction. This alone is a Moflin-class object <i>plus</i> the frond channel — comparable on day one.</p>
+    <div class="stagehead"><h3 style="margin:0;">Stage A — the presence blob</h3><span class="price">$235–413 · static fronds, no wheels</span></div>
+    <p class="gate"><b>Gate:</b> side-by-side with the Moflin, glow + colour + warmth + purr + breathing read as a living creature — to someone who isn't Samuel.</p>
+    <p style="margin-top:.7rem;">Printed shell under hand-sewn fur; glow, warmth, purr, breathing, touch, driven by a Raspberry Pi 5. Mood states react to touch and sound direction. <b>The fronds don't move in Stage A</b> — they light and change colour, and that's the whole frond channel for now. It buys the fastest possible route to a shell you can actually print: no gimbal cavity, no servo mounts, no fiber routed through a moving joint. The one moving part is the breathing cam.</p>
+
+    <div class="stagehead"><h3 style="margin:0;">Stage A2 — frond motion</h3><span class="price">+$12–16 · deferred, and deliberately so</span></div>
+    <p class="gate"><b>Gate:</b> posture measurably raises the aliveness read over Stage A — same observer, A/B against the static build. If it doesn't, motion hasn't earned its mass, noise or cost, and the production frond can lose its gimbal too.</p>
+    <p style="margin-top:.7rem;">Four servos: one frond cannot be driven on two axes by one servo, so independent posture costs 2 per frond. Deferring it turns the dossier's central assumption — that posture is half the frond language, alongside colour — into something testable instead of something assumed. Print order #1 still carries the gimbal cavity, mounts and a blanking plate, so this is a drop-in later, exactly the way the mono-split eye wells keep stereo a drop-in.</p>
+    <p style="margin-top:.7rem;">Open before ordering: MG90S is the placeholder here, but at ~2 kg·cm and 13.4 g it's heavy-handed for a light silicone stalk, and its whine is the kind of thing the Stage A gate exists to catch. A sub-micro (4–5 g class) is roughly a quarter the volume and mass; tendon-driving the fronds from the body cavity avoids head volume altogether and keeps mass low. Bench-test the real frond for bend torque before committing.</p>
 
     <div class="stagehead"><h3 style="margin:0;">Stage B — comprehension</h3><span class="price">+$35–40 · the whole bet</span></div>
     <p class="gate"><b>Gate:</b> a comprehension moment lands unprompted — it reacts to what was said, in body language only, and the observer notices without being told.</p>
@@ -221,8 +226,8 @@
       <tr><th>Stage</th><th>Subsystem</th><th>Part</th><th class="num">Est.</th></tr>
       <tr><td>A</td><td>Main brain</td><td>Raspberry Pi 5 8 GB + PSU + SD <span class="dim">— cognition, vision, on-device STT</span></td><td class="num">$80–100</td></tr>
       <tr><td>A</td><td>Ears</td><td>ReSpeaker 2-Mics Pi HAT</td><td class="num">$15–25</td></tr>
-      <tr><td>A</td><td>Fronds</td><td>PCA9685 driver + 5× MG90S <span class="dim">— 2 fronds × 2 axes + breathing cam</span></td><td class="num">$21–29</td></tr>
-      <tr><td>A</td><td>Glow</td><td>WS2812B strip + 3 mm side-glow fiber <span class="dim">— inside the frond stems</span></td><td class="num">$16–26</td></tr>
+      <tr><td>A</td><td>Breathing</td><td>PCA9685 driver + 1× MG90S <span class="dim">— breathing cam only; fronds are static in Stage A</span></td><td class="num">$9–13</td></tr>
+      <tr><td>A</td><td>Glow</td><td>WS2812B strip + 3 mm side-glow fiber <span class="dim">— inside the frond stems, one addressable segment each</span></td><td class="num">$16–26</td></tr>
       <tr><td>A</td><td>Touch</td><td>MPR121 + conductive fabric zones <span class="dim">— under the pelt</span></td><td class="num">$14–25</td></tr>
       <tr><td>A</td><td>Warmth</td><td>Heater film + NTC + MOSFET + 60 °C thermal fuse</td><td class="num">$12–20</td></tr>
       <tr><td>A</td><td>Purr</td><td>Vibration motor + I2S amp + 40 mm speaker <span class="dim">— purr sound only, never speech</span></td><td class="num">$14–24</td></tr>
@@ -230,7 +235,9 @@
       <tr><td>A</td><td>Pelt</td><td>Faux fur + zipper, hand-sewn <span class="dim">— the first zip-off pelt test</span></td><td class="num">$20–35</td></tr>
       <tr><td>A</td><td>Body</td><td>Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A)</td><td class="num">$40–90</td></tr>
       <tr><td>A</td><td>Build</td><td>Wiring, JST kit, standoffs, magnets</td><td class="num">$15–25</td></tr>
-      <tr class="hl"><td class="us">A</td><td class="us" colspan="2">Stage A total — a livable creature, no wheels</td><td class="num us">$247–429</td></tr>
+      <tr class="hl"><td class="us">A</td><td class="us" colspan="2">Stage A total — a livable creature, static fronds, no wheels</td><td class="num us">$235–413</td></tr>
+      <tr><td>A2</td><td>Fronds</td><td>4× MG90S <span class="dim">— 2 fronds × 2 axes; posture, deferred until it proves it earns its keep</span></td><td class="num">$12–16</td></tr>
+      <tr class="hl"><td class="us">A2</td><td class="us" colspan="2">Stage A2 total — fronds move</td><td class="num us">$12–16</td></tr>
       <tr><td>B</td><td>Eyes</td><td>Pi Camera Module 3 Wide <span class="dim">— the camera eye of the mono-split pair</span></td><td class="num">$35–40</td></tr>
       <tr class="hl"><td class="us">B</td><td class="us" colspan="2">Stage B total — comprehension (plus ~$5–15/mo API)</td><td class="num us">$35–40</td></tr>
       <tr><td>C</td><td>Instinct MCU</td><td>ESP32 devkit <span class="dim">— reflexes + motor safety, the two-brain split in miniature</span></td><td class="num">$6–10</td></tr>
@@ -248,13 +255,13 @@
       <p class="note">Same parts, checkable — for actually ordering. <b>Quantities here are order quantities, not build quantities:</b> where the two differ, the extra units are spares and the reason is spelled out on the line. The kit table above prices the build; the cart total below adds the spares on top. Checks are saved in this browser only (nothing sent anywhere). Generated from <code style="font-family:var(--mono);font-size:.85em;">parts.json</code>: run <code style="font-family:var(--mono);font-size:.85em;">node tools/proto-kit/kit.js --shopping-list</code> in the yura repo for a plain-text or <code style="font-family:var(--mono);font-size:.85em;">--json</code> version.</p>
 
       <div class="shop-stage">
-        <h4>Stage A — Presence blob</h4>
+        <h4>Stage A — Presence blob (static fronds)</h4>
         <ul class="shop-list">
           <li class="shop-item"><input type="checkbox" id="shop-main-brain"><label for="shop-main-brain"><span class="part-name">Raspberry Pi 5 8 GB + PSU + SD</span> <span class="price">$80–100</span><span class="meta">Main brain — cognition, vision, on-device Whisper STT · Raspberry Pi reseller / Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-mics"><label for="shop-mics"><span class="part-name">ReSpeaker 2-Mics Pi HAT</span> <span class="price">$15–25</span><span class="meta">Ears — sound direction + wake; 4-mic later if needed · Seeed Studio / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-servo-driver"><label for="shop-servo-driver"><span class="part-name">PCA9685 16-ch servo driver</span> <span class="price">$6–9</span><span class="meta">Fronds · Adafruit / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-frond-servos"><label for="shop-frond-servos"><span class="part-name">10× MG90S micro servo</span> <span class="price">$15–20 <span class="spare">+$15–20 spares</span></span><span class="meta">Fronds — build uses 5 (2 fronds × 2 axes + 1 breathing cam); order 10, because fronds are consumables and MG90S strip gears under repeated gimbal rebuilds · Amazon / Adafruit</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-glow-leds"><label for="shop-glow-leds"><span class="part-name">WS2812B strip, 1 m / 60 LED</span> <span class="price">$8–12</span><span class="meta">Glow · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-servo-driver"><label for="shop-servo-driver"><span class="part-name">PCA9685 16-ch servo driver</span> <span class="price">$6–9</span><span class="meta">Breathing — off-SoC servo timing (the two-brain rule in miniature); 16 channels leave headroom so Stage A2 needs no re-order · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-breath-servo"><label for="shop-breath-servo"><span class="part-name">3× MG90S micro servo</span> <span class="price">$3–4 <span class="spare">+$6–8 spares</span></span><span class="meta">Breathing — build uses 1 (breathing cam only; fronds are static in Stage A); order 3, because it has the highest duty cycle in the build — it runs whenever Yura is awake · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-glow-leds"><label for="shop-glow-leds"><span class="part-name">WS2812B strip, 1 m / 60 LED</span> <span class="price">$8–12</span><span class="meta">Glow — give each frond its own addressable segment; independent per-frond colour is the only attention cue left once posture is gone · Adafruit / Amazon</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-glow-fiber"><label for="shop-glow-fiber"><span class="part-name">3 mm side-glow fiber optic, 2 m</span> <span class="price">$8–14</span><span class="meta">Glow — inside the frond stems · Amazon / craft &amp; lighting supplier</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-touch-ic"><label for="shop-touch-ic"><span class="part-name">MPR121 capacitive breakout</span> <span class="price">$6–10</span><span class="meta">Touch · Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-touch-fabric"><label for="shop-touch-fabric"><span class="part-name">Conductive fabric + thread zones</span> <span class="price">$8–15</span><span class="meta">Touch — under the pelt · Adafruit / fabric store</span></label></li>
@@ -263,8 +270,15 @@
           <li class="shop-item"><input type="checkbox" id="shop-audio"><label for="shop-audio"><span class="part-name">MAX98357 I2S amp + 40 mm speaker</span> <span class="price">$8–12</span><span class="meta">Purr — sound layer only, Yura never speaks · Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-power-a"><label for="shop-power-a"><span class="part-name">USB-C PD power bank</span> <span class="price">$0–30</span><span class="meta">Power — $0 if one's already in the drawer · Amazon</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-pelt"><label for="shop-pelt"><span class="part-name">Faux fur + zipper + notions, hand-sewn</span> <span class="price">$20–35</span><span class="meta">Pelt — the first zip-off pelt test · fabric store / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-print-a"><label for="shop-print-a"><span class="part-name">Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A)</span> <span class="price">$40–90</span><span class="meta">Body — batch variants into one order, shipping dominates · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-print-a"><label for="shop-print-a"><span class="part-name">Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A)</span> <span class="price">$40–90</span><span class="meta">Body — batch variants into one order, shipping dominates; include the A2 gimbal cavity, mounts and blanking plate even though Stage A leaves them empty · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-misc"><label for="shop-misc"><span class="part-name">Wiring, JST kit, standoffs, magnets, heat-shrink</span> <span class="price">$15–25</span><span class="meta">Build · Amazon</span></label></li>
+        </ul>
+      </div>
+
+      <div class="shop-stage">
+        <h4>Stage A2 — Frond motion <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted);font-weight:400;">· don't order until Stage A has been judged</span></h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-frond-servos"><label for="shop-frond-servos"><span class="part-name">6× MG90S micro servo</span> <span class="price">$12–16 <span class="spare">+$6–8 spares</span></span><span class="meta">Fronds — build uses 4 (2 fronds × 2 axes; one servo can't drive two axes); order 6, because fronds are consumables and MG90S strip gears under repeated gimbal rebuilds. Servo class is still open — bench-test the real frond first · Amazon / Adafruit</span></label></li>
         </ul>
       </div>
 
@@ -290,8 +304,8 @@
 
       <div class="shop-total">
         <span>Build cost <span class="num">$397–686</span></span>
-        <span>Spares <span class="num">+$15–20</span></span>
-        <span class="cart">Cart total <b class="num">$412–706</b></span>
+        <span>Spares <span class="num">+$12–16</span></span>
+        <span class="cart">Cart total <b class="num">$409–702</b></span>
       </div>
 
       <p class="shop-progress" id="shopProgress"></p>
@@ -330,7 +344,10 @@
 
 <script>
 (function(){
-  var STORE_KEY = 'yura-proto-shopping-list';
+  // v2: Stage A went static-frond, so shop-frond-servos changed meaning
+  // (Stage A → A2). Bumping the key clears stale checks rather than
+  // silently re-attaching them to a different part.
+  var STORE_KEY = 'yura-proto-shopping-list-v2';
   var toggle = document.getElementById('shopToggle');
   var list = document.getElementById('shopList');
   var items = Array.prototype.slice.call(list.querySelectorAll('.shop-item'));
