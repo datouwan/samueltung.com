@@ -141,6 +141,16 @@
   .shop-item .price{font-family:var(--mono);font-size:.8rem;color:var(--glow);white-space:nowrap;}
   .shop-item.checked .price{color:var(--muted);}
   .shop-item .meta{display:block;font-size:.85rem;color:var(--muted);margin-top:.1rem;}
+  .shop-item .spare{color:var(--ember);}
+  .shop-item.checked .spare{color:var(--muted);}
+  .shop-total{
+    margin:1.4rem 0 0;padding-top:1rem;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:.78rem;color:var(--muted);
+    display:grid;gap:.3rem;
+  }
+  .shop-total span{display:flex;justify-content:space-between;gap:1rem;}
+  .shop-total .cart{color:var(--ink);}
+  .shop-total .cart b{color:var(--glow);font-weight:400;}
   .shop-actions{margin-top:1.4rem;display:flex;gap:.6rem;flex-wrap:wrap;}
   .shop-actions button{
     font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
@@ -235,7 +245,7 @@
     <button type="button" class="list-toggle" id="shopToggle" aria-expanded="false" aria-controls="shopList">Open as shopping list</button>
 
     <div class="shop" id="shopList">
-      <p class="note">Same parts, checkable — for actually ordering. Checks are saved in this browser only (nothing sent anywhere). Also generated straight from <code style="font-family:var(--mono);font-size:.85em;">parts.json</code>: run <code style="font-family:var(--mono);font-size:.85em;">node tools/proto-kit/kit.js --shopping-list</code> in the yura repo for a plain-text or <code style="font-family:var(--mono);font-size:.85em;">--json</code> version.</p>
+      <p class="note">Same parts, checkable — for actually ordering. <b>Quantities here are order quantities, not build quantities:</b> where the two differ, the extra units are spares and the reason is spelled out on the line. The kit table above prices the build; the cart total below adds the spares on top. Checks are saved in this browser only (nothing sent anywhere). Generated from <code style="font-family:var(--mono);font-size:.85em;">parts.json</code>: run <code style="font-family:var(--mono);font-size:.85em;">node tools/proto-kit/kit.js --shopping-list</code> in the yura repo for a plain-text or <code style="font-family:var(--mono);font-size:.85em;">--json</code> version.</p>
 
       <div class="shop-stage">
         <h4>Stage A — Presence blob</h4>
@@ -243,7 +253,7 @@
           <li class="shop-item"><input type="checkbox" id="shop-main-brain"><label for="shop-main-brain"><span class="part-name">Raspberry Pi 5 8 GB + PSU + SD</span> <span class="price">$80–100</span><span class="meta">Main brain — cognition, vision, on-device Whisper STT · Raspberry Pi reseller / Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-mics"><label for="shop-mics"><span class="part-name">ReSpeaker 2-Mics Pi HAT</span> <span class="price">$15–25</span><span class="meta">Ears — sound direction + wake; 4-mic later if needed · Seeed Studio / Amazon</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-servo-driver"><label for="shop-servo-driver"><span class="part-name">PCA9685 16-ch servo driver</span> <span class="price">$6–9</span><span class="meta">Fronds · Adafruit / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-frond-servos"><label for="shop-frond-servos"><span class="part-name">5× MG90S micro servo</span> <span class="price">$15–20</span><span class="meta">Fronds — 2 fronds × 2 axes + 1 breathing cam · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-frond-servos"><label for="shop-frond-servos"><span class="part-name">10× MG90S micro servo</span> <span class="price">$15–20 <span class="spare">+$15–20 spares</span></span><span class="meta">Fronds — build uses 5 (2 fronds × 2 axes + 1 breathing cam); order 10, because fronds are consumables and MG90S strip gears under repeated gimbal rebuilds · Amazon / Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-glow-leds"><label for="shop-glow-leds"><span class="part-name">WS2812B strip, 1 m / 60 LED</span> <span class="price">$8–12</span><span class="meta">Glow · Adafruit / Amazon</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-glow-fiber"><label for="shop-glow-fiber"><span class="part-name">3 mm side-glow fiber optic, 2 m</span> <span class="price">$8–14</span><span class="meta">Glow — inside the frond stems · Amazon / craft &amp; lighting supplier</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-touch-ic"><label for="shop-touch-ic"><span class="part-name">MPR121 capacitive breakout</span> <span class="price">$6–10</span><span class="meta">Touch · Adafruit</span></label></li>
@@ -276,6 +286,12 @@
           <li class="shop-item"><input type="checkbox" id="shop-power-c"><label for="shop-power-c"><span class="part-name">2× 18650 + holder + 2S BMS + buck</span> <span class="price">$18–30</span><span class="meta">Power — untethered at last · Amazon / Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-print-c"><label for="shop-print-c"><span class="part-name">Print order #2 — drive base + dock funnel</span> <span class="price">$40–90</span><span class="meta">Body · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
         </ul>
+      </div>
+
+      <div class="shop-total">
+        <span>Build cost <span class="num">$397–686</span></span>
+        <span>Spares <span class="num">+$15–20</span></span>
+        <span class="cart">Cart total <b class="num">$412–706</b></span>
       </div>
 
       <p class="shop-progress" id="shopProgress"></p>
