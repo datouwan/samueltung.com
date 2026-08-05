@@ -21,7 +21,8 @@ page, and analysis added here should serve that goal. The current business thesi
 - **Structural read:** hardware keeps the lights on; the business lives in the
   subscription.
 - **Next physical step:** home works-like prototype (Phase 0 puppet dropped 2026-07-30 —
-  Samuel's Moflin is the live reference). Stage A "presence blob" $271–487 → Stage B
+  Samuel's Moflin is the live reference). Stage A "presence blob" $253–457 → Stage A+
+  active warmth +$18–30 (deferred) → Stage B
   comprehension +$38–46 (+$5–15/mo API) → Stage C glide +$115–217; $424–750 all-in.
   Fronds are root-mounted 2-axis gimbals on **sub-micro** servos (tendon drive is the
   likely production answer, deferred). Figures are post-pre-flight — see
@@ -125,6 +126,26 @@ until a tool actually measures it.
 
 Append-only; date + one line each. Newest first.
 
+- 2026-08-05 — **Active warmth deferred to stage A+; Stage A warms itself off the Pi.**
+  Samuel's call — the heater added the most complexity for its size. The reframe: the
+  Pi 5 dissipates **10–12 W** under Whisper against the heater film's 8–20 W, so the
+  heat is already inside the shell and the BOM was paying twice — $5–10 to move it off
+  the SoC, $18–30 to put it back at the belly. The cooler's exhaust now ducts to a
+  belly heat-spreading plate. This removes the build's **only genuinely dangerous
+  subsystem** (resistive film in synthetic fur), drops the **ADS1115** (nothing else
+  in Stage A needs an ADC), the logic-level MOSFET, the NTC and the thermal fuse,
+  and takes the largest continuous load out of the power budget — realistic peak
+  falls ~50 W → ~28 W, so a ~40 W supply closes it comfortably and split rails are
+  no longer forced. **Stage A $271–487 → $253–457; all-in unchanged at $424–750**
+  (the subsystem moved stages, it didn't vanish). Print order #1 reserves a flat
+  cavity behind the belly plate so A+ is a drop-in with no reprint.
+  **Cost, stated plainly:** warmth stops being controllable — Pi heat tracks CPU
+  load, not mood — so Stage A tests warmth-as-baseline, not warmth-as-expression,
+  and the concept page lists "belly warmth pad" under Expression. **Deferred, not
+  deleted, because warmth is a real differentiator:** Moflin's specs list a
+  temperature *sensor* with no sign it produces heat, and the Stage A gate is a
+  head-to-head with a Moflin in the room. Bench task: measure belly temp under the
+  pelt at idle and under sustained Whisper load.
 - 2026-08-05 — **Pre-flight pass before ordering; A2 folded back into Stage A.**
   Samuel reverted the static-frond split — posture is back in Stage A — and the
   frond servos swapped **MG90S → sub-micro (4–5 g)**, which is what actually
