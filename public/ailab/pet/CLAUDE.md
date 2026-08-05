@@ -21,9 +21,11 @@ page, and analysis added here should serve that goal. The current business thesi
 - **Structural read:** hardware keeps the lights on; the business lives in the
   subscription.
 - **Next physical step:** home works-like prototype (Phase 0 puppet dropped 2026-07-30 —
-  Samuel's Moflin is the live reference). Stage A "presence blob", **static fronds**,
-  $235–413 → Stage A2 frond motion +$12–16 (deferred, A/B-tested against A) → Stage B
-  comprehension +$35–40 (+$5–15/mo API) → Stage C glide +$115–217; $397–686 all-in.
+  Samuel's Moflin is the live reference). Stage A "presence blob" $271–487 → Stage B
+  comprehension +$38–46 (+$5–15/mo API) → Stage C glide +$115–217; $424–750 all-in.
+  Fronds are root-mounted 2-axis gimbals on **sub-micro** servos (tendon drive is the
+  likely production answer, deferred). Figures are post-pre-flight — see
+  `yura/tools/proto-kit/PREFLIGHT.md`.
   Chassis via online print service (no printer at home): MJF PA12 rigid, TPU 95A
   compliant. Plan on the Proto page; parts in `yura` repo `tools/proto-kit/`.
 - **Key comps:** Moflin ($429, sells out — proof of demand), KEYi Loona ($450 — proof
@@ -123,7 +125,35 @@ until a tool actually measures it.
 
 Append-only; date + one line each. Newest first.
 
-- 2026-08-05 — **Stage A goes static-frond; posture split out as Stage A2.** Samuel's
+- 2026-08-05 — **Pre-flight pass before ordering; A2 folded back into Stage A.**
+  Samuel reverted the static-frond split — posture is back in Stage A — and the
+  frond servos swapped **MG90S → sub-micro (4–5 g)**, which is what actually
+  resolves the head-fit problem: ~¼ the volume and mass at the highest point of a
+  680 g creature, and quieter. Fronds are root-mounted 2-axis gimbals; tendon
+  drive from the body cavity stays the likely *production* answer (fixes volume,
+  CG and noise together) but root-mount is far easier to debug on a first build,
+  and Stage A tests aliveness, not manufacturability.
+  Then a full pre-order validation (`yura/tools/proto-kit/PREFLIGHT.md`) found
+  **five things that would have failed after delivery**, three on critical path:
+  (1) WS2812B won't drive on a Pi 5 — the RP1 controller broke the PWM/DMA path —
+  so glow, the whole frond channel, would not have lit; swapped to **APA102/SK9822**
+  over SPI. (2) The heater specified an NTC but **the Pi has no ADC**, so the
+  thermal loop had no feedback at all — added **ADS1115**, and specified the MOSFET
+  as logic-level. (3) The mic HAT and MAX98357 both wanted the single I²S bus, and
+  the HAT already has a codec + speaker out — **dropped the MAX98357**. (4) No
+  cooling in the BOM while Whisper pegs four cores under fur — added the **Pi 5
+  active cooler**, which then collides with the HAT for header space (resolve with
+  a tall stacking header, a low-profile heatsink, or a USB mic array). (5) Stage B's
+  camera **physically will not plug into a Pi 5** without the 22-pin cable.
+  Power budget doesn't close on one 27 W brick either (~50 W peak); Stage A doesn't
+  move, so mains replaces the power bank — most PD banks only give 5 V/3 A and many
+  auto-shut-off at an idle pet's draw. **Stage A $247–429 → $271–487; all-in
+  $397–686 → $424–750** — roughly half the servo upgrade, half parts the BOM was
+  simply missing. The old figure wasn't cheaper, it was incomplete.
+  **Still open:** ReSpeaker driver support on Pi 5 kernels (fallback: USB mic array,
+  which also frees the header); whether fan noise is audible through the pelt.
+  Print order #1 stays held — no CAD, and the stack layout must be resolved first.
+- 2026-08-05 — **Stage A goes static-frond; posture split out as Stage A2.** *(superseded same day — see above.)* Samuel's
   call: for the prototype the fronds only need to glow and change colour. Stage A
   drops the 4 frond servos ($247–429 → $235–413); they move to a new **Stage A2**
   (+$12–16) with its own gate — posture must measurably beat the static build with
