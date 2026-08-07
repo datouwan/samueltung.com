@@ -228,7 +228,7 @@
           <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation & data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
           <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering & dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
           <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model & scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
-          <article class="milestone now"><span class="phase">M8</span><div><h3>Constrained decoding</h3><p>EOS, token order and repetition controls pass. Rhythm-aware constraints and recognition accuracy are next.</p></div></article>
+          <article class="milestone now"><span class="phase">M8</span><div><h3>Constrained decoding</h3><p>EOS, token order and repetition controls pass. An Oemer spike supports a hybrid rhythm approach; measure validity is next.</p></div></article>
           <article class="milestone"><span class="phase">M9</span><div><h3>Robustness</h3><p>Camera, print and scan augmentation; wider notation variation; error analysis by symbol class.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
           <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot & scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
@@ -263,6 +263,22 @@ python -m src.train --config configs\train_pdmx_1k_gpu.yaml `
         <div class="grid next-grid">
           <article class="card next"><span class="priority">Current priority</span><h3>Move from syntax to musical validity</h3><ol><li>Track elapsed duration while decoding each measure.</li><li>Block durations that exceed the measure budget.</li><li>Allow a barline only when the measure is complete.</li><li>Report pitch, duration and structure errors separately.</li><li>Re-evaluate the same checkpoint before retraining.</li></ol></article>
           <article class="card next definition"><h3>Definition of done for M8</h3><p>Held-out output terminates, obeys token grammar and measure rhythm, while token error and exact-match metrics show a useful recognition baseline.</p><div class="bar" aria-label="Roadmap progress: milestone 8 in progress"><i></i></div><p><small>M8 phase one passed · rhythm phase active</small></p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="oemer-spike">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M8 experiment · 5 systems</p><h2>Oemer is a useful teacher—not the engine.</h2></div><p>A bounded comparison converted Oemer MusicXML into our own score object and token vocabulary. Its strongest results justify borrowing rhythm ideas, while its crashes and latency rule out a direct replacement.</p></div>
+        <div class="grid score-grid">
+          <article class="card metric good"><span>Exact and musically valid transcriptions across all five attempts</span><strong>2/5</strong></article>
+          <article class="card metric"><span>Successful MusicXML conversions; two sparse systems crashed</span><strong>3/5</strong></article>
+          <article class="card metric"><span>Mean token error rate among the three successful conversions</span><strong>0.023</strong></article>
+          <article class="card metric warn"><span>Five-system CPU wall time with two concurrent workers</span><strong>9.9m</strong></article>
+        </div>
+        <div class="grid next-grid" style="margin-top:18px">
+          <article class="card next"><span class="priority">Decision</span><h3>Keep our proprietary decoder</h3><p>Use Oemer only as an optional benchmark, high-confidence pseudo-label source, and reference for staff, barline, beam, and beat-repair logic.</p></article>
+          <article class="card next definition"><h3>What transfers into M8</h3><p>Measure-duration bookkeeping, visual rhythm cues, and deterministic beat repair. Dataset and checkpoint rights still require separate commercial review.</p></article>
         </div>
       </div>
     </section>
