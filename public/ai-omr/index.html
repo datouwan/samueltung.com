@@ -178,7 +178,7 @@
         <p class="lede">A local-first plan to turn printed sheet music into compact notation tokens, validate the musical structure, and export dependable MusicXML.</p>
       </div>
       <aside class="hero-card" aria-label="Project objective">
-        <span class="pill"><i class="dot"></i> M1–M7 complete</span>
+        <span class="pill"><i class="dot"></i> M8 in progress</span>
         <h2>Narrow scope. Exact output. A path to scale.</h2>
         <p>Start with printed, single-staff treble-clef melodies. Earn correctness there before expanding to the full complexity of written music.</p>
         <footer><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></footer>
@@ -189,12 +189,12 @@
   <main>
     <section id="status">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Baseline established.</h2></div><p>The pipeline runs end to end on a single RTX 4090. The next bottleneck is decoding quality—not raw training throughput.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Runaway decoding solved.</h2></div><p>Grammar constraints now make every held-out sequence terminate cleanly and parse syntactically. M8 continues with rhythm and recognition accuracy.</p></div>
         <div class="grid score-grid">
-          <article class="card metric good"><span>Teacher-forced exact match on 50-sample overfit test</span><strong>100%</strong></article>
-          <article class="card metric"><span>Rights-clean rendered examples in the first real split</span><strong>1,000</strong></article>
-          <article class="card metric"><span>Validation token accuracy after the 20-epoch Swin baseline</span><strong>48.4%</strong></article>
-          <article class="card metric warn"><span>Held-out autoregressive exact match—the problem now in focus</span><strong>0%</strong></article>
+          <article class="card metric good"><span>EOS termination and syntactically valid output across 113 held-out systems</span><strong>100%</strong></article>
+          <article class="card metric good"><span>Repeated 4-grams and sequences that reach the 512-token cap</span><strong>0%</strong></article>
+          <article class="card metric"><span>Constrained token error rate, down from the runaway 8.9845 baseline</span><strong>0.758</strong></article>
+          <article class="card metric warn"><span>Musically valid and exact held-out sequences—the remaining M8 gap</span><strong>0%</strong></article>
         </div>
       </div>
     </section>
@@ -228,7 +228,7 @@
           <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation & data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
           <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering & dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
           <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model & scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
-          <article class="milestone now"><span class="phase">M8</span><div><h3>Constrained decoding</h3><p>Fix EOS behavior, repetition loops and musical validity before spending more compute.</p></div></article>
+          <article class="milestone now"><span class="phase">M8</span><div><h3>Constrained decoding</h3><p>EOS, token order and repetition controls pass. Rhythm-aware constraints and recognition accuracy are next.</p></div></article>
           <article class="milestone"><span class="phase">M9</span><div><h3>Robustness</h3><p>Camera, print and scan augmentation; wider notation variation; error analysis by symbol class.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
           <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot & scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
@@ -259,10 +259,10 @@ python -m src.train --config configs\train_pdmx_1k_gpu.yaml `
 
     <section id="next">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Make decoding finish cleanly.</h2></div><p>Teacher forcing shows the model can learn the token mapping. Free-running generation shows it does not yet know when—or how—to stop.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Make every measure add up.</h2></div><p>Sequence shape and termination are now controlled. The next decoder state must track the time signature and remaining duration inside each measure.</p></div>
         <div class="grid next-grid">
-          <article class="card next"><span class="priority">Current priority</span><h3>Close the train–inference gap</h3><ol><li>Mask illegal next tokens with the notation grammar.</li><li>Strengthen EOS supervision and enforce sensible length limits.</li><li>Detect repeated n-grams and stalled sequences.</li><li>Report token errors by class and by sequence position.</li><li>Re-run the 1K baseline before adding augmentation.</li></ol></article>
-          <article class="card next definition"><h3>Definition of done for M8</h3><p>Held-out decoding terminates consistently, produces syntactically valid token sequences, and materially reduces token error rate without relying on teacher forcing.</p><div class="bar" aria-label="Roadmap progress: 7 of 12 milestones"><i></i></div><p><small>7 of 12 milestones established</small></p></article>
+          <article class="card next"><span class="priority">Current priority</span><h3>Move from syntax to musical validity</h3><ol><li>Track elapsed duration while decoding each measure.</li><li>Block durations that exceed the measure budget.</li><li>Allow a barline only when the measure is complete.</li><li>Report pitch, duration and structure errors separately.</li><li>Re-evaluate the same checkpoint before retraining.</li></ol></article>
+          <article class="card next definition"><h3>Definition of done for M8</h3><p>Held-out output terminates, obeys token grammar and measure rhythm, while token error and exact-match metrics show a useful recognition baseline.</p><div class="bar" aria-label="Roadmap progress: milestone 8 in progress"><i></i></div><p><small>M8 phase one passed · rhythm phase active</small></p></article>
         </div>
       </div>
     </section>
@@ -279,6 +279,6 @@ python -m src.train --config configs\train_pdmx_1k_gpu.yaml `
     </section>
   </main>
 
-  <footer class="site-footer"><div class="wrap"><p><strong>AI OMR</strong> · proprietary optical music recognition</p><small>Living plan · updated August 2026</small></div></footer>
+  <footer class="site-footer"><div class="wrap"><p><strong>AI OMR</strong> · proprietary optical music recognition</p><small>Living plan · M8 updated August 7, 2026</small></div></footer>
 </body>
 </html>
