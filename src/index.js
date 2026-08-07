@@ -66,6 +66,14 @@ export default {
       if (denied) return denied;
     }
 
+    // Resolve the AI OMR directory explicitly so progress-page deployments use
+    // the index asset's cache key while preserving the canonical trailing-slash URL.
+    if ((url.pathname === "/ai-omr" || url.pathname === "/ai-omr/") && env.ASSETS) {
+      const assetUrl = new URL(url);
+      assetUrl.pathname = "/ai-omr/index.html";
+      return env.ASSETS.fetch(new Request(assetUrl, request));
+    }
+
     const api = await handleWorldCupApi(request, env, ctx);
     if (api) return api;
 
