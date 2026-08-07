@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A practical roadmap for training a proprietary optical music recognition model—from rights-clean data to validated MusicXML.">
+  <meta name="theme-color" content="#101c19">
+  <title>AI OMR — Build & Training Plan</title>
+  <style>
+    :root {
+      --ink: #15221f;
+      --muted: #5d6a66;
+      --paper: #f4f0e7;
+      --card: #fffdf8;
+      --line: #d9d4c8;
+      --green: #1e6b55;
+      --green-dark: #10483a;
+      --mint: #bfe7d5;
+      --coral: #e26f51;
+      --gold: #d3a33f;
+      --blue: #5674a8;
+      --radius: 20px;
+      --shadow: 0 18px 50px rgba(18, 44, 36, .09);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 2%, rgba(191, 231, 213, .42), transparent 28rem),
+        var(--paper);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.22); border-radius: 99px; font-size: .78rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #6ee7b7; box-shadow: 0 0 0 5px rgba(110,231,183,.13); }
+
+    nav {
+      position: sticky; z-index: 10; top: 0;
+      background: rgba(244, 240, 231, .9); border-bottom: 1px solid rgba(21,34,31,.1); backdrop-filter: blur(14px);
+    }
+    .nav-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand span { color: var(--green); }
+    .nav-links { display: flex; gap: 24px; font-size: .86rem; font-weight: 700; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--green); }
+
+    header { padding: 86px 0 64px; }
+    .hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 42px; align-items: center; }
+    h1 { max-width: 790px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(3.2rem, 7.2vw, 6.6rem); font-weight: 500; line-height: .91; letter-spacing: -.065em; }
+    h1 em { color: var(--green); font-weight: inherit; }
+    .lede { max-width: 680px; margin: 28px 0 0; color: var(--muted); font-size: clamp(1.05rem, 1.7vw, 1.3rem); }
+    .hero-card { position: relative; overflow: hidden; min-height: 420px; padding: 30px; color: white; background: var(--ink); border-radius: 28px; box-shadow: var(--shadow); }
+    .hero-card::after { content: "𝄞"; position: absolute; right: -20px; bottom: -110px; color: rgba(191,231,213,.11); font-family: serif; font-size: 22rem; line-height: 1; }
+    .hero-card h2 { max-width: 360px; margin: 68px 0 16px; font: 500 2rem/1.08 Georgia, serif; }
+    .hero-card p { max-width: 390px; color: #cdd8d4; }
+    .hero-card footer { position: absolute; z-index: 1; bottom: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    section { padding: 72px 0; }
+    .section-head { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 32px; }
+    h2 { margin: 0; font: 500 clamp(2rem, 4vw, 3.6rem)/1.02 Georgia, serif; letter-spacing: -.035em; }
+    .section-head > p { max-width: 520px; margin: 0; color: var(--muted); }
+    .grid { display: grid; gap: 18px; }
+    .score-grid { grid-template-columns: repeat(4, 1fr); }
+    .card { padding: 25px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(28,47,40,.04); }
+    .metric { min-height: 194px; display: flex; flex-direction: column; justify-content: space-between; }
+    .metric strong { display: block; font: 500 clamp(2.2rem, 4vw, 3.6rem)/1 Georgia, serif; letter-spacing: -.05em; }
+    .metric span { color: var(--muted); font-size: .88rem; }
+    .metric.good { color: var(--green-dark); background: var(--mint); border-color: transparent; }
+    .metric.warn { color: white; background: var(--coral); border-color: transparent; }
+    .metric.good span, .metric.warn span { color: inherit; opacity: .82; }
+
+    .scope { grid-template-columns: 1fr 1fr; }
+    .scope .card { padding: 34px; }
+    .scope h3, .step h3, .next h3 { margin: 0 0 14px; font-size: 1rem; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    .checks li { position: relative; padding: 9px 0 9px 27px; border-bottom: 1px solid var(--line); }
+    .checks li:last-child { border: 0; }
+    .checks li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 900; }
+    .deferred li::before { content: "→"; color: var(--coral); }
+
+    .pipeline { grid-template-columns: repeat(4, 1fr); counter-reset: pipeline; }
+    .step { position: relative; min-height: 220px; }
+    .step::before { counter-increment: pipeline; content: "0" counter(pipeline); display: block; margin-bottom: 42px; color: var(--green); font-size: .78rem; font-weight: 900; }
+    .step:not(:last-child)::after { content: "→"; position: absolute; right: -17px; top: 46%; z-index: 2; width: 32px; height: 32px; display: grid; place-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 50%; }
+    .step p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+    .roadmap { position: relative; }
+    .roadmap::before { content: ""; position: absolute; top: 15px; bottom: 15px; left: 20px; width: 2px; background: var(--line); }
+    .milestone { position: relative; display: grid; grid-template-columns: 62px 130px 1fr; gap: 20px; padding: 12px 0 32px; }
+    .milestone::before { content: ""; z-index: 1; width: 14px; height: 14px; margin: 4px 0 0 14px; background: var(--card); border: 3px solid var(--line); border-radius: 50%; }
+    .milestone.done::before { background: var(--green); border-color: var(--mint); }
+    .milestone.now::before { background: var(--coral); border-color: #f9c3b5; box-shadow: 0 0 0 6px rgba(226,111,81,.12); }
+    .milestone .phase { color: var(--muted); font-size: .8rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .milestone h3 { margin: 0 0 4px; font-size: 1rem; }
+    .milestone p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+    .training { color: white; background: var(--green-dark); }
+    .training .eyebrow { color: var(--mint); }
+    .training .section-head > p { color: #c4d4ce; }
+    .ladder { grid-template-columns: repeat(4, 1fr); }
+    .run { padding: 28px; border: 1px solid rgba(255,255,255,.16); border-radius: var(--radius); }
+    .run .number { color: var(--mint); font: 500 3rem/1 Georgia, serif; }
+    .run h3 { margin: 28px 0 8px; }
+    .run p { margin: 0; color: #c4d4ce; font-size: .9rem; }
+    .run.active { color: var(--ink); background: var(--mint); border-color: transparent; }
+    .run.active p { color: var(--green-dark); }
+    pre { overflow: auto; margin: 28px 0 0; padding: 22px; color: #d7eee4; background: #0b3027; border: 1px solid rgba(255,255,255,.1); border-radius: 14px; font: .83rem/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+    .next-grid { grid-template-columns: 1.1fr .9fr; }
+    .next { padding: 32px; }
+    .priority { display: inline-block; margin-bottom: 26px; padding: 5px 9px; color: white; background: var(--coral); border-radius: 6px; font-size: .7rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .next ol { margin: 0; padding-left: 22px; }
+    .next li { padding: 7px 0; }
+    .definition { color: white; background: var(--blue); border-color: transparent; }
+    .definition p { color: #e7edf8; }
+    .bar { height: 8px; margin-top: 28px; overflow: hidden; background: rgba(255,255,255,.22); border-radius: 99px; }
+    .bar i { display: block; width: 58%; height: 100%; background: white; border-radius: inherit; }
+
+    .principles { grid-template-columns: repeat(3, 1fr); }
+    .principles strong { display: block; margin-bottom: 8px; }
+    .principles p { margin: 0; color: var(--muted); font-size: .92rem; }
+    .num { display: inline-grid; width: 34px; height: 34px; margin-bottom: 28px; place-items: center; color: var(--green-dark); background: var(--mint); border-radius: 50%; font-size: .78rem; font-weight: 900; }
+
+    .site-footer { padding: 42px 0; color: #bdcbc6; background: var(--ink); }
+    .site-footer .wrap { display: flex; justify-content: space-between; gap: 28px; align-items: center; }
+    .site-footer p { margin: 0; }
+    .site-footer small { color: #8fa09a; }
+
+    @media (max-width: 900px) {
+      .hero, .next-grid { grid-template-columns: 1fr; }
+      .hero-card { min-height: 350px; }
+      .score-grid, .pipeline, .ladder { grid-template-columns: repeat(2, 1fr); }
+      .step:nth-child(2)::after { display: none; }
+      .principles { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .wrap { width: min(100% - 26px, 1160px); }
+      .nav-links { display: none; }
+      header { padding-top: 56px; }
+      .hero-card { min-height: 390px; }
+      section { padding: 54px 0; }
+      .section-head { display: block; }
+      .section-head > p { margin-top: 14px; }
+      .score-grid, .scope, .pipeline, .ladder { grid-template-columns: 1fr; }
+      .step::after { display: none; }
+      .milestone { grid-template-columns: 46px 1fr; gap: 10px; }
+      .milestone .phase { grid-column: 2; }
+      .milestone > div:last-child { grid-column: 2; }
+      .roadmap::before { left: 20px; }
+      .site-footer .wrap { display: block; }
+      .site-footer small { display: block; margin-top: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <nav aria-label="Primary navigation">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top">AI <span>OMR</span></a>
+      <div class="nav-links">
+        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#next">Next</a>
+      </div>
+    </div>
+  </nav>
+
+  <header id="top">
+    <div class="wrap hero">
+      <div>
+        <p class="eyebrow">Project brief · August 2026</p>
+        <h1>Teaching machines to <em>read music.</em></h1>
+        <p class="lede">A local-first plan to turn printed sheet music into compact notation tokens, validate the musical structure, and export dependable MusicXML.</p>
+      </div>
+      <aside class="hero-card" aria-label="Project objective">
+        <span class="pill"><i class="dot"></i> M1–M7 complete</span>
+        <h2>Narrow scope. Exact output. A path to scale.</h2>
+        <p>Start with printed, single-staff treble-clef melodies. Earn correctness there before expanding to the full complexity of written music.</p>
+        <footer><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></footer>
+      </aside>
+    </div>
+  </header>
+
+  <main>
+    <section id="status">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Baseline established.</h2></div><p>The pipeline runs end to end on a single RTX 4090. The next bottleneck is decoding quality—not raw training throughput.</p></div>
+        <div class="grid score-grid">
+          <article class="card metric good"><span>Teacher-forced exact match on 50-sample overfit test</span><strong>100%</strong></article>
+          <article class="card metric"><span>Rights-clean rendered examples in the first real split</span><strong>1,000</strong></article>
+          <article class="card metric"><span>Validation token accuracy after the 20-epoch Swin baseline</span><strong>48.4%</strong></article>
+          <article class="card metric warn"><span>Held-out autoregressive exact match—the problem now in focus</span><strong>0%</strong></article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">V1 contract</p><h2>Solve one useful problem well.</h2></div><p>The first model is intentionally constrained. Every deferred feature is a deliberate reduction in ambiguity, data demand, and debugging time.</p></div>
+        <div class="grid scope">
+          <article class="card"><h3>Included now</h3><ul class="checks"><li>Printed Western notation</li><li>One staff/system, treble clef</li><li>Mostly monophonic melody</li><li>Whole through sixteenth notes and rests</li><li>Dots, common keys and time signatures</li><li>Accidentals, barlines and basic ties</li></ul></article>
+          <article class="card"><h3>Deferred on purpose</h3><ul class="checks deferred"><li>Grand staff and orchestral systems</li><li>Multiple independent voices</li><li>Dense chords and tuplets</li><li>Grace-note-heavy passages</li><li>Percussion and tablature</li><li>Handwritten or contemporary notation</li></ul></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">System design</p><h2>Pixels in. MusicXML out.</h2></div><p>The neural network predicts a compact musical language. Deterministic software then checks rhythm and syntax before generating verbose MusicXML.</p></div>
+        <div class="grid pipeline">
+          <article class="card step"><h3>Prepare the page</h3><p>Crop, deskew, normalize contrast and detect capture problems such as blur or glare.</p></article>
+          <article class="card step"><h3>Read the staff</h3><p>A Swin or ViT encoder feeds an autoregressive Transformer notation decoder.</p></article>
+          <article class="card step"><h3>Validate music</h3><p>Check grammar, measure duration, accidentals, ties and positional rules.</p></article>
+          <article class="card step"><h3>Build the score</h3><p>Create an internal score object, emit MusicXML and render it for review.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>Completed foundations are grouped for clarity. The active milestone is constrained decoding and reliable sequence termination.</p></div>
+        <div class="roadmap">
+          <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation & data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
+          <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering & dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
+          <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model & scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
+          <article class="milestone now"><span class="phase">M8</span><div><h3>Constrained decoding</h3><p>Fix EOS behavior, repetition loops and musical validity before spending more compute.</p></div></article>
+          <article class="milestone"><span class="phase">M9</span><div><h3>Robustness</h3><p>Camera, print and scan augmentation; wider notation variation; error analysis by symbol class.</p></div></article>
+          <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
+          <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot & scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="training" id="training">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Training ladder</p><h2>Scale only after each gate passes.</h2></div><p>A larger run should answer a question the smaller run could not. This keeps the 4090 focused on learning—not hiding pipeline defects.</p></div>
+        <div class="grid ladder">
+          <article class="run"><span class="number">01</span><h3>One sample</h3><p>Prove tensor shapes, loss, forward pass and checkpoint write.</p></article>
+          <article class="run"><span class="number">02</span><h3>Fifty samples</h3><p>Overfit to 100% and prove the model can represent the task.</p></article>
+          <article class="run active"><span class="number">03</span><h3>One thousand</h3><p>Measure generalization and expose decoding failure modes.</p></article>
+          <article class="run"><span class="number">04</span><h3>10K → full corpus</h3><p>Add variation, tune capacity, then move unchanged code to cloud GPUs.</p></article>
+        </div>
+        <pre aria-label="Training commands"><code># activate the local environment
+.\.venv\Scripts\Activate.ps1
+
+# train the current scalable baseline
+python -m src.train --config configs\train_pdmx_1k_gpu.yaml
+
+# resume safely from the last checkpoint
+python -m src.train --config configs\train_pdmx_1k_gpu.yaml `
+  --resume checkpoints\pdmx-1k\last.pt</code></pre>
+      </div>
+    </section>
+
+    <section id="next">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Make decoding finish cleanly.</h2></div><p>Teacher forcing shows the model can learn the token mapping. Free-running generation shows it does not yet know when—or how—to stop.</p></div>
+        <div class="grid next-grid">
+          <article class="card next"><span class="priority">Current priority</span><h3>Close the train–inference gap</h3><ol><li>Mask illegal next tokens with the notation grammar.</li><li>Strengthen EOS supervision and enforce sensible length limits.</li><li>Detect repeated n-grams and stalled sequences.</li><li>Report token errors by class and by sequence position.</li><li>Re-run the 1K baseline before adding augmentation.</li></ol></article>
+          <article class="card next definition"><h3>Definition of done for M8</h3><p>Held-out decoding terminates consistently, produces syntactically valid token sequences, and materially reduces token error rate without relying on teacher forcing.</p><div class="bar" aria-label="Roadmap progress: 7 of 12 milestones"><i></i></div><p><small>7 of 12 milestones established</small></p></article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Operating principles</p><h2>Accuracy has a provenance.</h2></div></div>
+        <div class="grid principles">
+          <article class="card"><span class="num">01</span><strong>Rights-clean by construction</strong><p>Train from public-domain or permissively licensed symbolic scores, self-render images, and retain source and license metadata.</p></article>
+          <article class="card"><span class="num">02</span><strong>Deterministic where possible</strong><p>Let the model recognize. Let explicit code enforce musical grammar, validate rhythm and generate MusicXML.</p></article>
+          <article class="card"><span class="num">03</span><strong>Measure real decoding</strong><p>Track token error rate, exact sequence match and musical validity on autoregressive output—not loss alone.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="wrap"><p><strong>AI OMR</strong> · proprietary optical music recognition</p><small>Living plan · updated August 2026</small></div></footer>
+</body>
+</html>

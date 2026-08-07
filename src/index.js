@@ -2,8 +2,8 @@
 //
 // The Worker runs before static assets (assets.run_worker_first in
 // wrangler.jsonc) so it can gate the whole site behind a password. Everything
-// is protected with HTTP Basic Auth EXCEPT the public World Cup feature
-// (/worldcup and its /api/* endpoints).
+// is protected with HTTP Basic Auth EXCEPT explicitly public project pages
+// (/ai-omr, /worldcup, and the public /api/* endpoints).
 //
 // The password is the SITE_PASSWORD secret (any username works; only the
 // password is checked). Set it with:  npx wrangler secret put SITE_PASSWORD
@@ -13,9 +13,11 @@
 
 import { handleWorldCupApi, warmSquads } from "./worldcup/api.js";
 
-// Paths that stay public (no password): the World Cup page and its API.
+// Paths that stay public (no password): project pages and public APIs.
 function isPublicPath(pathname) {
-  return pathname === "/worldcup"
+  return pathname === "/ai-omr"
+    || pathname.startsWith("/ai-omr/")
+    || pathname === "/worldcup"
     || pathname.startsWith("/worldcup/")
     || pathname.startsWith("/api/");
 }
