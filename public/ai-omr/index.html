@@ -1,11 +1,11 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A practical roadmap for training a proprietary optical music recognition model—from rights-clean data to validated MusicXML.">
   <meta name="theme-color" content="#101c19">
-  <title>AI OMR — Build & Training Plan</title>
+  <title>AI OMR — Build &amp; Training Plan</title>
   <style>
     :root {
       --ink: #15221f;
@@ -60,7 +60,7 @@
     .hero-card::after { content: "𝄞"; position: absolute; right: -20px; bottom: -110px; color: rgba(191,231,213,.11); font-family: serif; font-size: 22rem; line-height: 1; }
     .hero-card h2 { max-width: 360px; margin: 68px 0 16px; font: 500 2rem/1.08 Georgia, serif; }
     .hero-card p { max-width: 390px; color: #cdd8d4; }
-    .hero-card footer { position: absolute; z-index: 1; bottom: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .hero-card .hero-meta { position: absolute; z-index: 1; bottom: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
 
     section { padding: 72px 0; }
     .section-head { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 32px; }
@@ -75,6 +75,20 @@
     .metric.good { color: var(--green-dark); background: var(--mint); border-color: transparent; }
     .metric.warn { color: white; background: var(--coral); border-color: transparent; }
     .metric.good span, .metric.warn span { color: inherit; opacity: .82; }
+
+    .comparison { grid-template-columns: repeat(3, 1fr); }
+    .experiment { display: flex; flex-direction: column; gap: 22px; }
+    .experiment.featured { color: white; background: var(--green-dark); border-color: transparent; }
+    .experiment.featured .eyebrow, .experiment.featured dd { color: var(--mint); }
+    .experiment h3 { margin: 0; font: 500 1.55rem/1.08 Georgia, serif; }
+    .experiment dl { display: grid; grid-template-columns: 1fr auto; gap: 8px 18px; margin: 0; }
+    .experiment dt { color: var(--muted); font-size: .84rem; }
+    .experiment dd { margin: 0; color: var(--green-dark); font-weight: 850; }
+    .experiment.featured dt { color: #c4d4ce; }
+    .experiment p { margin: auto 0 0; color: var(--muted); font-size: .88rem; }
+    .experiment.featured p { color: #c4d4ce; }
+    .report-link { font-weight: 800; color: var(--green-dark); }
+    .report-link-wrap { margin-top: 22px; }
 
     .scope { grid-template-columns: 1fr 1fr; }
     .scope .card { padding: 34px; }
@@ -120,8 +134,12 @@
     .next li { padding: 7px 0; }
     .definition { color: white; background: var(--blue); border-color: transparent; }
     .definition p { color: #e7edf8; }
-    .bar { height: 8px; margin-top: 28px; overflow: hidden; background: rgba(255,255,255,.22); border-radius: 99px; }
-    .bar i { display: block; width: 58%; height: 100%; background: white; border-radius: inherit; }
+    progress.bar { display: block; width: 100%; height: 8px; margin-top: 28px; overflow: hidden; appearance: none; color: white; background: rgba(255,255,255,.22); border: 0; border-radius: 99px; }
+    progress.bar::-webkit-progress-bar { background: rgba(255,255,255,.22); border-radius: 99px; }
+    progress.bar::-webkit-progress-value { background: white; border-radius: 99px; }
+    progress.bar::-moz-progress-bar { background: white; border-radius: 99px; }
+    .command-region { padding: 0; }
+    .spaced-grid { margin-top: 18px; }
 
     .principles { grid-template-columns: repeat(3, 1fr); }
     .principles strong { display: block; margin-bottom: 8px; }
@@ -136,7 +154,7 @@
     @media (max-width: 900px) {
       .hero, .next-grid { grid-template-columns: 1fr; }
       .hero-card { min-height: 350px; }
-      .score-grid, .pipeline, .ladder { grid-template-columns: repeat(2, 1fr); }
+      .score-grid, .pipeline, .ladder, .comparison { grid-template-columns: repeat(2, 1fr); }
       .step:nth-child(2)::after { display: none; }
       .principles { grid-template-columns: 1fr; }
     }
@@ -148,7 +166,7 @@
       section { padding: 54px 0; }
       .section-head { display: block; }
       .section-head > p { margin-top: 14px; }
-      .score-grid, .scope, .pipeline, .ladder { grid-template-columns: 1fr; }
+      .score-grid, .scope, .pipeline, .ladder, .comparison { grid-template-columns: 1fr; }
       .step::after { display: none; }
       .milestone { grid-template-columns: 46px 1fr; gap: 10px; }
       .milestone .phase { grid-column: 2; }
@@ -165,7 +183,7 @@
     <div class="wrap nav-inner">
       <a class="brand" href="#top">AI <span>OMR</span></a>
       <div class="nav-links">
-        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#next">Next</a>
+        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#results">Results</a><a href="#next">Next</a>
       </div>
     </div>
   </nav>
@@ -179,9 +197,9 @@
       </div>
       <aside class="hero-card" aria-label="Project objective">
         <span class="pill"><i class="dot"></i> M8 in progress</span>
-        <h2>Narrow scope. Exact output. A path to scale.</h2>
-        <p>Start with printed, single-staff treble-clef melodies. Earn correctness there before expanding to the full complexity of written music.</p>
-        <footer><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></footer>
+        <h2>The decoder is valid. Now make it accurate.</h2>
+        <p>Rhythm, pickups, ties, termination, and token order are enforced. The pretrained vision path now responds to each page; pitch and event-count accuracy are the active gate.</p>
+        <div class="hero-meta"><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></div>
       </aside>
     </div>
   </header>
@@ -189,12 +207,12 @@
   <main>
     <section id="status">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Runaway decoding solved.</h2></div><p>Grammar constraints now make every held-out sequence terminate cleanly and parse syntactically. M8 continues with rhythm and recognition accuracy.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Rhythm-valid, image-conditioned output.</h2></div><p>The corrected M8 decoder no longer forces one event per measure. It produces legal scores and page-specific predictions; recognition quality is the remaining gate.</p></div>
         <div class="grid score-grid">
-          <article class="card metric good"><span>EOS termination and syntactically valid output across 113 held-out systems</span><strong>100%</strong></article>
-          <article class="card metric good"><span>Repeated 4-grams and sequences that reach the 512-token cap</span><strong>0%</strong></article>
-          <article class="card metric"><span>Constrained token error rate, down from the runaway 8.9845 baseline</span><strong>0.758</strong></article>
-          <article class="card metric warn"><span>Musically valid and exact held-out sequences—the remaining M8 gap</span><strong>0%</strong></article>
+          <article class="card metric good"><span>Syntax, pickup-aware rhythm validity, and EOS termination across 68 clean test systems</span><strong>100%</strong></article>
+          <article class="card metric good"><span>Distinct page-conditioned predictions from the pretrained model</span><strong>65/68</strong></article>
+          <article class="card metric"><span>Rhythm-clean, grammar-reachable systems retained from the first 1,000</span><strong>607</strong></article>
+          <article class="card metric warn"><span>Exact held-out systems; pretrained autoregressive TER is 0.8791</span><strong>0%</strong></article>
         </div>
       </div>
     </section>
@@ -223,15 +241,15 @@
 
     <section id="roadmap">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>Completed foundations are grouped for clarity. The active milestone is constrained decoding and reliable sequence termination.</p></div>
+        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>Completed foundations are grouped for clarity. M8 now measures recognition, diversity, and validity together so template collapse cannot masquerade as progress.</p></div>
         <div class="roadmap">
-          <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation & data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
-          <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering & dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
-          <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model & scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
-          <article class="milestone now"><span class="phase">M8</span><div><h3>Constrained decoding</h3><p>EOS, token order and repetition controls pass. An Oemer spike supports a hybrid rhythm approach; measure validity is next.</p></div></article>
+          <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation &amp; data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
+          <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering &amp; dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
+          <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model &amp; scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
+          <article class="milestone now"><span class="phase">M8</span><div><h3>Proprietary decoder accuracy</h3><p>Measure budgets, balanced pickups, fillable remainders, ties, EOS, and collapse diagnostics pass. Visual alignment and event-count calibration are next.</p></div></article>
           <article class="milestone"><span class="phase">M9</span><div><h3>Robustness</h3><p>Camera, print and scan augmentation; wider notation variation; error analysis by symbol class.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
-          <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot & scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
+          <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot &amp; scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
         </div>
       </div>
     </section>
@@ -242,27 +260,60 @@
         <div class="grid ladder">
           <article class="run"><span class="number">01</span><h3>One sample</h3><p>Prove tensor shapes, loss, forward pass and checkpoint write.</p></article>
           <article class="run"><span class="number">02</span><h3>Fifty samples</h3><p>Overfit to 100% and prove the model can represent the task.</p></article>
-          <article class="run active"><span class="number">03</span><h3>One thousand</h3><p>Measure generalization and expose decoding failure modes.</p></article>
+          <article class="run active"><span class="number">03</span><h3>607 clean</h3><p>Measure real generalization after filtering incompatible rhythm labels.</p></article>
           <article class="run"><span class="number">04</span><h3>10K → full corpus</h3><p>Add variation, tune capacity, then move unchanged code to cloud GPUs.</p></article>
         </div>
-        <pre aria-label="Training commands"><code># activate the local environment
+        <section class="command-region" aria-label="Training commands"><pre><code># activate the local environment
 .\.venv\Scripts\Activate.ps1
 
-# train the current scalable baseline
-python -m src.train --config configs\train_pdmx_1k_gpu.yaml
+# rebuild the decoder-compatible manifest
+python -m ai_omr rhythm-clean-subset data\processed\manifest-v1.parquet `
+  --output data\processed\manifest-rhythm-clean.parquet
+
+# train the current RTX 4090 lead experiment
+python -m src.train --config configs\train_rhythm_clean_pretrained.yaml
 
 # resume safely from the last checkpoint
-python -m src.train --config configs\train_pdmx_1k_gpu.yaml `
-  --resume checkpoints\pdmx-1k\last.pt</code></pre>
+python -m src.train --config configs\train_rhythm_clean_pretrained.yaml `
+  --resume checkpoints\rhythm-clean-pretrained\last.pt
+
+# measure true autoregressive output on the untouched test split
+python -m src.evaluate --config configs\train_rhythm_clean_pretrained.yaml `
+  --checkpoint checkpoints\rhythm-clean-pretrained\best.pt `
+  --output runs\m8-rhythm-clean-pretrained-test.json</code></pre></section>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M8 checkpoint comparison · 68 clean test systems</p><h2>A lower TER can still be collapse.</h2></div><p>All models use the same final autoregressive evaluator. Diversity and structural calibration explain what a single error rate conceals.</p></div>
+        <div class="grid comparison">
+          <article class="card experiment">
+            <div><p class="eyebrow">Original mixed labels</p><h3>Old 1K checkpoint</h3></div>
+            <dl><dt>Token error rate</dt><dd>1.1927</dd><dt>Unique outputs</dt><dd>8.8%</dd><dt>Dominant template</dt><dd>51.5%</dd><dt>Measure-count match</dt><dd>20.6%</dd></dl>
+            <p>Invalid labels and the old decoder produced repetitive, structurally weak output.</p>
+          </article>
+          <article class="card experiment">
+            <div><p class="eyebrow">Rhythm-clean · scratch</p><h3>Collapsed checkpoint</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.6975</dd><dt>Unique outputs</dt><dd>1.5%</dd><dt>Dominant template</dt><dd>100%</dd><dt>Measure-count match</dt><dd>4.4%</dd></dl>
+            <p>The attractive TER is false progress: every page receives the same short 22-token score.</p>
+          </article>
+          <article class="card experiment featured">
+            <div><p class="eyebrow">Current lead · pretrained Swin</p><h3>Image-conditioned checkpoint</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.8791</dd><dt>Unique outputs</dt><dd>95.6%</dd><dt>Dominant template</dt><dd>2.9%</dd><dt>Measure-count match</dt><dd>30.9%</dd></dl>
+            <p>65 distinct outputs prove the visual pathway is active. A 1.46 output/reference length ratio exposes over-segmentation.</p>
+          </article>
+        </div>
+        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M8_PROPRIETARY_DECODER.md">Read the reproducible decoder report on GitHub →</a></p>
       </div>
     </section>
 
     <section id="next">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Make every measure add up.</h2></div><p>Sequence shape and termination are now controlled. The next decoder state must track the time signature and remaining duration inside each measure.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Make vision and sequence length agree.</h2></div><p>The grammar now guarantees musical structure. The model must learn where symbols are on the page, how many events exist, and when the score should end.</p></div>
         <div class="grid next-grid">
-          <article class="card next"><span class="priority">Current priority</span><h3>Move from syntax to musical validity</h3><ol><li>Track elapsed duration while decoding each measure.</li><li>Block durations that exceed the measure budget.</li><li>Allow a barline only when the measure is complete.</li><li>Report pitch, duration and structure errors separately.</li><li>Re-evaluate the same checkpoint before retraining.</li></ol></article>
-          <article class="card next definition"><h3>Definition of done for M8</h3><p>Held-out output terminates, obeys token grammar and measure rhythm, while token error and exact-match metrics show a useful recognition baseline.</p><div class="bar" aria-label="Roadmap progress: milestone 8 in progress"><i></i></div><p><small>M8 phase one passed · rhythm phase active</small></p></article>
+          <article class="card next"><span class="priority">Current priority</span><h3>Improve visual-to-token alignment</h3><ol><li>Reduce the 1.46 output/reference length ratio toward 1.0.</li><li>Improve pitch TER from 1.1649 and duration TER from 0.7729.</li><li>Calibrate measure/event counts without weakening the grammar.</li><li>Retain high prediction diversity and 100% legal termination.</li><li>Produce the first exact systems on the fixed 68-page gate.</li></ol></article>
+          <article class="card next definition"><h3>Definition of done for M8</h3><p>Outputs remain syntactically and rhythmically valid, respond distinctly to each page, and show material pitch, duration, and count improvement—with the first exact held-out systems.</p><progress class="bar" aria-label="Roadmap progress: milestone 8 in progress" value="72" max="100">72%</progress><p><small>Grammar and data gate passed · recognition calibration active</small></p></article>
         </div>
       </div>
     </section>
@@ -276,7 +327,7 @@ python -m src.train --config configs\train_pdmx_1k_gpu.yaml `
           <article class="card metric"><span>Mean token error rate among the three successful conversions</span><strong>0.023</strong></article>
           <article class="card metric warn"><span>Five-system CPU wall time with two concurrent workers</span><strong>9.9m</strong></article>
         </div>
-        <div class="grid next-grid" style="margin-top:18px">
+        <div class="grid next-grid spaced-grid">
           <article class="card next"><span class="priority">Decision</span><h3>Keep our proprietary decoder</h3><p>Use Oemer only as an optional benchmark, high-confidence pseudo-label source, and reference for staff, barline, beam, and beat-repair logic.</p></article>
           <article class="card next definition"><h3>What transfers into M8</h3><p>Measure-duration bookkeeping, visual rhythm cues, and deterministic beat repair. Dataset and checkpoint rights still require separate commercial review.</p></article>
         </div>
