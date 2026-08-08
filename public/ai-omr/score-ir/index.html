@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AI OMR Score IR v2: expanding from monophonic pitch and duration tokens to chords, beams, printed accidentals, fingerings, and faithful MusicXML rendering.">
+  <meta name="theme-color" content="#101c19">
+  <title>AI OMR — Score IR v2</title>
+  <style>
+    :root{--ink:#15221f;--muted:#5d6a66;--paper:#f4f0e7;--card:#fffdf8;--line:#d9d4c8;--green:#1e6b55;--green-dark:#10483a;--mint:#bfe7d5;--coral:#e26f51;--gold:#d3a33f;--blue:#5674a8;--radius:20px;--shadow:0 18px 50px rgba(18,44,36,.09)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);background:radial-gradient(circle at 8% 2%,rgba(191,231,213,.42),transparent 28rem),var(--paper);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit}.wrap{width:min(1160px,calc(100% - 40px));margin-inline:auto}.eyebrow{margin:0 0 12px;color:var(--green);font-size:.76rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    nav{position:sticky;z-index:20;top:0;background:rgba(244,240,231,.92);border-bottom:1px solid rgba(21,34,31,.1);backdrop-filter:blur(14px)}.nav-inner{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{font-weight:900;letter-spacing:-.03em;text-decoration:none}.brand span{color:var(--green)}.nav-links{display:flex;gap:22px;font-size:.86rem;font-weight:700}.nav-links a{text-decoration:none}.nav-links a:hover{color:var(--green)}
+    header{padding:82px 0 58px}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:42px;align-items:center}h1{margin:0;font:500 clamp(3.1rem,7vw,6.3rem)/.92 Georgia,"Times New Roman",serif;letter-spacing:-.06em}h1 em{color:var(--green);font-weight:inherit}.lede{max-width:730px;margin:26px 0 0;color:var(--muted);font-size:clamp(1.04rem,1.7vw,1.28rem)}.hero-card{padding:30px;color:#fff;background:var(--ink);border-radius:28px;box-shadow:var(--shadow)}.hero-card strong{display:block;margin:44px 0 10px;font:500 2rem/1.06 Georgia,serif}.hero-card p{color:#cdd8d4}.hero-card .glyph{font:500 5.2rem/1 "Noto Music","Segoe UI Symbol",serif;color:var(--mint)}
+    section{padding:66px 0}.section-head{display:flex;justify-content:space-between;gap:32px;align-items:end;margin-bottom:28px}.section-head h2{margin:0;font:500 clamp(2rem,4vw,3.5rem)/1.02 Georgia,serif;letter-spacing:-.035em}.section-head>p{max-width:540px;margin:0;color:var(--muted)}.grid{display:grid;gap:16px}.two{grid-template-columns:1fr 1fr}.four{grid-template-columns:repeat(4,1fr)}.card{padding:25px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 8px 28px rgba(28,47,40,.04)}.card h3{margin:0 0 10px;font-size:1rem}.card p{margin:0;color:var(--muted);font-size:.92rem}.good{background:var(--mint);border-color:transparent;color:var(--green-dark)}.good p{color:inherit}.warn{background:var(--coral);border-color:transparent;color:#fff}.warn p{color:#fff}.num{display:inline-grid;width:34px;height:34px;margin-bottom:22px;place-items:center;color:var(--green-dark);background:var(--mint);border-radius:50%;font-size:.78rem;font-weight:900}
+    .pipeline{color:#fff;background:var(--green-dark)}.pipeline .eyebrow{color:var(--mint)}.pipeline .section-head>p{color:#c4d4ce}.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.flow div{position:relative;padding:22px 14px;text-align:center;border:1px solid rgba(255,255,255,.16);border-radius:14px;font-size:.82rem}.flow div:not(:last-child)::after{content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);width:20px;color:var(--mint);font-weight:900}.flow strong{display:block;margin-bottom:5px}.flow span{color:#c4d4ce}
+    pre{overflow:auto;margin:0;padding:22px;color:#d7eee4;background:#0b3027;border-radius:14px;font:.82rem/1.7 ui-monospace,SFMono-Regular,Consolas,monospace}.priority-list{counter-reset:item}.priority-list .card{position:relative;padding-left:70px}.priority-list .card::before{counter-increment:item;content:"0" counter(item);position:absolute;left:24px;top:26px;color:var(--green);font-size:.76rem;font-weight:900}.note{padding:22px 24px;background:#fff4d8;border-left:4px solid var(--gold);border-radius:0 12px 12px 0;color:#5f5335}.note strong{color:var(--ink)}
+    footer{padding:40px 0;color:#bdcbc6;background:var(--ink)}footer .wrap{display:flex;justify-content:space-between;gap:28px;align-items:center}footer p{margin:0}footer small{color:#8fa09a}
+    @media(max-width:900px){.hero,.two{grid-template-columns:1fr}.four{grid-template-columns:repeat(2,1fr)}.flow{grid-template-columns:repeat(3,1fr)}.flow div:nth-child(3)::after{display:none}}
+    @media(max-width:640px){.wrap{width:min(100% - 26px,1160px)}.nav-links{display:none}.section-head{display:block}.section-head>p{margin-top:12px}.four,.flow{grid-template-columns:1fr}.flow div::after{display:none!important}footer .wrap{display:block}footer small{display:block;margin-top:8px}}
+  </style>
+</head>
+<body>
+<nav><div class="wrap nav-inner"><a class="brand" href="/ai-omr/">AI <span>OMR</span></a><div class="nav-links"><a href="/ai-omr/">Plan</a><a href="/ai-omr/symbols/">Symbols</a><a href="#roadmap">Score IR v2</a></div></div></nav>
+<header><div class="wrap hero"><div><p class="eyebrow">Architecture update · August 2026</p><h1>The renderer can do it.<br><em>The Score IR cannot — yet.</em></h1><p class="lede">Verovio and MusicXML already support the rich notation needed for violin practice: chords and double stops, beam groups, fingerings, ties, slurs, articulations, bowing marks, tuplets, dynamics, and multiple voices. The next semantic bottleneck is our internal score representation.</p></div><aside class="hero-card"><div class="glyph">𝄞 ♪ ♯</div><strong>Keep Verovio.</strong><p>Upgrade the contract between AI output and MusicXML. The model should produce compact musical structure, not raw XML.</p></aside></div></header>
+
+<section><div class="wrap"><div class="section-head"><div><p class="eyebrow">Current state</p><h2>What V1 can and cannot express</h2></div><p>The current representation is intentionally monophonic and was the right choice for proving the first recognition loop.</p></div><div class="grid four"><div class="card good"><h3>Already supported</h3><p>Pitch, duration, rests, key signature, time signature, dotted values, accidentals as pitch alteration, and ties.</p></div><div class="card warn"><h3>Chord / double stop</h3><p>Not supported. The current MusicXML parser explicitly rejects chord notes.</p></div><div class="card warn"><h3>Beam relationships</h3><p>Not represented. Duration exists, but beam membership, level, and hooks are lost.</p></div><div class="card warn"><h3>Fingering & engraving</h3><p>No per-note fingering and no separate representation of an explicitly printed accidental.</p></div></div></div></section>
+
+<section class="pipeline"><div class="wrap"><div class="section-head"><div><p class="eyebrow">Target architecture</p><h2>Introduce a semantic Score IR</h2></div><p>The AI recognizes structure; deterministic code validates it and writes standards-compliant MusicXML; Verovio handles engraving.</p></div><div class="flow"><div><strong>Image</strong><span>scanned staff</span></div><div><strong>Primitives</strong><span>noteheads, stems, beams</span></div><div><strong>Relationships</strong><span>attached, stacked, grouped</span></div><div><strong>Score IR v2</strong><span>musical events</span></div><div><strong>MusicXML</strong><span>deterministic writer</span></div><div><strong>Verovio</strong><span>faithful render</span></div></div></div></section>
+
+<section id="roadmap"><div class="wrap"><div class="section-head"><div><p class="eyebrow">First rich-notation milestone</p><h2>Support the violin example first</h2></div><p>A beamed dotted-eighth + sixteenth pattern with double stops, stacked fingerings, and a printed sharp is a useful concrete acceptance target.</p></div><div class="grid two"><div class="priority-list grid"><div class="card"><h3>Chord / double stop</h3><p>An event must support multiple simultaneous notes instead of one pitch.</p></div><div class="card"><h3>Explicit beam groups</h3><p>Preserve beam level and begin / continue / end / hook relationships.</p></div><div class="card"><h3>Displayed accidentals</h3><p>Separate sounding pitch alteration from the symbol visibly printed on the page.</p></div><div class="card"><h3>Per-note fingering</h3><p>Attach finger numbers to the correct note inside a chord.</p></div></div><pre>Event(
+  duration = 3/16,
+  notes = [
+    Note(B4, fingering=4),
+    Note(G4, fingering=2)
+  ],
+  beams = [Beam(1, "begin")]
+)
+
+Event(
+  duration = 1/16,
+  notes = [Note(E4)],
+  beams = [
+    Beam(1, "continue"),
+    Beam(2, "forward_hook")
+  ]
+)</pre></div><div class="note" style="margin-top:24px"><strong>Sequencing rule:</strong> do not derail the current M8 recognition gate. Score IR v2 can be designed and round-trip tested in parallel, but model-training scope should stay on the current rhythm-clean V1 target until the project is producing credible exact systems.</div></div></section>
+
+<section><div class="wrap"><div class="section-head"><div><p class="eyebrow">Then expand</p><h2>Rich notation after the foundation</h2></div><p>Once the first four relationships round-trip correctly, add richer expressive and polyphonic notation incrementally.</p></div><div class="grid four"><div class="card"><span class="num">05</span><h3>Slurs</h3><p>Relationship across different pitches; distinguish from ties using pitch/context.</p></div><div class="card"><span class="num">06</span><h3>Articulations</h3><p>Staccato, accent, tenuto, fermata.</p></div><div class="card"><span class="num">07</span><h3>String technique</h3><p>Up-bow, down-bow, pizzicato, arco, harmonics.</p></div><div class="card"><span class="num">08+</span><h3>Tuplets, dynamics, voices</h3><p>Add irregular rhythm, expression, and multi-voice structure after core event relationships are stable.</p></div></div></div></section>
+<footer><div class="wrap"><p>AI OMR · Score IR v2</p><small>Scan → understand → MusicXML → Verovio</small></div></footer>
+</body>
+</html>
