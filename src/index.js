@@ -49,6 +49,41 @@ function checkAuth(request, env) {
   });
 }
 
+function decorateAiOmrPlan(response) {
+  const update = `
+    <section id="score-ir-v2" style="padding:72px 0;background:#fffdf8;border-top:1px solid #d9d4c8;border-bottom:1px solid #d9d4c8">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Architecture update · August 2026</p>
+            <h2>Verovio can render it. The Score IR cannot — yet.</h2>
+          </div>
+          <p>The next semantic milestone is not a new renderer. It is a richer intermediate representation for chords/double stops, explicit beam groups, printed accidentals, and per-note fingerings.</p>
+        </div>
+        <div class="grid scope">
+          <article class="card" style="padding:34px">
+            <h3 style="margin:0 0 14px">Keep the rendering stack</h3>
+            <p style="margin:0;color:#5d6a66">MusicXML + Verovio already cover the rich notation needed for violin practice. Keep the renderer and upgrade the contract between model output and MusicXML.</p>
+          </article>
+          <article class="card" style="padding:34px;background:#bfe7d5;border-color:transparent">
+            <h3 style="margin:0 0 14px;color:#10483a">Score IR v2 first target</h3>
+            <p style="margin:0 0 16px;color:#10483a">Represent the real-world sample that triggered this update: a beamed dotted-eighth + sixteenth figure with violin double stops, stacked fingerings, and a printed sharp.</p>
+            <a href="/ai-omr/score-ir/" style="font-weight:850;color:#10483a">Read the Score IR v2 architecture note →</a>
+          </article>
+        </div>
+        <p style="margin:22px 0 0;color:#5d6a66"><strong style="color:#15221f">Sequencing rule:</strong> do not derail the active M8 recognition gate. Design and round-trip test Score IR v2 in parallel, but keep model-training scope on the current rhythm-clean V1 benchmark until genuine image conditioning produces credible exact systems.</p>
+      </div>
+    </section>`;
+
+  return new HTMLRewriter()
+    .on("main", {
+      element(element) {
+        element.append(update, { html: true });
+      },
+    })
+    .transform(response);
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -60,7 +95,7 @@ export default {
       return Response.redirect(to.toString(), 301);
     }
 
-    // Gate everything except the public World Cup feature.
+    // Gate everything except the public project pages and APIs.
     if (!isPublicPath(url.pathname)) {
       const denied = checkAuth(request, env);
       if (denied) return denied;
@@ -69,7 +104,13 @@ export default {
     const api = await handleWorldCupApi(request, env, ctx);
     if (api) return api;
 
-    if (env.ASSETS) return env.ASSETS.fetch(request);
+    if (env.ASSETS) {
+      const asset = await env.ASSETS.fetch(request);
+      if (url.pathname === "/ai-omr/" && asset.headers.get("content-type")?.includes("text/html")) {
+        return decorateAiOmrPlan(asset);
+      }
+      return asset;
+    }
     return new Response("Not found", { status: 404 });
   },
 
