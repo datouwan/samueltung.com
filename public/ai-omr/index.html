@@ -183,7 +183,7 @@
     <div class="wrap nav-inner">
       <a class="brand" href="#top">AI <span>OMR</span></a>
       <div class="nav-links">
-        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#results">Results</a><a href="#next">Next</a>
+        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#results">Results</a><a href="#m8-1">M8.1</a><a href="#next">Next</a>
       </div>
     </div>
   </nav>
@@ -196,9 +196,9 @@
         <p class="lede">A local-first plan to turn printed sheet music into compact notation tokens, validate the musical structure, and export dependable MusicXML.</p>
       </div>
       <aside class="hero-card" aria-label="Project objective">
-        <span class="pill"><i class="dot"></i> M8 in progress</span>
-        <h2>The decoder is valid. Now make it accurate.</h2>
-        <p>Rhythm, pickups, ties, termination, and token order are enforced. The pretrained vision path now responds to each page; pitch and event-count accuracy are the active gate.</p>
+        <span class="pill"><i class="dot"></i> M8.1 measured</span>
+        <h2>Stable geometry. Recognition is still flat.</h2>
+        <p>M8.1 makes validation output independent of batch size, removes runaway decoding, and preserves legal scores. It does not beat the calibrated recognition control, so explicit header and count supervision is next.</p>
         <div class="hero-meta"><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></div>
       </aside>
     </div>
@@ -207,12 +207,12 @@
   <main>
     <section id="status">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Rhythm-valid, image-conditioned output.</h2></div><p>The corrected M8 decoder no longer forces one event per measure. It produces legal scores and page-specific predictions; recognition quality is the remaining gate.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Deterministic output. Accuracy still gated.</h2></div><p>The M8.1 path is fixed-canvas, padding-aware, bounded, and reproducible. Recognition—not decoder validity or batch geometry—is now the remaining blocker.</p></div>
         <div class="grid score-grid">
-          <article class="card metric good"><span>Syntax, pickup-aware rhythm validity, and EOS termination across 68 clean test systems</span><strong>100%</strong></article>
-          <article class="card metric good"><span>Distinct page-conditioned predictions from the pretrained model</span><strong>65/68</strong></article>
-          <article class="card metric"><span>Rhythm-clean, grammar-reachable systems retained from the first 1,000</span><strong>607</strong></article>
-          <article class="card metric warn"><span>Exact held-out systems; pretrained autoregressive TER is 0.8791</span><strong>0%</strong></article>
+          <article class="card metric good"><span>Validation batch sizes 1, 4, 8, and 32 with the same prediction digest</span><strong>4/4</strong></article>
+          <article class="card metric warn"><span>M8.1 FP32 test TER; calibrated historical control remains better at 0.6040</span><strong>0.6149</strong></article>
+          <article class="card metric good"><span>Output/reference length ratio with no seventh-repeat runaways</span><strong>1.049×</strong></article>
+          <article class="card metric"><span>Exact systems across the fixed 68-system test split</span><strong>0/68</strong></article>
         </div>
       </div>
     </section>
@@ -231,22 +231,22 @@
       <div class="wrap">
         <div class="section-head"><div><p class="eyebrow">System design</p><h2>Pixels in. MusicXML out.</h2></div><p>The neural network predicts a compact musical language. Deterministic software then checks rhythm and syntax before generating verbose MusicXML.</p></div>
         <div class="grid pipeline">
-          <article class="card step"><h3>Prepare the page</h3><p>Crop, deskew, normalize contrast and detect capture problems such as blur or glare.</p></article>
-          <article class="card step"><h3>Read the staff</h3><p>A Swin or ViT encoder feeds an autoregressive Transformer notation decoder.</p></article>
-          <article class="card step"><h3>Validate music</h3><p>Check grammar, measure duration, accidentals, ties and positional rules.</p></article>
-          <article class="card step"><h3>Build the score</h3><p>Create an internal score object, emit MusicXML and render it for review.</p></article>
+          <article class="card step"><h3>Stabilize the page</h3><p>Normalize each system onto one fixed canvas and retain its true content width.</p></article>
+          <article class="card step"><h3>Read the staff</h3><p>Stride-16 Swin features use masked right padding and separable 2D positions.</p></article>
+          <article class="card step"><h3>Decode safely</h3><p>A Transformer predicts compact notation with legal EOS and corpus-safe loop guards.</p></article>
+          <article class="card step"><h3>Validate music</h3><p>Check grammar and rhythm, create the score object, then emit reviewable MusicXML.</p></article>
         </div>
       </div>
     </section>
 
     <section id="roadmap">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>Completed foundations are grouped for clarity. M8 now measures recognition, diversity, and validity together so template collapse cannot masquerade as progress.</p></div>
+        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>M8.1 closes geometry and reproducibility defects without claiming an accuracy win. The next comparison must improve recognition while holding that infrastructure fixed.</p></div>
         <div class="roadmap">
           <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation &amp; data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
           <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering &amp; dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
           <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model &amp; scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
-          <article class="milestone now"><span class="phase">M8</span><div><h3>Proprietary decoder accuracy</h3><p>Measure budgets, balanced pickups, fillable remainders, ties, EOS, and collapse diagnostics pass. Visual alignment and event-count calibration are next.</p></div></article>
+          <article class="milestone now"><span class="phase">M8.1</span><div><h3>Proprietary decoder accuracy</h3><p>Grammar, fixed-canvas alignment, deterministic evaluation, and bounded decoding pass. Explicit key, time, pickup, measure, and event supervision is next.</p></div></article>
           <article class="milestone"><span class="phase">M9</span><div><h3>Robustness</h3><p>Camera, print and scan augmentation; wider notation variation; error analysis by symbol class.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
           <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot &amp; scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
@@ -270,17 +270,14 @@
 python -m ai_omr rhythm-clean-subset data\processed\manifest-v1.parquet `
   --output data\processed\manifest-rhythm-clean.parquet
 
-# train the current RTX 4090 lead experiment
-python -m src.train --config configs\train_rhythm_clean_pretrained.yaml
+# train the fixed-canvas RTX 4090 experiment
+python -m src.train --config configs\train_m8_1.yaml
 
-# resume safely from the last checkpoint
-python -m src.train --config configs\train_rhythm_clean_pretrained.yaml `
-  --resume checkpoints\rhythm-clean-pretrained\last.pt
-
-# measure true autoregressive output on the untouched test split
-python -m src.evaluate --config configs\train_rhythm_clean_pretrained.yaml `
-  --checkpoint checkpoints\rhythm-clean-pretrained\best.pt `
-  --output runs\m8-rhythm-clean-pretrained-test.json</code></pre></section>
+# run canonical FP32 autoregressive validation
+python -m src.evaluate --config configs\eval_m8_1.yaml `
+  --checkpoint checkpoints\m8-1\epoch-40.pt `
+  --split validation --batch-size 32 `
+  --output runs\m8-1-validation.json</code></pre></section>
       </div>
     </section>
 
@@ -299,21 +296,45 @@ python -m src.evaluate --config configs\train_rhythm_clean_pretrained.yaml `
             <p>The attractive TER is false progress: every page receives the same short 22-token score.</p>
           </article>
           <article class="card experiment featured">
-            <div><p class="eyebrow">Current lead · pretrained Swin</p><h3>Image-conditioned checkpoint</h3></div>
+            <div><p class="eyebrow">Historical M8 · pretrained Swin</p><h3>Image-conditioned checkpoint</h3></div>
             <dl><dt>Token error rate</dt><dd>0.8791</dd><dt>Unique outputs</dt><dd>95.6%</dd><dt>Dominant template</dt><dd>2.9%</dd><dt>Measure-count match</dt><dd>30.9%</dd></dl>
             <p>65 distinct outputs prove the visual pathway is active. A 1.46 output/reference length ratio exposes over-segmentation.</p>
           </article>
         </div>
-        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M8_PROPRIETARY_DECODER.md">Read the reproducible decoder report on GitHub →</a></p>
+        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M8_PROPRIETARY_DECODER.md">Read the historical M8 decoder report on GitHub →</a></p>
+      </div>
+    </section>
+
+    <section id="m8-1">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M8.1 alignment checkpoint · 68 clean test systems</p><h2>Infrastructure win. Accuracy still flat.</h2></div><p>The calibrated control corrects legal-EOS bias on the historical checkpoint. M8.1 retrains deterministic visual geometry; it improves measure counting but not recognition TER.</p></div>
+        <div class="grid comparison">
+          <article class="card experiment">
+            <div><p class="eyebrow">EOS-calibrated historical checkpoint</p><h3>Recognition control</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.6040</dd><dt>Pitch / duration TER</dt><dd>0.8104 / 0.4733</dd><dt>Length ratio</dt><dd>0.954</dd><dt>Measure match / MAE</dt><dd>27.9% / 1.103</dd><dt>Event match / MAE</dt><dd>14.7% / 5.235</dd><dt>Key / time accuracy</dt><dd>89.7% / 55.9%</dd></dl>
+            <p>Stopping calibration is a strong control, not learned visual improvement.</p>
+          </article>
+          <article class="card experiment featured">
+            <div><p class="eyebrow">Fixed canvas · stage 2 · FP32 evaluation</p><h3>M8.1 deterministic model</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.6149</dd><dt>Pitch / duration TER</dt><dd>0.8191 / 0.4797</dd><dt>Length ratio</dt><dd>1.049</dd><dt>Measure match / MAE</dt><dd>32.4% / 1.000</dd><dt>Event match / MAE</dt><dd>11.8% / 5.471</dd><dt>Key / time accuracy</dt><dd>51.5% / 50.0%</dd></dl>
+            <p>66 distinct predictions, 100% valid termination, and no seventh-repeat runaways.</p>
+          </article>
+          <article class="card experiment">
+            <div><p class="eyebrow">Measured outcome</p><h3>What M8.1 actually proves</h3></div>
+            <dl><dt>Stable validation batches</dt><dd>1 / 4 / 8 / 32</dd><dt>Unique test outputs</dt><dd>97.1%</dd><dt>Valid / terminated</dt><dd>100% / 100%</dd><dt>Exact systems</dt><dd>0 / 68</dd></dl>
+            <p>Geometry and decoding are reproducible. Header, pitch, duration, and event recognition remain unsolved.</p>
+          </article>
+        </div>
+        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M8_1_VISUAL_ALIGNMENT.md">Read the full M8.1 report and reproduction commands on GitHub →</a></p>
       </div>
     </section>
 
     <section id="next">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Make vision and sequence length agree.</h2></div><p>The grammar now guarantees musical structure. The model must learn where symbols are on the page, how many events exist, and when the score should end.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Supervise what the decoder must recognize and count.</h2></div><p>Keep M8.1 geometry fixed. The next experiment must improve header, pitch, duration, and count recognition rather than changing the evaluation pipeline again.</p></div>
         <div class="grid next-grid">
-          <article class="card next"><span class="priority">Current priority</span><h3>Improve visual-to-token alignment</h3><ol><li>Reduce the 1.46 output/reference length ratio toward 1.0.</li><li>Improve pitch TER from 1.1649 and duration TER from 0.7729.</li><li>Calibrate measure/event counts without weakening the grammar.</li><li>Retain high prediction diversity and 100% legal termination.</li><li>Produce the first exact systems on the fixed 68-page gate.</li></ol></article>
-          <article class="card next definition"><h3>Definition of done for M8</h3><p>Outputs remain syntactically and rhythmically valid, respond distinctly to each page, and show material pitch, duration, and count improvement—with the first exact held-out systems.</p><progress class="bar" aria-label="Roadmap progress: milestone 8 in progress" value="72" max="100">72%</progress><p><small>Grammar and data gate passed · recognition calibration active</small></p></article>
+          <article class="card next"><span class="priority">Current priority</span><h3>Add explicit visual supervision</h3><ol><li>Predict key and time signature from masked visual memory.</li><li>Predict pickup presence and measure count.</li><li>Predict event count and train it jointly with token decoding.</li><li>Compare grammar-masked loss with the current inference-only grammar.</li><li>Create a fresh untouched final split before any M9 claim.</li></ol></article>
+          <article class="card next definition"><h3>Definition of done for M8</h3><p>Beat the 0.6040 calibrated control on a validation-selected policy, improve header and exact-count accuracy, retain deterministic validity, and produce the first exact systems.</p><progress class="bar" aria-label="Roadmap progress: milestone 8 in progress" value="76" max="100">76%</progress><p><small>Geometry and decoder correctness passed · recognition supervision active</small></p></article>
         </div>
       </div>
     </section>
@@ -346,6 +367,6 @@ python -m src.evaluate --config configs\train_rhythm_clean_pretrained.yaml `
     </section>
   </main>
 
-  <footer class="site-footer"><div class="wrap"><p><strong>AI OMR</strong> · proprietary optical music recognition</p><small>Living plan · M8 updated August 7, 2026</small></div></footer>
+  <footer class="site-footer"><div class="wrap"><p><strong>AI OMR</strong> · proprietary optical music recognition</p><small>Living plan · M8.1 updated August 8, 2026</small></div></footer>
 </body>
 </html>
