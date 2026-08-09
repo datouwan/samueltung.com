@@ -183,7 +183,7 @@
     <div class="wrap nav-inner">
       <a class="brand" href="#top">AI <span>OMR</span></a>
       <div class="nav-links">
-        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#results">Results</a><a href="#m8-1">M8.1</a><a href="#next">Next</a>
+        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#results">Results</a><a href="#m8-5">M8.5</a><a href="#m9-1">M9.1</a><a href="#tracks">Tracks</a><a href="#next">Next</a>
       </div>
     </div>
   </nav>
@@ -196,9 +196,9 @@
         <p class="lede">A local-first plan to turn printed sheet music into compact notation tokens, validate the musical structure, and export dependable MusicXML.</p>
       </div>
       <aside class="hero-card" aria-label="Project objective">
-        <span class="pill"><i class="dot"></i> M8.1 measured</span>
-        <h2>Stable geometry. Recognition is still flat.</h2>
-        <p>M8.1 makes validation output independent of batch size, removes runaway decoding, and preserves legal scores. It does not beat the calibrated recognition control, so explicit header and count supervision is next.</p>
+        <span class="pill"><i class="dot"></i> M9.1 synthetic-camera foundation passed</span>
+        <h2>Clean recognition now survives moderate degradation.</h2>
+        <p>M8.5 closes the clean V1 gate. M9.1 cuts confirmatory camera TER by 29% without regressing clean accuracy. Real photographed-score gold is next.</p>
         <div class="hero-meta"><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></div>
       </aside>
     </div>
@@ -207,12 +207,12 @@
   <main>
     <section id="status">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Deterministic output. Accuracy still gated.</h2></div><p>The M8.1 path is fixed-canvas, padding-aware, bounded, and reproducible. Recognition—not decoder validity or batch geometry—is now the remaining blocker.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Clean V1 is closed; camera robustness has begun.</h2></div><p>M8.5 produces exact systems on independent PDMX notation. M9.1 adds deterministic print/camera degradation and improves robustness while retaining clean accuracy.</p></div>
         <div class="grid score-grid">
-          <article class="card metric good"><span>Validation batch sizes 1, 4, 8, and 32 with the same prediction digest</span><strong>4/4</strong></article>
-          <article class="card metric warn"><span>M8.1 FP32 test TER; calibrated historical control remains better at 0.6040</span><strong>0.6149</strong></article>
-          <article class="card metric good"><span>Output/reference length ratio with no seventh-repeat runaways</span><strong>1.049×</strong></article>
-          <article class="card metric"><span>Exact systems across the fixed 68-system test split</span><strong>0/68</strong></article>
+          <article class="card metric good"><span>M8.5 autoregressive TER on 2,563 clean validation systems</span><strong>0.0674</strong></article>
+          <article class="card metric good"><span>M9.1 clean validation TER after camera fine-tuning</span><strong>0.0606</strong></article>
+          <article class="card metric good"><span>Confirmatory moderate-camera TER, down from 0.2168</span><strong>0.1539</strong></article>
+          <article class="card metric"><span>Exact systems on the independent PDMX clean final</span><strong>2/37</strong></article>
         </div>
       </div>
     </section>
@@ -241,13 +241,13 @@
 
     <section id="roadmap">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>M8.1 closes geometry and reproducibility defects without claiming an accuracy win. The next comparison must improve recognition while holding that infrastructure fixed.</p></div>
+        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>M8 clean recognition is complete. M9.1 proves deterministic moderate camera augmentation helps; a rights-clean, manually reviewed real-photo benchmark is now the active gate.</p></div>
         <div class="roadmap">
           <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation &amp; data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
           <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering &amp; dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
           <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model &amp; scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
-          <article class="milestone now"><span class="phase">M8.1</span><div><h3>Proprietary decoder accuracy</h3><p>Grammar, fixed-canvas alignment, deterministic evaluation, and bounded decoding pass. Explicit key, time, pickup, measure, and event supervision is next.</p></div></article>
-          <article class="milestone"><span class="phase">M9</span><div><h3>Robustness</h3><p>Camera, print and scan augmentation; wider notation variation; error analysis by symbol class.</p></div></article>
+          <article class="milestone done"><span class="phase">M8.5</span><div><h3>Clean recognition gate</h3><p>27,039-system development, 579 exact validation systems, and exact systems on a token-disjoint independent PDMX final.</p></div></article>
+          <article class="milestone now"><span class="phase">M9.1</span><div><h3>Camera/print robustness</h3><p>Moderate deterministic degradation passes without clean regression. Real-photo gold and pitch robustness remain active.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
           <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot &amp; scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
         </div>
@@ -260,8 +260,8 @@
         <div class="grid ladder">
           <article class="run"><span class="number">01</span><h3>One sample</h3><p>Prove tensor shapes, loss, forward pass and checkpoint write.</p></article>
           <article class="run"><span class="number">02</span><h3>Fifty samples</h3><p>Overfit to 100% and prove the model can represent the task.</p></article>
-          <article class="run active"><span class="number">03</span><h3>607 clean</h3><p>Measure real generalization after filtering incompatible rhythm labels.</p></article>
-          <article class="run"><span class="number">04</span><h3>10K → full corpus</h3><p>Add variation, tune capacity, then move unchanged code to cloud GPUs.</p></article>
+          <article class="run"><span class="number">03</span><h3>27K clean</h3><p>Close the clean V1 gate with varied melodic data and an independent-source final.</p></article>
+          <article class="run active"><span class="number">04</span><h3>49K paired views</h3><p>Train on clean plus deterministic camera copies and preserve clean accuracy.</p></article>
         </div>
         <section class="command-region" aria-label="Training commands"><pre><code># activate the local environment
 .\.venv\Scripts\Activate.ps1
@@ -270,14 +270,15 @@
 python -m ai_omr rhythm-clean-subset data\processed\manifest-v1.parquet `
   --output data\processed\manifest-rhythm-clean.parquet
 
-# train the fixed-canvas RTX 4090 experiment
-python -m src.train --config configs\train_m8_1.yaml
+# continue from clean M8.5 into paired camera training
+python -m src.train --config configs\train_camera_moderate.yaml `
+  --resume checkpoints\m8-5\epoch-26.pt
 
-# run canonical FP32 autoregressive validation
-python -m src.evaluate --config configs\eval_m8_1.yaml `
-  --checkpoint checkpoints\m8-1\epoch-40.pt `
+# run canonical FP32 autoregressive camera validation
+python -m src.evaluate --config configs\train_camera_moderate.yaml `
+  --checkpoint checkpoints\camera-moderate\epoch-30.pt `
   --split validation --batch-size 32 `
-  --output runs\m8-1-validation.json</code></pre></section>
+  --output runs\camera-validation-epoch-30.json</code></pre></section>
       </div>
     </section>
 
@@ -305,36 +306,70 @@ python -m src.evaluate --config configs\eval_m8_1.yaml `
       </div>
     </section>
 
-    <section id="m8-1">
+    <section id="m8-5">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">M8.1 alignment checkpoint · 68 clean test systems</p><h2>Infrastructure win. Accuracy still flat.</h2></div><p>The calibrated control corrects legal-EOS bias on the historical checkpoint. M8.1 retrains deterministic visual geometry; it improves measure counting but not recognition TER.</p></div>
+        <div class="section-head"><div><p class="eyebrow">M8.5 clean-recognition outcome</p><h2>Scale and musical variation closed the clean gate.</h2></div><p>A versioned melodic generator expands development to 27,039 systems without changing the vocabulary or objective. Selection remains validation-only; independent PDMX is evaluated once.</p></div>
         <div class="grid comparison">
           <article class="card experiment">
-            <div><p class="eyebrow">EOS-calibrated historical checkpoint</p><h3>Recognition control</h3></div>
-            <dl><dt>Token error rate</dt><dd>0.6040</dd><dt>Pitch / duration TER</dt><dd>0.8104 / 0.4733</dd><dt>Length ratio</dt><dd>0.954</dd><dt>Measure match / MAE</dt><dd>27.9% / 1.103</dd><dt>Event match / MAE</dt><dd>14.7% / 5.235</dd><dt>Key / time accuracy</dt><dd>89.7% / 55.9%</dd></dl>
-            <p>Stopping calibration is a strong control, not learned visual improvement.</p>
+            <div><p class="eyebrow">M8.4 reference</p><h3>5,039-system development</h3></div>
+            <dl><dt>Validation TER</dt><dd>0.2204</dd><dt>Pitch TER</dt><dd>0.4433</dd><dt>Event-count match</dt><dd>71.1%</dd><dt>Exact systems</dt><dd>11 / 563</dd></dl>
+            <p>Balanced synthetic coverage first cleared the in-domain gate.</p>
           </article>
           <article class="card experiment featured">
-            <div><p class="eyebrow">Fixed canvas · stage 2 · FP32 evaluation</p><h3>M8.1 deterministic model</h3></div>
-            <dl><dt>Token error rate</dt><dd>0.6149</dd><dt>Pitch / duration TER</dt><dd>0.8191 / 0.4797</dd><dt>Length ratio</dt><dd>1.049</dd><dt>Measure match / MAE</dt><dd>32.4% / 1.000</dd><dt>Event match / MAE</dt><dd>11.8% / 5.471</dd><dt>Key / time accuracy</dt><dd>51.5% / 50.0%</dd></dl>
-            <p>66 distinct predictions, 100% valid termination, and no seventh-repeat runaways.</p>
+            <div><p class="eyebrow">24,476 train · 2,563 validation</p><h3>M8.5 selected validation</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.0674</dd><dt>Pitch / duration TER</dt><dd>0.1522 / 0.0146</dd><dt>Measure / event match</dt><dd>99.4% / 94.7%</dd><dt>Valid / unique</dt><dd>100% / 100%</dd><dt>Exact systems</dt><dd>579 / 2,563</dd></dl>
+            <p>Melodic motion and the full existing duration distribution produce hundreds of exact systems.</p>
           </article>
           <article class="card experiment">
-            <div><p class="eyebrow">Measured outcome</p><h3>What M8.1 actually proves</h3></div>
-            <dl><dt>Stable validation batches</dt><dd>1 / 4 / 8 / 32</dd><dt>Unique test outputs</dt><dd>97.1%</dd><dt>Valid / terminated</dt><dd>100% / 100%</dd><dt>Exact systems</dt><dd>0 / 68</dd></dl>
-            <p>Geometry and decoding are reproducible. Header, pitch, duration, and event recognition remain unsolved.</p>
+            <div><p class="eyebrow">Token-disjoint · one-time evaluation</p><h3>Independent PDMX final</h3></div>
+            <dl><dt>Systems</dt><dd>37</dd><dt>Token error rate</dt><dd>0.2441</dd><dt>Pitch / duration TER</dt><dd>0.3206 / 0.2023</dd><dt>Valid / unique</dt><dd>100% / 100%</dd><dt>Exact systems</dt><dd>2 / 37</dd></dl>
+            <p>Exact unseen public-domain systems close the clean recognition gate while exposing a domain gap.</p>
           </article>
         </div>
-        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M8_1_VISUAL_ALIGNMENT.md">Read the full M8.1 report and reproduction commands on GitHub →</a></p>
+        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M8_5_RECOGNITION_GATE.md">Read the M8.5 recognition-gate report on GitHub →</a></p>
+      </div>
+    </section>
+
+    <section id="m9-1">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M9.1 moderate camera/print outcome</p><h2>Robustness improved without sacrificing clean scores.</h2></div><p>Offline deterministic rotation, perspective, resolution loss, blur, tonal variation, noise, and JPEG artifacts create auditable paired views. The vocabulary and training objective remain fixed.</p></div>
+        <div class="grid comparison">
+          <article class="card experiment">
+            <div><p class="eyebrow">Same 200 confirmatory images</p><h3>M8.5 camera control</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.2168</dd><dt>Pitch / duration TER</dt><dd>0.4586 / 0.0771</dd><dt>Event-count match</dt><dd>77.0%</dd><dt>Header accuracy</dt><dd>88.0%</dd><dt>Exact systems</dt><dd>0 / 200</dd></dl>
+            <p>Clean recognition alone does not retain pitch and header accuracy under moderate degradation.</p>
+          </article>
+          <article class="card experiment featured">
+            <div><p class="eyebrow">Epoch 30 · paired clean + camera</p><h3>M9.1 confirmatory final</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.1539</dd><dt>Pitch / duration TER</dt><dd>0.3771 / 0.0117</dd><dt>Event-count match</dt><dd>97.5%</dd><dt>Header accuracy</dt><dd>100%</dd><dt>Exact systems</dt><dd>1 / 200</dd></dl>
+            <p>TER falls 29.0%, exact recognition appears, and outputs remain 100% valid, terminated, and unique.</p>
+          </article>
+          <article class="card experiment">
+            <div><p class="eyebrow">No-regression check</p><h3>Clean validation improves</h3></div>
+            <dl><dt>Clean TER</dt><dd>0.0606</dd><dt>Clean pitch TER</dt><dd>0.1439</dd><dt>Event-count match</dt><dd>97.4%</dd><dt>Exact systems</dt><dd>602 / 2,563</dd></dl>
+            <p>Paired views improve moderate-camera and clean recognition together.</p>
+          </article>
+        </div>
+        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M9_1_CAMERA_ROBUSTNESS.md">Read the M9.1 camera-robustness report on GitHub →</a></p>
       </div>
     </section>
 
     <section id="next">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Supervise what the decoder must recognize and count.</h2></div><p>Keep M8.1 geometry fixed. The next experiment must improve header, pitch, duration, and count recognition rather than changing the evaluation pipeline again.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Measure genuinely photographed scores.</h2></div><p>Synthetic clean and moderate-camera gates now pass. The next evidence must be a separately sourced, rights-clean, manually reviewed real-photo benchmark.</p></div>
         <div class="grid next-grid">
-          <article class="card next"><span class="priority">Current priority</span><h3>Add explicit visual supervision</h3><ol><li>Predict key and time signature from masked visual memory.</li><li>Predict pickup presence and measure count.</li><li>Predict event count and train it jointly with token decoding.</li><li>Compare grammar-masked loss with the current inference-only grammar.</li><li>Create a fresh untouched final split before any M9 claim.</li></ol></article>
-          <article class="card next definition"><h3>Definition of done for M8</h3><p>Beat the 0.6040 calibrated control on a validation-selected policy, improve header and exact-count accuracy, retain deterministic validity, and produce the first exact systems.</p><progress class="bar" aria-label="Roadmap progress: milestone 8 in progress" value="76" max="100">76%</progress><p><small>Geometry and decoder correctness passed · recognition supervision active</small></p></article>
+          <article class="card next"><span class="priority">Current priority</span><h3>Establish real-photo gold</h3><ol><li>Collect rights-clean photographed or scanned V1 score systems.</li><li>Review every crop against authoritative MusicXML.</li><li>Freeze provenance, image, and token hashes before inference.</li><li>Measure pitch TER and exact systems without selecting on gold.</li><li>Use development-only mixed/heavy augmentation for any follow-up.</li></ol></article>
+          <article class="card next definition"><h3>Definition of done for M9</h3><p>Retain clean and moderate-camera gains while producing credible exact systems on a separately frozen real-photo benchmark.</p><progress class="bar" aria-label="Roadmap progress: milestone 9 in progress" value="78" max="100">78%</progress><p><small>M8 clean complete · M9.1 synthetic-camera complete · real-photo gold open</small></p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="tracks">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Two-track development</p><h2>Recognition and score semantics advance in parallel.</h2></div><p>Track A proves the AI can read a score. Track B proves the product can represent and faithfully re-render richer notation. They converge only after recognition is reliable.</p></div>
+        <div class="grid scope">
+          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>27,039-system clean development corpus</li><li>579 exact clean validation systems</li><li>Two exact independent PDMX final systems</li><li>Moderate-camera TER reduced by 29%</li><li>Next: rights-clean real-photo gold</li></ul></article>
+          <article class="card"><p class="eyebrow">Track B · Score semantics</p><h3>Score IR → faithful notation</h3><ul class="checks"><li>Chord and violin double-stop representation</li><li>Explicit beams, levels, and hooks</li><li>Displayed accidental preserved separately</li><li>Per-note fingering in chords</li><li>MusicXML → Verovio round trip proven</li></ul><p class="report-link-wrap"><a class="report-link" href="/ai-omr/score-ir/">Read the Score IR v2 architecture note →</a></p></article>
         </div>
       </div>
     </section>
@@ -367,6 +402,6 @@ python -m src.evaluate --config configs\eval_m8_1.yaml `
     </section>
   </main>
 
-  <footer class="site-footer"><div class="wrap"><p><strong>AI OMR</strong> · proprietary optical music recognition</p><small>Living plan · M8.1 updated August 8, 2026</small></div></footer>
+  <footer class="site-footer"><div class="wrap"><p><strong>AI OMR</strong> · proprietary optical music recognition</p><small>Living plan · M9.1 updated August 8, 2026</small></div></footer>
 </body>
 </html>

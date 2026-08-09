@@ -171,7 +171,7 @@ export default {
     if (env.ASSETS) {
       const asset = await env.ASSETS.fetch(request);
       if (url.pathname === "/ai-omr/" && asset.headers.get("content-type")?.includes("text/html")) {
-        return decorateAiOmrPlan(asset);
+        return asset;
       }
       return asset;
     }
