@@ -198,7 +198,7 @@
       <aside class="hero-card" aria-label="Project objective">
         <span class="pill"><i class="dot"></i> M9.3 real-photo failures classified</span>
         <h2>The next recognition defect is now measurable.</h2>
-        <p>The 100-system daylight development set establishes 0.1880 TER and six exact systems. Failure alignment shows 87.4% of same-position altered notes are emitted as naturals.</p>
+        <p>The 100-system daylight set establishes 0.1880 TER. Full-domain measurement shows altered-note output is only 4.39% of reference on clean data and 0.72% on real photos; a key-aware data intervention is now ready.</p>
         <div class="hero-meta"><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></div>
       </aside>
     </div>
@@ -248,7 +248,7 @@
           <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model &amp; scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
           <article class="milestone done"><span class="phase">M8.5</span><div><h3>Clean recognition gate</h3><p>27,039-system development, 579 exact validation systems, and exact systems on a token-disjoint independent PDMX final.</p></div></article>
           <article class="milestone done"><span class="phase">M9.1–2</span><div><h3>Camera/print robustness</h3><p>Moderate augmentation transfers to a sealed 50-system iPhone gold set: 0.1496 TER, 2 exact systems, and 100% valid outputs.</p></div></article>
-          <article class="milestone now"><span class="phase">M9.3</span><div><h3>Real-photo development</h3><p>100 disjoint daylight systems are captured and classified. Next: measure altered-token behavior across clean and synthetic-camera validation, then test a key-conditioned solution.</p></div></article>
+          <article class="milestone now"><span class="phase">M9.3</span><div><h3>Real-photo development</h3><p>100 disjoint daylight systems are classified. Checkpoint-wide accidental suppression is measured, and a key-aware synthetic profile passes its rights, overlap, MusicXML, and rendering pilot.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
           <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot &amp; scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
         </div>
@@ -371,7 +371,7 @@ python -m src.evaluate --config configs\train_camera_moderate.yaml `
       <div class="wrap">
         <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Build the real-photo development loop.</h2></div><p>The gold result is frozen. The next dataset is deliberately separate, inspectable, and available for error analysis and training decisions.</p></div>
         <div class="grid next-grid">
-          <article class="card next"><span class="priority">Current priority</span><h3>Restore altered-pitch emission</h3><ol><li>Measure flat/sharp token behavior on clean and synthetic-camera validation.</li><li>Audit target balance by key signature and altered-note token.</li><li>Separate extreme-key header errors from note-token conditioning.</li><li>Test one key-conditioned training intervention without changing V1 vocabulary.</li><li>Require real-photo improvement with no clean or camera regression.</li></ol></article>
+          <article class="card next"><span class="priority">Current priority</span><h3>Train the key-aware intervention</h3><ol><li>Scale the validated key-aware melodic profile beyond its 120-system pilot.</li><li>Create paired clean and moderate-camera views with unchanged targets.</li><li>Resume briefly from M9.1 epoch 30 and select on development only.</li><li>Measure altered-note output, pitch TER, and event counts across all three development domains.</li><li>Require real-photo improvement with no clean or camera regression.</li></ol></article>
           <article class="card next definition"><h3>Definition of done for M9.3</h3><p>Beat the 0.1880 development TER and 0.3702 pitch TER while improving 69% event-count accuracy, preserving 100% validity and termination, and leaving M9.2 gold untouched.</p><progress class="bar" aria-label="Roadmap progress: milestone 9 in progress" value="87" max="100">87%</progress><p><small>M8 clean complete · M9.2 gold sealed · M9.3 baseline and failure classification complete</small></p></article>
         </div>
       </div>
@@ -381,7 +381,7 @@ python -m src.evaluate --config configs\train_camera_moderate.yaml `
       <div class="wrap">
         <div class="section-head"><div><p class="eyebrow">Two-track development</p><h2>Recognition and score semantics advance in parallel.</h2></div><p>Track A proves the AI can read a score. Track B proves the product can represent and faithfully re-render richer notation. They converge only after recognition is reliable.</p></div>
         <div class="grid scope">
-          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>27,039-system clean development corpus</li><li>Real-photo gold: 0.1496 TER, 2/50 exact</li><li>M9.3 development: 0.1880 TER, 6/100 exact</li><li>84/100 systems expose accidental errors</li><li>Next: key-conditioned pitch intervention</li></ul></article>
+          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>Real-photo gold: 0.1496 TER, 2/50 exact</li><li>M9.3 development: 0.1880 TER, 6/100 exact</li><li>Altered output/reference: 4.39% clean, 4.10% camera, 0.72% real</li><li>Key-aware 120-system pilot validated</li><li>Next: scaled key-aware fine-tune</li></ul></article>
           <article class="card"><p class="eyebrow">Track B · Score semantics</p><h3>Score IR → faithful notation</h3><ul class="checks"><li>Chord and violin double-stop representation</li><li>Explicit beams, levels, and hooks</li><li>Displayed accidental preserved separately</li><li>Per-note fingering in chords</li><li>MusicXML → Verovio round trip proven</li></ul><p class="report-link-wrap"><a class="report-link" href="/ai-omr/score-ir/">Read the Score IR v2 architecture note →</a></p></article>
         </div>
       </div>
