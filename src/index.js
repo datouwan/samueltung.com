@@ -169,7 +169,13 @@ export default {
     if (api) return api;
 
     if (env.ASSETS) {
-      const asset = await env.ASSETS.fetch(request);
+      let assetRequest = request;
+      if (url.pathname === "/ai-omr/") {
+        const assetUrl = new URL(request.url);
+        assetUrl.pathname = "/ai-omr/index.html";
+        assetRequest = new Request(assetUrl, request);
+      }
+      const asset = await env.ASSETS.fetch(assetRequest);
       if (url.pathname === "/ai-omr/" && asset.headers.get("content-type")?.includes("text/html")) {
         return asset;
       }
