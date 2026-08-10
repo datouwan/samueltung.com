@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A searchable music notation symbol reference and AI-OMR taxonomy: symbol, name, musical meaning, recognition category, MusicXML mapping, and implementation priority.">
+  <meta name="theme-color" content="#101c19">
+  <title>AI OMR — Music Notation Symbol Reference</title>
+  <style>
+    :root {
+      --ink:#15221f;--muted:#5d6a66;--paper:#f4f0e7;--card:#fffdf8;--line:#d9d4c8;
+      --green:#1e6b55;--green-dark:#10483a;--mint:#bfe7d5;--coral:#e26f51;--gold:#d3a33f;--blue:#5674a8;
+      --radius:20px;--shadow:0 18px 50px rgba(18,44,36,.09)
+    }
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;color:var(--ink);background:radial-gradient(circle at 8% 2%,rgba(191,231,213,.42),transparent 28rem),var(--paper);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:inherit} a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+    .wrap{width:min(1160px,calc(100% - 40px));margin-inline:auto}.eyebrow{margin:0 0 12px;color:var(--green);font-size:.76rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+    nav{position:sticky;z-index:20;top:0;background:rgba(244,240,231,.92);border-bottom:1px solid rgba(21,34,31,.1);backdrop-filter:blur(14px)}
+    .nav-inner{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{font-weight:900;letter-spacing:-.03em;text-decoration:none}.brand span{color:var(--green)}
+    .nav-links{display:flex;gap:22px;font-size:.86rem;font-weight:700}.nav-links a{text-decoration:none}.nav-links a:hover{color:var(--green)}
+    header{padding:82px 0 52px}.hero{display:grid;grid-template-columns:1.18fr .82fr;gap:42px;align-items:center}
+    h1{margin:0;font:500 clamp(3.1rem,7vw,6.3rem)/.92 Georgia,"Times New Roman",serif;letter-spacing:-.06em} h1 em{color:var(--green);font-weight:inherit}
+    .lede{max-width:720px;margin:26px 0 0;color:var(--muted);font-size:clamp(1.04rem,1.7vw,1.28rem)}
+    .hero-card{position:relative;overflow:hidden;min-height:330px;padding:30px;color:#fff;background:var(--ink);border-radius:28px;box-shadow:var(--shadow)}
+    .hero-card .glyphs{font:500 clamp(4.2rem,8vw,7rem)/1 "Noto Music","Segoe UI Symbol",serif;letter-spacing:.05em;color:var(--mint)}
+    .hero-card p{max-width:390px;margin:30px 0 0;color:#cdd8d4}.hero-card small{position:absolute;bottom:26px;left:30px;color:#93a69f}
+    section{padding:62px 0}.section-head{display:flex;justify-content:space-between;gap:32px;align-items:end;margin-bottom:26px}.section-head h2{margin:0;font:500 clamp(2rem,4vw,3.5rem)/1.02 Georgia,serif;letter-spacing:-.035em}.section-head>p{max-width:540px;margin:0;color:var(--muted)}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.metric{padding:23px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius)}.metric strong{display:block;font:500 2.65rem/1 Georgia,serif;letter-spacing:-.05em}.metric span{color:var(--muted);font-size:.86rem}
+    .toolbar{position:sticky;z-index:10;top:65px;padding:14px 0;background:rgba(244,240,231,.94);border-block:1px solid rgba(21,34,31,.08);backdrop-filter:blur(12px)}
+    .tools{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:14px;align-items:center}.search{width:100%;padding:13px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit}
+    .filters{display:flex;gap:8px;flex-wrap:wrap}.filter{cursor:pointer;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font:700 .76rem/1 inherit}.filter.active{color:#fff;background:var(--green-dark);border-color:var(--green-dark)}
+    .category-block{margin:0 0 40px}.category-title{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}.category-title h3{margin:0;font:500 1.75rem/1.1 Georgia,serif}.category-title span{color:var(--muted);font-size:.8rem}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.symbol-card{display:grid;grid-template-columns:82px 1fr;min-height:176px;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 7px 24px rgba(28,47,40,.035)}
+    .symbol-box{display:grid;place-items:center;padding:14px;background:#f7f2e8;border-right:1px solid var(--line);font:500 2.75rem/1 "Noto Music","Segoe UI Symbol","Arial Unicode MS",serif;text-align:center}.symbol-box.text{font:800 1.2rem/1.05 ui-monospace,SFMono-Regular,Consolas,monospace}
+    .symbol-body{padding:17px}.symbol-body h4{margin:0 0 5px;font-size:1rem}.symbol-body p{margin:0;color:var(--muted);font-size:.84rem;line-height:1.48}.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.tag{padding:4px 7px;border-radius:6px;background:#ece8df;color:#52605c;font-size:.66rem;font-weight:800;letter-spacing:.03em}.tag.p0{background:var(--mint);color:var(--green-dark)}.tag.p1{background:#f3d9d1;color:#8f402d}.tag.xml{background:#e4e9f2;color:#41597e}
+    .empty{display:none;padding:50px;text-align:center;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:var(--radius)}
+    .ontology{color:#fff;background:var(--green-dark)}.ontology .eyebrow{color:var(--mint)}.ontology .section-head>p{color:#c4d4ce}.ontology-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.code-card{padding:26px;background:#0b3027;border:1px solid rgba(255,255,255,.12);border-radius:18px}.code-card pre{overflow:auto;margin:0;color:#d7eee4;font:.82rem/1.65 ui-monospace,SFMono-Regular,Consolas,monospace}.principles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.principle{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius)}.principle strong{display:block;margin-bottom:8px}.principle p{margin:0;color:var(--muted);font-size:.9rem}
+    .note{padding:22px 24px;background:#fff4d8;border-left:4px solid var(--gold);border-radius:0 12px 12px 0;color:#5f5335}.note strong{color:var(--ink)}
+    footer{padding:40px 0;color:#bdcbc6;background:var(--ink)}footer .wrap{display:flex;justify-content:space-between;gap:28px;align-items:center}footer p{margin:0}footer small{color:#8fa09a}
+    @media(max-width:900px){.hero{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}.ontology-grid{grid-template-columns:1fr}.principles{grid-template-columns:1fr}}
+    @media(max-width:640px){.wrap{width:min(100% - 26px,1160px)}.nav-links{display:none}header{padding-top:54px}.section-head{display:block}.section-head>p{margin-top:12px}.tools{grid-template-columns:1fr}.grid,.summary{grid-template-columns:1fr}.symbol-card{grid-template-columns:72px 1fr}.symbol-box{font-size:2.35rem}footer .wrap{display:block}footer small{display:block;margin-top:7px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <nav aria-label="Primary navigation"><div class="wrap nav-inner"><a class="brand" href="/ai-omr/">AI <span>OMR</span></a><div class="nav-links"><a href="/ai-omr/">Plan</a><a href="/ai-omr/market">Market</a><a href="#reference">Symbols</a><a href="#ontology">Ontology</a></div></div></nav>
+
+  <header id="top"><div class="wrap hero"><div><p class="eyebrow">Music notation · model specification</p><h1>Know the <em>symbol.</em><br>Know the music.</h1><p class="lede">A searchable reference for common Western music notation—and a living taxonomy for the AI-OMR model. Each entry connects the visual mark to its musical meaning, recognition category, MusicXML concept, and implementation priority.</p></div><aside class="hero-card"><div class="glyphs">𝄞 ♯ ♪ 𝄐</div><p>This page is both human documentation and model infrastructure: the same vocabulary can drive dataset labels, decoder tokens, MusicXML conversion, evaluation, and product support.</p><small>AI OMR · Symbol Reference v0.1</small></aside></div></header>
+
+  <section><div class="wrap"><div class="summary"><div class="metric"><strong id="symbolCount">0</strong><span>reference entries</span></div><div class="metric"><strong id="categoryCount">0</strong><span>notation categories</span></div><div class="metric"><strong id="p0Count">0</strong><span>V1 / P0 symbols</span></div><div class="metric"><strong>MusicXML</strong><span>structured output target</span></div></div></div></section>
+
+  <div class="toolbar"><div class="wrap tools"><input id="search" class="search" type="search" placeholder="Search: staccato, sharp, repeat, bow…" aria-label="Search music symbols"><div id="filters" class="filters" aria-label="Filter symbol categories"></div></div></div>
+
+  <main id="reference"><section><div class="wrap"><div class="section-head"><div><p class="eyebrow">Reference</p><h2>Common Western notation</h2></div><p>Focused on the notation most relevant to student practice. Specialized contemporary, percussion, microtonal, and historical symbols can be added as the product scope expands.</p></div><div id="catalog"></div><div id="empty" class="empty">No symbols match this search or filter.</div></div></section>
+
+  <section id="ontology" class="ontology"><div class="wrap"><div class="section-head"><div><p class="eyebrow">Model design</p><h2>From visual glyph to structured event</h2></div><p>The recognizer should not treat every printed note as one giant class. Separate visual primitives from semantic events, then reconstruct valid music with deterministic grammar.</p></div><div class="ontology-grid"><div class="code-card"><pre>notation:
+  structure:
+    staff, ledger_line, barline
+  pitch:
+    notehead, accidental, clef
+  rhythm:
+    stem, flag, beam, dot, tuplet
+  expression:
+    articulation, dynamic, hairpin
+  navigation:
+    repeat, volta, segno, coda
+  string_technique:
+    bowing, fingering, pizzicato</pre></div><div class="code-card"><pre>IMAGE
+  ↓
+visual primitives
+  ↓
+semantic music tokens
+  ↓
+grammar / measure validation
+  ↓
+internal score object
+  ↓
+MusicXML
+  ↓
+practice + AI feedback</pre></div></div></div></section>
+
+  <section><div class="wrap"><div class="section-head"><div><p class="eyebrow">Recognition principles</p><h2>What matters for OMR</h2></div><p>Correct music depends on relationships—not just classifying isolated glyphs.</p></div><div class="principles"><div class="principle"><strong>Geometry carries pitch</strong><p>A notehead's vertical position relative to staff lines and clef determines pitch. Staff detection is therefore foundational.</p></div><div class="principle"><strong>Context resolves ambiguity</strong><p>A curved line can be a tie or slur; a dot can be augmentation or articulation. Neighboring notes and rhythmic grammar decide the meaning.</p></div><div class="principle"><strong>Measures provide validation</strong><p>Time signature and event durations create hard constraints. Impossible beat totals should trigger review or constrained decoding.</p></div></div><div class="note" style="margin-top:22px"><strong>Scope note.</strong> “All music symbols” is effectively unbounded: SMuFL contains thousands of glyphs across Western, historical, percussion, microtonal, and specialist notation. This page intentionally defines the common student-practice taxonomy first and can grow with model coverage.</div></div></section></main>
+
+  <footer><div class="wrap"><p>AI OMR · Music Notation Symbol Reference</p><small>Living model specification · samueltung.com/ai-omr/symbols</small></div></footer>
+
+<script>
+const symbols = [
+  // Structure
+  ['Structure','staff','Staff','5 lines','Five horizontal lines that establish vertical pitch positions.','structure','staff','P0'],
+  ['Structure','ledger line','Ledger line','—','Short line extending the staff for notes above or below it.','structure','ledger-line','P0'],
+  ['Structure','barline','Barline','|','Separates measures.','structure','barline','P0'],
+  ['Structure','double barline','Double barline','||','Marks a section boundary or important division.','structure','barline light-light','P1'],
+  ['Structure','final barline','Final barline','|▮','Marks the end of a piece or movement.','structure','barline light-heavy','P1'],
+  ['Structure','brace','Brace','{','Groups related staves, especially piano grand staff.','structure','part-group','Later'],
+  ['Structure','bracket','Bracket','[','Groups instruments or staves into a system.','structure','part-group','Later'],
+
+  // Clefs
+  ['Clefs','treble clef','Treble / G clef','𝄞','Places G4 on the second staff line; standard violin clef.','clef','clef G line=2','P0'],
+  ['Clefs','bass clef','Bass / F clef','𝄢','Places F3 on the fourth staff line.','clef','clef F line=4','P1'],
+  ['Clefs','alto clef','Alto / C clef','𝄡','Places middle C on the middle line; common for viola.','clef','clef C line=3','P1'],
+  ['Clefs','tenor clef','Tenor clef','𝄡','C clef positioned so middle C lies on the fourth line.','clef','clef C line=4','Later'],
+  ['Clefs','octave clef','Octave-transposing clef','𝄞⁸','Clef with 8 or 15 indicating octave displacement.','clef','clef-octave-change','Later'],
+
+  // Notes / rhythm
+  ['Notes & Rhythm','whole note semibreve','Whole note','𝅝','Sustains for four quarter-note beats in 4/4.','note','type whole','P0'],
+  ['Notes & Rhythm','half note minim','Half note','𝅗𝅥','Sustains for two quarter-note beats.','note','type half','P0'],
+  ['Notes & Rhythm','quarter note crotchet','Quarter note','♩','One quarter-note beat; common beat unit.','note','type quarter','P0'],
+  ['Notes & Rhythm','eighth note quaver','Eighth note','♪','Half of a quarter-note beat.','note','type eighth','P0'],
+  ['Notes & Rhythm','sixteenth note semiquaver','Sixteenth note','𝅘𝅥𝅯','One quarter of a quarter-note beat.','note','type 16th','P0'],
+  ['Notes & Rhythm','thirty-second note','Thirty-second note','𝅘𝅥𝅰','Half the duration of a sixteenth note.','note','type 32nd','P1'],
+  ['Notes & Rhythm','sixty-fourth note','Sixty-fourth note','𝅘𝅥𝅱','Half the duration of a thirty-second note.','note','type 64th','Later'],
+  ['Notes & Rhythm','stem','Stem','│','Vertical line attached to a notehead; helps encode duration and voice direction.','rhythm','stem','P0'],
+  ['Notes & Rhythm','flag','Flag','⌁','Curved stroke on isolated eighth-or-shorter notes; flag count encodes subdivision.','rhythm','flag','P0'],
+  ['Notes & Rhythm','beam','Beam','━','Horizontal/angled stroke grouping eighth-or-shorter notes.','rhythm','beam','P0'],
+  ['Notes & Rhythm','augmentation dot dotted','Augmentation dot','•','Adds half of the note or rest original duration.','rhythm','dot','P0'],
+  ['Notes & Rhythm','double dot','Double augmentation dot','••','Adds three quarters of the original duration.','rhythm','dot dot','Later'],
+  ['Notes & Rhythm','tie','Tie','⌒','Connects identical pitches so their durations are combined.','relation','tie','P0'],
+  ['Notes & Rhythm','triplet tuplet 3','Triplet','3','Three notes performed in the time normally occupied by two of the same value.','rhythm','time-modification 3:2','P1'],
+  ['Notes & Rhythm','tuplet','Tuplet','5:4','Irregular subdivision indicated by a number or ratio.','rhythm','time-modification','Later'],
+
+  // Rests
+  ['Rests','whole rest','Whole rest','𝄻','Silence for a whole measure in common contexts / whole-note duration.','rest','rest whole','P0'],
+  ['Rests','half rest','Half rest','𝄼','Silence for a half-note duration.','rest','rest half','P0'],
+  ['Rests','quarter rest','Quarter rest','𝄽','Silence for a quarter-note duration.','rest','rest quarter','P0'],
+  ['Rests','eighth rest','Eighth rest','𝄾','Silence for an eighth-note duration.','rest','rest eighth','P0'],
+  ['Rests','sixteenth rest','Sixteenth rest','𝄿','Silence for a sixteenth-note duration.','rest','rest 16th','P0'],
+  ['Rests','thirty-second rest','Thirty-second rest','𝅀','Silence for a thirty-second-note duration.','rest','rest 32nd','P1'],
+
+  // Accidentals / key
+  ['Pitch & Key','sharp accidental','Sharp','♯','Raises a note by one semitone.','accidental','sharp','P0'],
+  ['Pitch & Key','flat accidental','Flat','♭','Lowers a note by one semitone.','accidental','flat','P0'],
+  ['Pitch & Key','natural accidental','Natural','♮','Cancels a previous sharp or flat for the note.','accidental','natural','P0'],
+  ['Pitch & Key','double sharp','Double sharp','𝄪','Raises a note by two semitones.','accidental','double-sharp','Later'],
+  ['Pitch & Key','double flat','Double flat','𝄫','Lowers a note by two semitones.','accidental','flat-flat','Later'],
+  ['Pitch & Key','key signature sharps flats','Key signature','♯♯ / ♭♭','Accidentals following the clef that define default altered scale degrees.','key','key fifths','P0'],
+
+  // Meter
+  ['Meter','four four time signature','4/4','4⁄4','Four quarter-note beats per measure.','meter','time beats=4 beat-type=4','P0'],
+  ['Meter','three four time signature','3/4','3⁄4','Three quarter-note beats per measure.','meter','time 3/4','P0'],
+  ['Meter','two four time signature','2/4','2⁄4','Two quarter-note beats per measure.','meter','time 2/4','P0'],
+  ['Meter','six eight time signature','6/8','6⁄8','Six eighth-note subdivisions, commonly felt in two compound beats.','meter','time 6/8','P0'],
+  ['Meter','common time','Common time','𝄴','Symbol equivalent to 4/4.','meter','time symbol=common','P1'],
+  ['Meter','cut time alla breve','Cut time','𝄵','Symbol equivalent to 2/2.','meter','time symbol=cut','Later'],
+
+  // Articulation / phrasing
+  ['Articulation','staccato','Staccato','•','Play short and detached.','articulation','staccato','P1'],
+  ['Articulation','tenuto','Tenuto','—','Hold for full value, often with gentle emphasis.','articulation','tenuto','P1'],
+  ['Articulation','accent','Accent','>','Emphasize the attack of the note.','articulation','accent','P1'],
+  ['Articulation','marcato','Marcato','^','Strong, marked accent.','articulation','strong-accent','Later'],
+  ['Articulation','fermata','Fermata','𝄐','Hold a note or rest longer than its written value.','articulation','fermata','P1'],
+  ['Articulation','slur legato','Slur','⌒','Curved line over different pitches indicating connected phrasing / legato.','relation','slur','P1'],
+  ['Articulation','breath mark','Breath mark',',','Brief pause or breath between phrases.','articulation','breath-mark','Later'],
+  ['Articulation','caesura','Caesura','//','A deliberate break or pause in the musical flow.','articulation','caesura','Later'],
+
+  // Dynamics
+  ['Dynamics','piano soft','Piano','p','Soft dynamic level.','dynamic','p','P1'],
+  ['Dynamics','pianissimo very soft','Pianissimo','pp','Very soft.','dynamic','pp','P1'],
+  ['Dynamics','mezzo piano','Mezzo piano','mp','Moderately soft.','dynamic','mp','P1'],
+  ['Dynamics','mezzo forte','Mezzo forte','mf','Moderately loud.','dynamic','mf','P1'],
+  ['Dynamics','forte loud','Forte','f','Loud.','dynamic','f','P1'],
+  ['Dynamics','fortissimo very loud','Fortissimo','ff','Very loud.','dynamic','ff','P1'],
+  ['Dynamics','crescendo hairpin','Crescendo','<','Gradually increase loudness.','dynamic','wedge crescendo','P1'],
+  ['Dynamics','diminuendo decrescendo hairpin','Diminuendo','>','Gradually decrease loudness.','dynamic','wedge diminuendo','P1'],
+  ['Dynamics','sforzando','Sforzando','sfz','Sudden strong emphasis.','dynamic','sfz','Later'],
+  ['Dynamics','fortepiano','Forte-piano','fp','Loud attack followed immediately by soft dynamic.','dynamic','fp','Later'],
+
+  // Tempo
+  ['Tempo','metronome mark bpm','Metronome mark','♩=80','Specifies an exact pulse rate in beats per minute.','tempo','metronome','P0'],
+  ['Tempo','largo','Largo','Largo','Very slow, broad tempo instruction.','tempo','words','Later'],
+  ['Tempo','adagio','Adagio','Adagio','Slow tempo instruction.','tempo','words','Later'],
+  ['Tempo','andante','Andante','Andante','Moderate walking pace.','tempo','words','Later'],
+  ['Tempo','allegro','Allegro','Allegro','Fast and lively tempo instruction.','tempo','words','Later'],
+  ['Tempo','presto','Presto','Presto','Very fast tempo instruction.','tempo','words','Later'],
+  ['Tempo','ritardando rit','Ritardando','rit.','Gradually slow down.','tempo','words','Later'],
+  ['Tempo','accelerando accel','Accelerando','accel.','Gradually speed up.','tempo','words','Later'],
+  ['Tempo','a tempo','A tempo','a tempo','Return to the previous established tempo.','tempo','words','Later'],
+
+  // Ornaments
+  ['Ornaments','trill','Trill','tr','Rapid alternation with the neighboring note.','ornament','trill-mark','Later'],
+  ['Ornaments','turn','Turn','𝆗','Ornament moving around the principal note.','ornament','turn','Later'],
+  ['Ornaments','mordent','Mordent','𝆹𝅥𝅯','Quick alternation with an adjacent note.','ornament','mordent','Later'],
+  ['Ornaments','grace note acciaccatura','Grace note','♪','Small ornamental note before or around a principal note.','ornament','grace','Later'],
+  ['Ornaments','arpeggio','Arpeggio','↝','Chord tones played in sequence rather than simultaneously.','ornament','arpeggiate','Later'],
+
+  // Repeats / navigation
+  ['Repeats & Navigation','start repeat','Start repeat','||:','Beginning of a repeated passage.','navigation','barline repeat forward','P1'],
+  ['Repeats & Navigation','end repeat','End repeat',':||','Return to the matching start-repeat or beginning.','navigation','barline repeat backward','P1'],
+  ['Repeats & Navigation','first ending volta','First ending','1.','Ending used on the first pass through a repeat.','navigation','ending number=1','P1'],
+  ['Repeats & Navigation','second ending volta','Second ending','2.','Alternate ending used on a later pass.','navigation','ending number=2','P1'],
+  ['Repeats & Navigation','segno','Segno','𝄋','Navigation marker used by D.S. instructions.','navigation','segno','Later'],
+  ['Repeats & Navigation','coda','Coda','𝄌','Navigation destination for a coda jump.','navigation','coda','Later'],
+  ['Repeats & Navigation','da capo dc','Da Capo','D.C.','Return to the beginning.','navigation','sound dacapo','Later'],
+  ['Repeats & Navigation','dal segno ds','Dal Segno','D.S.','Return to the segno sign.','navigation','sound dalsegno','Later'],
+  ['Repeats & Navigation','fine','Fine','Fine','End the piece at this instruction.','navigation','sound fine','Later'],
+
+  // Strings / violin
+  ['Strings / Violin','up bow','Up bow','V','Begin the stroke with the bow moving upward toward the frog.','string-technique','technical up-bow','P1'],
+  ['Strings / Violin','down bow','Down bow','Π','Begin the stroke with the bow moving downward toward the tip.','string-technique','technical down-bow','P1'],
+  ['Strings / Violin','pizzicato pizz','Pizzicato','pizz.','Pluck the string rather than bow it.','string-technique','words / pizzicato','P1'],
+  ['Strings / Violin','arco','Arco','arco','Resume playing with the bow after pizzicato.','string-technique','words / arco','P1'],
+  ['Strings / Violin','open string zero fingering','Open string','0','Play the string without stopping it with the left hand.','fingering','fingering 0','P1'],
+  ['Strings / Violin','first finger fingering','Fingering','1 2 3 4','Suggested left-hand finger number.','fingering','fingering','P1'],
+  ['Strings / Violin','harmonic diamond notehead','Harmonic','◇','Lightly touch a string to produce a harmonic overtone.','string-technique','harmonic / notehead','Later'],
+  ['Strings / Violin','sul g sul d sul a sul e','Sul string','sul G','Play the passage on a specified string.','string-technique','words','Later'],
+  ['Strings / Violin','glissando','Glissando','gliss.','Continuous slide between pitches.','string-technique','glissando','Later'],
+
+  // Piano / keyboard
+  ['Piano','pedal sustain','Sustain pedal','Ped.','Depress the damper pedal.','keyboard-technique','pedal start','Later'],
+  ['Piano','pedal release','Pedal release','✱','Release the damper pedal.','keyboard-technique','pedal stop','Later'],
+  ['Piano','una corda','Una corda','una corda','Use the soft pedal.','keyboard-technique','words','Later'],
+  ['Piano','tre corde','Tre corde','tre corde','Release the soft pedal / return to three strings.','keyboard-technique','words','Later'],
+  ['Piano','ottava 8va','8va','8va','Play one octave above the written pitch.','octave-shift','octave-shift up','Later'],
+  ['Piano','ottava bassa 8vb','8vb','8vb','Play one octave below the written pitch.','octave-shift','octave-shift down','Later']
+];
+
+const categoryOrder=[...new Set(symbols.map(s=>s[0]))];
+const catalog=document.getElementById('catalog'), search=document.getElementById('search'), filters=document.getElementById('filters'), empty=document.getElementById('empty');
+let active='All';
+function textGlyph(v){return /[A-Za-z0-9]/.test(v)&&v.length>2}
+function renderFilters(){['All',...categoryOrder].forEach(c=>{const b=document.createElement('button');b.className='filter'+(c==='All'?' active':'');b.textContent=c;b.dataset.category=c;b.onclick=()=>{active=c;document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x.dataset.category===c));render()};filters.appendChild(b)})}
+function render(){const q=search.value.trim().toLowerCase();catalog.innerHTML='';let shown=0;categoryOrder.forEach(cat=>{if(active!=='All'&&active!==cat)return;const items=symbols.filter(s=>s[0]===cat&&(!q||s.slice(1).join(' ').toLowerCase().includes(q)));if(!items.length)return;shown+=items.length;const block=document.createElement('section');block.className='category-block';const head=document.createElement('div');head.className='category-title';head.innerHTML=`<h3>${cat}</h3><span>${items.length} ${items.length===1?'entry':'entries'}</span>`;block.appendChild(head);const grid=document.createElement('div');grid.className='grid';items.forEach(s=>{const [category,keywords,name,glyph,meaning,omr,xml,priority]=s;const card=document.createElement('article');card.className='symbol-card';card.innerHTML=`<div class="symbol-box ${textGlyph(glyph)?'text':''}" aria-hidden="true">${glyph}</div><div class="symbol-body"><h4>${name}</h4><p>${meaning}</p><div class="meta"><span class="tag ${priority==='P0'?'p0':priority==='P1'?'p1':''}">${priority==='P0'?'V1 · P0':priority==='P1'?'P1':'Later'}</span><span class="tag">${omr}</span><span class="tag xml">${xml}</span></div></div>`;grid.appendChild(card)});block.appendChild(grid);catalog.appendChild(block)});empty.style.display=shown?'none':'block'}
+search.addEventListener('input',render);renderFilters();render();
+document.getElementById('symbolCount').textContent=symbols.length;document.getElementById('categoryCount').textContent=categoryOrder.length;document.getElementById('p0Count').textContent=symbols.filter(s=>s[7]==='P0').length;
+</script>
+</body>
+</html>

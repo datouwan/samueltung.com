@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A practical roadmap for training a proprietary optical music recognition model—from rights-clean data to validated MusicXML.">
+  <meta name="theme-color" content="#101c19">
+  <title>AI OMR — Build &amp; Training Plan</title>
+  <style>
+    :root {
+      --ink: #15221f;
+      --muted: #5d6a66;
+      --paper: #f4f0e7;
+      --card: #fffdf8;
+      --line: #d9d4c8;
+      --green: #1e6b55;
+      --green-dark: #10483a;
+      --mint: #bfe7d5;
+      --coral: #e26f51;
+      --gold: #d3a33f;
+      --blue: #5674a8;
+      --radius: 20px;
+      --shadow: 0 18px 50px rgba(18, 44, 36, .09);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 2%, rgba(191, 231, 213, .42), transparent 28rem),
+        var(--paper);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.22); border-radius: 99px; font-size: .78rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #6ee7b7; box-shadow: 0 0 0 5px rgba(110,231,183,.13); }
+
+    nav {
+      position: sticky; z-index: 10; top: 0;
+      background: rgba(244, 240, 231, .9); border-bottom: 1px solid rgba(21,34,31,.1); backdrop-filter: blur(14px);
+    }
+    .nav-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand span { color: var(--green); }
+    .nav-links { display: flex; gap: 24px; font-size: .86rem; font-weight: 700; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--green); }
+
+    header { padding: 86px 0 64px; }
+    .hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 42px; align-items: center; }
+    h1 { max-width: 790px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(3.2rem, 7.2vw, 6.6rem); font-weight: 500; line-height: .91; letter-spacing: -.065em; }
+    h1 em { color: var(--green); font-weight: inherit; }
+    .lede { max-width: 680px; margin: 28px 0 0; color: var(--muted); font-size: clamp(1.05rem, 1.7vw, 1.3rem); }
+    .hero-card { position: relative; overflow: hidden; min-height: 420px; padding: 30px; color: white; background: var(--ink); border-radius: 28px; box-shadow: var(--shadow); }
+    .hero-card::after { content: "𝄞"; position: absolute; right: -20px; bottom: -110px; color: rgba(191,231,213,.11); font-family: serif; font-size: 22rem; line-height: 1; }
+    .hero-card h2 { max-width: 360px; margin: 68px 0 16px; font: 500 2rem/1.08 Georgia, serif; }
+    .hero-card p { max-width: 390px; color: #cdd8d4; }
+    .hero-card .hero-meta { position: absolute; z-index: 1; bottom: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    section { padding: 72px 0; }
+    .section-head { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 32px; }
+    h2 { margin: 0; font: 500 clamp(2rem, 4vw, 3.6rem)/1.02 Georgia, serif; letter-spacing: -.035em; }
+    .section-head > p { max-width: 520px; margin: 0; color: var(--muted); }
+    .grid { display: grid; gap: 18px; }
+    .score-grid { grid-template-columns: repeat(4, 1fr); }
+    .card { padding: 25px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(28,47,40,.04); }
+    .metric { min-height: 194px; display: flex; flex-direction: column; justify-content: space-between; }
+    .metric strong { display: block; font: 500 clamp(2.2rem, 4vw, 3.6rem)/1 Georgia, serif; letter-spacing: -.05em; }
+    .metric span { color: var(--muted); font-size: .88rem; }
+    .metric.good { color: var(--green-dark); background: var(--mint); border-color: transparent; }
+    .metric.warn { color: white; background: var(--coral); border-color: transparent; }
+    .metric.good span, .metric.warn span { color: inherit; opacity: .82; }
+
+    .comparison { grid-template-columns: repeat(3, 1fr); }
+    .experiment { display: flex; flex-direction: column; gap: 22px; }
+    .experiment.featured { color: white; background: var(--green-dark); border-color: transparent; }
+    .experiment.featured .eyebrow, .experiment.featured dd { color: var(--mint); }
+    .experiment h3 { margin: 0; font: 500 1.55rem/1.08 Georgia, serif; }
+    .experiment dl { display: grid; grid-template-columns: 1fr auto; gap: 8px 18px; margin: 0; }
+    .experiment dt { color: var(--muted); font-size: .84rem; }
+    .experiment dd { margin: 0; color: var(--green-dark); font-weight: 850; }
+    .experiment.featured dt { color: #c4d4ce; }
+    .experiment p { margin: auto 0 0; color: var(--muted); font-size: .88rem; }
+    .experiment.featured p { color: #c4d4ce; }
+    .report-link { font-weight: 800; color: var(--green-dark); }
+    .report-link-wrap { margin-top: 22px; }
+
+    .scope { grid-template-columns: 1fr 1fr; }
+    .scope .card { padding: 34px; }
+    .scope h3, .step h3, .next h3 { margin: 0 0 14px; font-size: 1rem; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    .checks li { position: relative; padding: 9px 0 9px 27px; border-bottom: 1px solid var(--line); }
+    .checks li:last-child { border: 0; }
+    .checks li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 900; }
+    .deferred li::before { content: "→"; color: var(--coral); }
+
+    .pipeline { grid-template-columns: repeat(4, 1fr); counter-reset: pipeline; }
+    .step { position: relative; min-height: 220px; }
+    .step::before { counter-increment: pipeline; content: "0" counter(pipeline); display: block; margin-bottom: 42px; color: var(--green); font-size: .78rem; font-weight: 900; }
+    .step:not(:last-child)::after { content: "→"; position: absolute; right: -17px; top: 46%; z-index: 2; width: 32px; height: 32px; display: grid; place-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 50%; }
+    .step p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+    .roadmap { position: relative; }
+    .roadmap::before { content: ""; position: absolute; top: 15px; bottom: 15px; left: 20px; width: 2px; background: var(--line); }
+    .milestone { position: relative; display: grid; grid-template-columns: 62px 130px 1fr; gap: 20px; padding: 12px 0 32px; }
+    .milestone::before { content: ""; z-index: 1; width: 14px; height: 14px; margin: 4px 0 0 14px; background: var(--card); border: 3px solid var(--line); border-radius: 50%; }
+    .milestone.done::before { background: var(--green); border-color: var(--mint); }
+    .milestone.now::before { background: var(--coral); border-color: #f9c3b5; box-shadow: 0 0 0 6px rgba(226,111,81,.12); }
+    .milestone .phase { color: var(--muted); font-size: .8rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .milestone h3 { margin: 0 0 4px; font-size: 1rem; }
+    .milestone p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+    .training { color: white; background: var(--green-dark); }
+    .training .eyebrow { color: var(--mint); }
+    .training .section-head > p { color: #c4d4ce; }
+    .ladder { grid-template-columns: repeat(4, 1fr); }
+    .run { padding: 28px; border: 1px solid rgba(255,255,255,.16); border-radius: var(--radius); }
+    .run .number { color: var(--mint); font: 500 3rem/1 Georgia, serif; }
+    .run h3 { margin: 28px 0 8px; }
+    .run p { margin: 0; color: #c4d4ce; font-size: .9rem; }
+    .run.active { color: var(--ink); background: var(--mint); border-color: transparent; }
+    .run.active p { color: var(--green-dark); }
+    pre { overflow: auto; margin: 28px 0 0; padding: 22px; color: #d7eee4; background: #0b3027; border: 1px solid rgba(255,255,255,.1); border-radius: 14px; font: .83rem/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; }
+
+    .next-grid { grid-template-columns: 1.1fr .9fr; }
+    .next { padding: 32px; }
+    .priority { display: inline-block; margin-bottom: 26px; padding: 5px 9px; color: white; background: var(--coral); border-radius: 6px; font-size: .7rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .next ol { margin: 0; padding-left: 22px; }
+    .next li { padding: 7px 0; }
+    .definition { color: white; background: var(--blue); border-color: transparent; }
+    .definition p { color: #e7edf8; }
+    progress.bar { display: block; width: 100%; height: 8px; margin-top: 28px; overflow: hidden; appearance: none; color: white; background: rgba(255,255,255,.22); border: 0; border-radius: 99px; }
+    progress.bar::-webkit-progress-bar { background: rgba(255,255,255,.22); border-radius: 99px; }
+    progress.bar::-webkit-progress-value { background: white; border-radius: 99px; }
+    progress.bar::-moz-progress-bar { background: white; border-radius: 99px; }
+    .command-region { padding: 0; }
+    .spaced-grid { margin-top: 18px; }
+
+    .principles { grid-template-columns: repeat(3, 1fr); }
+    .principles strong { display: block; margin-bottom: 8px; }
+    .principles p { margin: 0; color: var(--muted); font-size: .92rem; }
+    .num { display: inline-grid; width: 34px; height: 34px; margin-bottom: 28px; place-items: center; color: var(--green-dark); background: var(--mint); border-radius: 50%; font-size: .78rem; font-weight: 900; }
+
+    .site-footer { padding: 42px 0; color: #bdcbc6; background: var(--ink); }
+    .site-footer .wrap { display: flex; justify-content: space-between; gap: 28px; align-items: center; }
+    .site-footer p { margin: 0; }
+    .site-footer small { color: #8fa09a; }
+
+    @media (max-width: 900px) {
+      .hero, .next-grid { grid-template-columns: 1fr; }
+      .hero-card { min-height: 350px; }
+      .score-grid, .pipeline, .ladder, .comparison { grid-template-columns: repeat(2, 1fr); }
+      .step:nth-child(2)::after { display: none; }
+      .principles { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .wrap { width: min(100% - 26px, 1160px); }
+      .nav-links { display: none; }
+      header { padding-top: 56px; }
+      .hero-card { min-height: 390px; }
+      section { padding: 54px 0; }
+      .section-head { display: block; }
+      .section-head > p { margin-top: 14px; }
+      .score-grid, .scope, .pipeline, .ladder, .comparison { grid-template-columns: 1fr; }
+      .step::after { display: none; }
+      .milestone { grid-template-columns: 46px 1fr; gap: 10px; }
+      .milestone .phase { grid-column: 2; }
+      .milestone > div:last-child { grid-column: 2; }
+      .roadmap::before { left: 20px; }
+      .site-footer .wrap { display: block; }
+      .site-footer small { display: block; margin-top: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <nav aria-label="Primary navigation">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top">AI <span>OMR</span></a>
+      <div class="nav-links">
+        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#results">Results</a><a href="#m8-1">M8.1</a><a href="#next">Next</a>
+      </div>
+    </div>
+  </nav>
+
+  <header id="top">
+    <div class="wrap hero">
+      <div>
+        <p class="eyebrow">Project brief · August 2026</p>
+        <h1>Teaching machines to <em>read music.</em></h1>
+        <p class="lede">A local-first plan to turn printed sheet music into compact notation tokens, validate the musical structure, and export dependable MusicXML.</p>
+      </div>
+      <aside class="hero-card" aria-label="Project objective">
+        <span class="pill"><i class="dot"></i> M8.1 measured</span>
+        <h2>Stable geometry. Recognition is still flat.</h2>
+        <p>M8.1 makes validation output independent of batch size, removes runaway decoding, and preserves legal scores. It does not beat the calibrated recognition control, so explicit header and count supervision is next.</p>
+        <div class="hero-meta"><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></div>
+      </aside>
+    </div>
+  </header>
+
+  <main>
+    <section id="status">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Deterministic output. Accuracy still gated.</h2></div><p>The M8.1 path is fixed-canvas, padding-aware, bounded, and reproducible. Recognition—not decoder validity or batch geometry—is now the remaining blocker.</p></div>
+        <div class="grid score-grid">
+          <article class="card metric good"><span>Validation batch sizes 1, 4, 8, and 32 with the same prediction digest</span><strong>4/4</strong></article>
+          <article class="card metric warn"><span>M8.1 FP32 test TER; calibrated historical control remains better at 0.6040</span><strong>0.6149</strong></article>
+          <article class="card metric good"><span>Output/reference length ratio with no seventh-repeat runaways</span><strong>1.049×</strong></article>
+          <article class="card metric"><span>Exact systems across the fixed 68-system test split</span><strong>0/68</strong></article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">V1 contract</p><h2>Solve one useful problem well.</h2></div><p>The first model is intentionally constrained. Every deferred feature is a deliberate reduction in ambiguity, data demand, and debugging time.</p></div>
+        <div class="grid scope">
+          <article class="card"><h3>Included now</h3><ul class="checks"><li>Printed Western notation</li><li>One staff/system, treble clef</li><li>Mostly monophonic melody</li><li>Whole through sixteenth notes and rests</li><li>Dots, common keys and time signatures</li><li>Accidentals, barlines and basic ties</li></ul></article>
+          <article class="card"><h3>Deferred on purpose</h3><ul class="checks deferred"><li>Grand staff and orchestral systems</li><li>Multiple independent voices</li><li>Dense chords and tuplets</li><li>Grace-note-heavy passages</li><li>Percussion and tablature</li><li>Handwritten or contemporary notation</li></ul></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">System design</p><h2>Pixels in. MusicXML out.</h2></div><p>The neural network predicts a compact musical language. Deterministic software then checks rhythm and syntax before generating verbose MusicXML.</p></div>
+        <div class="grid pipeline">
+          <article class="card step"><h3>Stabilize the page</h3><p>Normalize each system onto one fixed canvas and retain its true content width.</p></article>
+          <article class="card step"><h3>Read the staff</h3><p>Stride-16 Swin features use masked right padding and separable 2D positions.</p></article>
+          <article class="card step"><h3>Decode safely</h3><p>A Transformer predicts compact notation with legal EOS and corpus-safe loop guards.</p></article>
+          <article class="card step"><h3>Validate music</h3><p>Check grammar and rhythm, create the score object, then emit reviewable MusicXML.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>M8.1 closes geometry and reproducibility defects without claiming an accuracy win. The next comparison must improve recognition while holding that infrastructure fixed.</p></div>
+        <div class="roadmap">
+          <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation &amp; data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
+          <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering &amp; dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
+          <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model &amp; scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
+          <article class="milestone now"><span class="phase">M8.1</span><div><h3>Proprietary decoder accuracy</h3><p>Grammar, fixed-canvas alignment, deterministic evaluation, and bounded decoding pass. Explicit key, time, pickup, measure, and event supervision is next.</p></div></article>
+          <article class="milestone"><span class="phase">M9</span><div><h3>Robustness</h3><p>Camera, print and scan augmentation; wider notation variation; error analysis by symbol class.</p></div></article>
+          <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
+          <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot &amp; scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="training" id="training">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Training ladder</p><h2>Scale only after each gate passes.</h2></div><p>A larger run should answer a question the smaller run could not. This keeps the 4090 focused on learning—not hiding pipeline defects.</p></div>
+        <div class="grid ladder">
+          <article class="run"><span class="number">01</span><h3>One sample</h3><p>Prove tensor shapes, loss, forward pass and checkpoint write.</p></article>
+          <article class="run"><span class="number">02</span><h3>Fifty samples</h3><p>Overfit to 100% and prove the model can represent the task.</p></article>
+          <article class="run active"><span class="number">03</span><h3>607 clean</h3><p>Measure real generalization after filtering incompatible rhythm labels.</p></article>
+          <article class="run"><span class="number">04</span><h3>10K → full corpus</h3><p>Add variation, tune capacity, then move unchanged code to cloud GPUs.</p></article>
+        </div>
+        <section class="command-region" aria-label="Training commands"><pre><code># activate the local environment
+.\.venv\Scripts\Activate.ps1
+
+# rebuild the decoder-compatible manifest
+python -m ai_omr rhythm-clean-subset data\processed\manifest-v1.parquet `
+  --output data\processed\manifest-rhythm-clean.parquet
+
+# train the fixed-canvas RTX 4090 experiment
+python -m src.train --config configs\train_m8_1.yaml
+
+# run canonical FP32 autoregressive validation
+python -m src.evaluate --config configs\eval_m8_1.yaml `
+  --checkpoint checkpoints\m8-1\epoch-40.pt `
+  --split validation --batch-size 32 `
+  --output runs\m8-1-validation.json</code></pre></section>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M8 checkpoint comparison · 68 clean test systems</p><h2>A lower TER can still be collapse.</h2></div><p>All models use the same final autoregressive evaluator. Diversity and structural calibration explain what a single error rate conceals.</p></div>
+        <div class="grid comparison">
+          <article class="card experiment">
+            <div><p class="eyebrow">Original mixed labels</p><h3>Old 1K checkpoint</h3></div>
+            <dl><dt>Token error rate</dt><dd>1.1927</dd><dt>Unique outputs</dt><dd>8.8%</dd><dt>Dominant template</dt><dd>51.5%</dd><dt>Measure-count match</dt><dd>20.6%</dd></dl>
+            <p>Invalid labels and the old decoder produced repetitive, structurally weak output.</p>
+          </article>
+          <article class="card experiment">
+            <div><p class="eyebrow">Rhythm-clean · scratch</p><h3>Collapsed checkpoint</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.6975</dd><dt>Unique outputs</dt><dd>1.5%</dd><dt>Dominant template</dt><dd>100%</dd><dt>Measure-count match</dt><dd>4.4%</dd></dl>
+            <p>The attractive TER is false progress: every page receives the same short 22-token score.</p>
+          </article>
+          <article class="card experiment featured">
+            <div><p class="eyebrow">Historical M8 · pretrained Swin</p><h3>Image-conditioned checkpoint</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.8791</dd><dt>Unique outputs</dt><dd>95.6%</dd><dt>Dominant template</dt><dd>2.9%</dd><dt>Measure-count match</dt><dd>30.9%</dd></dl>
+            <p>65 distinct outputs prove the visual pathway is active. A 1.46 output/reference length ratio exposes over-segmentation.</p>
+          </article>
+        </div>
+        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M8_PROPRIETARY_DECODER.md">Read the historical M8 decoder report on GitHub →</a></p>
+      </div>
+    </section>
+
+    <section id="m8-1">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M8.1 alignment checkpoint · 68 clean test systems</p><h2>Infrastructure win. Accuracy still flat.</h2></div><p>The calibrated control corrects legal-EOS bias on the historical checkpoint. M8.1 retrains deterministic visual geometry; it improves measure counting but not recognition TER.</p></div>
+        <div class="grid comparison">
+          <article class="card experiment">
+            <div><p class="eyebrow">EOS-calibrated historical checkpoint</p><h3>Recognition control</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.6040</dd><dt>Pitch / duration TER</dt><dd>0.8104 / 0.4733</dd><dt>Length ratio</dt><dd>0.954</dd><dt>Measure match / MAE</dt><dd>27.9% / 1.103</dd><dt>Event match / MAE</dt><dd>14.7% / 5.235</dd><dt>Key / time accuracy</dt><dd>89.7% / 55.9%</dd></dl>
+            <p>Stopping calibration is a strong control, not learned visual improvement.</p>
+          </article>
+          <article class="card experiment featured">
+            <div><p class="eyebrow">Fixed canvas · stage 2 · FP32 evaluation</p><h3>M8.1 deterministic model</h3></div>
+            <dl><dt>Token error rate</dt><dd>0.6149</dd><dt>Pitch / duration TER</dt><dd>0.8191 / 0.4797</dd><dt>Length ratio</dt><dd>1.049</dd><dt>Measure match / MAE</dt><dd>32.4% / 1.000</dd><dt>Event match / MAE</dt><dd>11.8% / 5.471</dd><dt>Key / time accuracy</dt><dd>51.5% / 50.0%</dd></dl>
+            <p>66 distinct predictions, 100% valid termination, and no seventh-repeat runaways.</p>
+          </article>
+          <article class="card experiment">
+            <div><p class="eyebrow">Measured outcome</p><h3>What M8.1 actually proves</h3></div>
+            <dl><dt>Stable validation batches</dt><dd>1 / 4 / 8 / 32</dd><dt>Unique test outputs</dt><dd>97.1%</dd><dt>Valid / terminated</dt><dd>100% / 100%</dd><dt>Exact systems</dt><dd>0 / 68</dd></dl>
+            <p>Geometry and decoding are reproducible. Header, pitch, duration, and event recognition remain unsolved.</p>
+          </article>
+        </div>
+        <p class="report-link-wrap"><a class="report-link" href="https://github.com/datouwan/ai-omr/blob/agent/scalable-omr-training/docs/M8_1_VISUAL_ALIGNMENT.md">Read the full M8.1 report and reproduction commands on GitHub →</a></p>
+      </div>
+    </section>
+
+    <section id="next">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Supervise what the decoder must recognize and count.</h2></div><p>Keep M8.1 geometry fixed. The next experiment must improve header, pitch, duration, and count recognition rather than changing the evaluation pipeline again.</p></div>
+        <div class="grid next-grid">
+          <article class="card next"><span class="priority">Current priority</span><h3>Add explicit visual supervision</h3><ol><li>Predict key and time signature from masked visual memory.</li><li>Predict pickup presence and measure count.</li><li>Predict event count and train it jointly with token decoding.</li><li>Compare grammar-masked loss with the current inference-only grammar.</li><li>Create a fresh untouched final split before any M9 claim.</li></ol></article>
+          <article class="card next definition"><h3>Definition of done for M8</h3><p>Beat the 0.6040 calibrated control on a validation-selected policy, improve header and exact-count accuracy, retain deterministic validity, and produce the first exact systems.</p><progress class="bar" aria-label="Roadmap progress: milestone 8 in progress" value="76" max="100">76%</progress><p><small>Geometry and decoder correctness passed · recognition supervision active</small></p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="oemer-spike">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">M8 experiment · 5 systems</p><h2>Oemer is a useful teacher—not the engine.</h2></div><p>A bounded comparison converted Oemer MusicXML into our own score object and token vocabulary. Its strongest results justify borrowing rhythm ideas, while its crashes and latency rule out a direct replacement.</p></div>
+        <div class="grid score-grid">
+          <article class="card metric good"><span>Exact and musically valid transcriptions across all five attempts</span><strong>2/5</strong></article>
+          <article class="card metric"><span>Successful MusicXML conversions; two sparse systems crashed</span><strong>3/5</strong></article>
+          <article class="card metric"><span>Mean token error rate among the three successful conversions</span><strong>0.023</strong></article>
+          <article class="card metric warn"><span>Five-system CPU wall time with two concurrent workers</span><strong>9.9m</strong></article>
+        </div>
+        <div class="grid next-grid spaced-grid">
+          <article class="card next"><span class="priority">Decision</span><h3>Keep our proprietary decoder</h3><p>Use Oemer only as an optional benchmark, high-confidence pseudo-label source, and reference for staff, barline, beam, and beat-repair logic.</p></article>
+          <article class="card next definition"><h3>What transfers into M8</h3><p>Measure-duration bookkeeping, visual rhythm cues, and deterministic beat repair. Dataset and checkpoint rights still require separate commercial review.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Operating principles</p><h2>Accuracy has a provenance.</h2></div></div>
+        <div class="grid principles">
+          <article class="card"><span class="num">01</span><strong>Rights-clean by construction</strong><p>Train from public-domain or permissively licensed symbolic scores, self-render images, and retain source and license metadata.</p></article>
+          <article class="card"><span class="num">02</span><strong>Deterministic where possible</strong><p>Let the model recognize. Let explicit code enforce musical grammar, validate rhythm and generate MusicXML.</p></article>
+          <article class="card"><span class="num">03</span><strong>Measure real decoding</strong><p>Track token error rate, exact sequence match and musical validity on autoregressive output—not loss alone.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer"><div class="wrap"><p><strong>AI OMR</strong> · proprietary optical music recognition</p><small>Living plan · M8.1 updated August 8, 2026</small></div></footer>
+</body>
+</html>

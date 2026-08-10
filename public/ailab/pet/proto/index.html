@@ -109,6 +109,60 @@
     font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted);}
 
   :focus-visible{outline:2px solid var(--glow);outline-offset:2px;}
+
+  .list-toggle{
+    display:inline-flex;align-items:center;gap:.4rem;margin:1.4rem 0 0;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--glow);background:none;border:1px solid var(--line);border-radius:999px;
+    padding:.5rem 1rem;cursor:pointer;
+  }
+  .list-toggle:hover{border-color:var(--glow);}
+  .shop{display:none;margin-top:1.6rem;}
+  .shop.on{display:block;}
+  .shop-stage{margin-top:2rem;}
+  .shop-stage:first-child{margin-top:0;}
+  .shop-stage h4{
+    font-family:var(--sans);font-weight:700;font-size:.95rem;margin:0 0 .6rem;
+    color:var(--ink);
+  }
+  .shop-list{list-style:none;margin:0;padding:0;display:grid;gap:0;}
+  .shop-item{
+    display:flex;gap:.7rem;align-items:flex-start;padding:.6rem 0;
+    border-bottom:1px solid var(--line);
+  }
+  .shop-item:last-child{border-bottom:none;}
+  .shop-item input[type="checkbox"]{
+    margin-top:.3rem;width:1rem;height:1rem;accent-color:var(--glow);flex:none;cursor:pointer;
+  }
+  .shop-item label{flex:1;cursor:pointer;}
+  .shop-item.checked label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line);}
+  .shop-item .part-name{font-family:var(--sans);font-weight:600;color:var(--ink);}
+  .shop-item.checked .part-name{color:var(--muted);}
+  .shop-item .price{font-family:var(--mono);font-size:.8rem;color:var(--glow);white-space:nowrap;}
+  .shop-item.checked .price{color:var(--muted);}
+  .shop-item .meta{display:block;font-size:.85rem;color:var(--muted);margin-top:.1rem;}
+  .shop-item .spare{color:var(--ember);}
+  .shop-item.checked .spare{color:var(--muted);}
+  .shop-total{
+    margin:1.4rem 0 0;padding-top:1rem;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:.78rem;color:var(--muted);
+    display:grid;gap:.3rem;
+  }
+  .shop-total span{display:flex;justify-content:space-between;gap:1rem;}
+  .shop-total .cart{color:var(--ink);}
+  .shop-total .cart b{color:var(--glow);font-weight:400;}
+  .shop-actions{margin-top:1.4rem;display:flex;gap:.6rem;flex-wrap:wrap;}
+  .shop-actions button{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;
+    padding:.4rem .8rem;cursor:pointer;
+  }
+  .shop-actions button:hover{color:var(--ink);border-color:var(--ink);}
+  .shop-progress{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin:1rem 0 0;
+  }
+  .shop-progress b{color:var(--glow);font-weight:400;}
 </style>
 </head>
 <body>
@@ -126,7 +180,7 @@
   <header>
     <p class="kicker">Yura · prototype plan · July 2026</p>
     <h1>Build it at home first</h1>
-    <p class="dek">The Phase 0 puppet is dropped — there's a Moflin in the house setting the alive-ness bar already. Instead: a <strong>works-like prototype for ~$400–690 all-in</strong>, chassis ordered from an online print service, everything else off-the-shelf dev boards. Three stages, each with a kill-or-continue gate.</p>
+    <p class="dek">The Phase 0 puppet is dropped — there's a Moflin in the house setting the alive-ness bar already. Instead: a <strong>works-like prototype for ~$425–750 all-in</strong>, chassis ordered from an online print service, everything else off-the-shelf dev boards. Three stages, each with a kill-or-continue gate.</p>
   </header>
 
   <section>
@@ -140,9 +194,16 @@
     <p class="sec-label"><b>02</b> · Stages</p>
     <h2>Three builds, three gates</h2>
 
-    <div class="stagehead"><h3 style="margin:0;">Stage A — the presence blob</h3><span class="price">$247–429 · no wheels</span></div>
+    <div class="stagehead"><h3 style="margin:0;">Stage A — the presence blob</h3><span class="price">$253–457 · no wheels</span></div>
     <p class="gate"><b>Gate:</b> side-by-side with the Moflin, fronds + glow + warmth + purr read as a living creature — to someone who isn't Samuel.</p>
     <p style="margin-top:.7rem;">Printed shell under hand-sewn fur; fronds, glow, warmth, purr, breathing, touch, driven by a Raspberry Pi 5. Mood states react to touch and sound direction. This alone is a Moflin-class object <i>plus</i> the frond channel — comparable on day one.</p>
+    <p style="margin-top:.7rem;"><b>Warmth comes from the Pi, not a heater.</b> The Pi 5 dissipates 10–12 W under Whisper — the same order as the heater film it was going to sit beside — so the cooler's exhaust is ducted to a belly plate instead of being fought. That deletes the build's only genuinely dangerous subsystem, along with the ADC, the MOSFET and the thermal fuse. The trade: Pi heat tracks CPU load, not mood, so Stage A tests warmth as a baseline rather than as an expressive channel.</p>
+
+    <p style="margin-top:.7rem;">Fronds are <b>root-mounted 2-axis gimbals on sub-micro servos</b> — two per frond, because one servo cannot drive two axes. Sub-micro over MG90S is a fit decision: roughly a quarter the volume and mass at the highest point of a 680 g creature, and quieter, which the gate cares about. Tendon-driving the fronds from the body cavity is very likely the production answer — it fixes head volume, centre of gravity and noise together — but root-mount is far easier to debug on a first build, and Stage A tests aliveness, not manufacturability.</p>
+
+    <div class="stagehead"><h3 style="margin:0;">Stage A+ — active warmth</h3><span class="price">+$18–30 · deferred, built only on demand</span></div>
+    <p class="gate"><b>Trigger:</b> passive warmth doesn't read as alive at the Stage A gate — or warmth needs to become expressive rather than constant. <b>Then the gate:</b> the belly holds a steady, skin-safe temperature under fur, with the thermal fuse never being the thing that saves it.</p>
+    <p style="margin-top:.7rem;">Heater film, ADS1115, NTC, logic-level MOSFET and a 60 °C one-shot fuse. Worth keeping on the table rather than deleting: Moflin's specs list a temperature <i>sensor</i>, with no sign it produces heat — so warmth is one of the few channels where Yura wins outright rather than matching. Print order #1 reserves a flat cavity behind the belly plate, so this drops in without a reprint.</p>
 
     <div class="stagehead"><h3 style="margin:0;">Stage B — comprehension</h3><span class="price">+$35–40 · the whole bet</span></div>
     <p class="gate"><b>Gate:</b> a comprehension moment lands unprompted — it reacts to what was said, in body language only, and the observer notices without being told.</p>
@@ -165,28 +226,102 @@
     </div>
     <div class="tbl"><table>
       <tr><th>Stage</th><th>Subsystem</th><th>Part</th><th class="num">Est.</th></tr>
-      <tr><td>A</td><td>Main brain</td><td>Raspberry Pi 5 8 GB + PSU + SD <span class="dim">— cognition, vision, on-device STT</span></td><td class="num">$80–100</td></tr>
+      <tr><td>A</td><td>Main brain</td><td>Raspberry Pi 5 8 GB + PSU + SD <span class="dim">— cognition, vision, on-device STT; 27 W 5 V/5 A PSU class</span></td><td class="num">$80–100</td></tr>
+      <tr><td>A</td><td>Main brain</td><td>Pi 5 active cooler <span class="dim">— Whisper pegs all four cores; exhaust ducted to the belly plate is also the warmth channel</span></td><td class="num">$5–10</td></tr>
       <tr><td>A</td><td>Ears</td><td>ReSpeaker 2-Mics Pi HAT</td><td class="num">$15–25</td></tr>
-      <tr><td>A</td><td>Fronds</td><td>PCA9685 driver + 5× MG90S <span class="dim">— 4 fronds + breathing cam</span></td><td class="num">$21–29</td></tr>
-      <tr><td>A</td><td>Glow</td><td>WS2812B strip + 3 mm side-glow fiber <span class="dim">— inside the frond stems</span></td><td class="num">$16–26</td></tr>
+      <tr><td>A</td><td>Ears</td><td>Stacking GPIO header <span class="dim">— the HAT occupies the 40-pin header</span></td><td class="num">$3–6</td></tr>
+      <tr><td>A</td><td>Fronds</td><td>PCA9685 driver + 4× sub-micro servo <span class="dim">— 2 fronds × 2 axes, root-mounted gimbals</span></td><td class="num">$30–57</td></tr>
+      <tr><td>A</td><td>Breathing</td><td>1× MG90S <span class="dim">— breathing cam; stays MG90S, it sits deep in the body</span></td><td class="num">$3–4</td></tr>
+      <tr><td>A</td><td>Glow</td><td>APA102/SK9822 strip + 3 mm side-glow fiber <span class="dim">— SPI, not bit-banged timing; one addressable segment per frond</span></td><td class="num">$18–30</td></tr>
       <tr><td>A</td><td>Touch</td><td>MPR121 + conductive fabric zones <span class="dim">— under the pelt</span></td><td class="num">$14–25</td></tr>
-      <tr><td>A</td><td>Warmth</td><td>Heater film + NTC + MOSFET + 60 °C thermal fuse</td><td class="num">$12–20</td></tr>
-      <tr><td>A</td><td>Purr</td><td>Vibration motor + I2S amp + 40 mm speaker <span class="dim">— purr sound only, never speech</span></td><td class="num">$14–24</td></tr>
-      <tr><td>A</td><td>Power</td><td>USB-C PD power bank <span class="dim">— $0 if one's in the drawer</span></td><td class="num">$0–30</td></tr>
+      <tr><td>A</td><td>Purr</td><td>Vibration motor + driver + 40 mm speaker <span class="dim">— purr sound only, never speech; the mic HAT already carries the codec</span></td><td class="num">$10–20</td></tr>
+      <tr><td>A</td><td>Power</td><td>5 V/5 A supply — mains USB-C PD <span class="dim">— Stage A doesn't move, so it needn't run on a bank</span></td><td class="num">$0–30</td></tr>
       <tr><td>A</td><td>Pelt</td><td>Faux fur + zipper, hand-sewn <span class="dim">— the first zip-off pelt test</span></td><td class="num">$20–35</td></tr>
-      <tr><td>A</td><td>Body</td><td>Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A)</td><td class="num">$40–90</td></tr>
+      <tr><td>A</td><td>Body</td><td>Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A) + frond gimbals</td><td class="num">$40–90</td></tr>
       <tr><td>A</td><td>Build</td><td>Wiring, JST kit, standoffs, magnets</td><td class="num">$15–25</td></tr>
-      <tr class="hl"><td class="us">A</td><td class="us" colspan="2">Stage A total — a livable creature, no wheels</td><td class="num us">$247–429</td></tr>
+      <tr class="hl"><td class="us">A</td><td class="us" colspan="2">Stage A total — a livable creature, no wheels</td><td class="num us">$253–457</td></tr>
+      <tr><td>A+</td><td>Warmth</td><td>Heater film + ADS1115 + NTC + logic-level MOSFET + 60 °C thermal fuse <span class="dim">— deferred; only if passive warmth doesn't land</span></td><td class="num">$18–30</td></tr>
+      <tr class="hl"><td class="us">A+</td><td class="us" colspan="2">Stage A+ total — active warmth</td><td class="num us">$18–30</td></tr>
       <tr><td>B</td><td>Eyes</td><td>Pi Camera Module 3 Wide <span class="dim">— the camera eye of the mono-split pair</span></td><td class="num">$35–40</td></tr>
-      <tr class="hl"><td class="us">B</td><td class="us" colspan="2">Stage B total — comprehension (plus ~$5–15/mo API)</td><td class="num us">$35–40</td></tr>
+      <tr><td>B</td><td>Eyes</td><td>Pi 5 camera cable (22-pin) <span class="dim">— the module ships with the wrong one for a Pi 5</span></td><td class="num">$3–6</td></tr>
+      <tr class="hl"><td class="us">B</td><td class="us" colspan="2">Stage B total — comprehension (plus ~$5–15/mo API)</td><td class="num us">$38–46</td></tr>
       <tr><td>C</td><td>Instinct MCU</td><td>ESP32 devkit <span class="dim">— reflexes + motor safety, the two-brain split in miniature</span></td><td class="num">$6–10</td></tr>
       <tr><td>C</td><td>Drive</td><td>3× N20 encoder motors + 2× DRV8833 + 3× 48 mm omniwheels</td><td class="num">$31–57</td></tr>
       <tr><td>C</td><td>Eyes</td><td>VL53L5CX ToF breakout <span class="dim">— the depth eye</span></td><td class="num">$20–30</td></tr>
       <tr><td>C</td><td>Power</td><td>2× 18650 + 2S BMS + buck <span class="dim">— untethered at last</span></td><td class="num">$18–30</td></tr>
       <tr><td>C</td><td>Body</td><td>Print order #2 — drive base + dock funnel</td><td class="num">$40–90</td></tr>
       <tr class="hl"><td class="us">C</td><td class="us" colspan="2">Stage C total — it glides</td><td class="num us">$115–217</td></tr>
-      <tr class="hl"><td class="us">Σ</td><td class="us" colspan="2"><b>All-in, one-time</b></td><td class="num us"><b>$397–686</b></td></tr>
+      <tr class="hl"><td class="us">Σ</td><td class="us" colspan="2"><b>All-in, one-time</b></td><td class="num us"><b>$424–750</b></td></tr>
     </table></div>
+
+    <button type="button" class="list-toggle" id="shopToggle" aria-expanded="false" aria-controls="shopList">Open as shopping list</button>
+
+    <div class="shop" id="shopList">
+      <p class="note">Same parts, checkable — for actually ordering. <b>Quantities here are order quantities, not build quantities:</b> where the two differ, the extra units are spares and the reason is spelled out on the line. The kit table above prices the build; the cart total below adds the spares on top. Checks are saved in this browser only (nothing sent anywhere). Generated from <code style="font-family:var(--mono);font-size:.85em;">parts.json</code>: run <code style="font-family:var(--mono);font-size:.85em;">node tools/proto-kit/kit.js --shopping-list</code> in the yura repo for a plain-text or <code style="font-family:var(--mono);font-size:.85em;">--json</code> version.</p>
+
+      <div class="shop-stage">
+        <h4>Stage A — Presence blob</h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-main-brain"><label for="shop-main-brain"><span class="part-name">Raspberry Pi 5 8 GB + PSU + SD</span> <span class="price">$80–100</span><span class="meta">Main brain — cognition, vision, on-device Whisper STT. PSU must be the 27 W 5 V/5 A class, not a generic 5 V/3 A brick · Raspberry Pi reseller / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-cooler"><label for="shop-cooler"><span class="part-name">Pi 5 active cooler</span> <span class="price">$5–10</span><span class="meta">Main brain — Whisper pegs all four cores and the Pi 5 throttles without it. Duct its exhaust to the belly plate: 10–12 W of waste heat becomes the warmth channel instead of a problem to fight · Raspberry Pi reseller / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-mics"><label for="shop-mics"><span class="part-name">ReSpeaker 2-Mics Pi HAT</span> <span class="price">$15–25</span><span class="meta">Ears — sound direction + wake. Verify the driver builds on your Pi 5 kernel before committing; this board has been the flakiest part of the stack · Seeed Studio / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-gpio-riser"><label for="shop-gpio-riser"><span class="part-name">Stacking GPIO header / breakout</span> <span class="price">$3–6</span><span class="meta">Ears — the HAT occupies the 40-pin header, and I²C, the LED data line, the heater MOSFET and the purr driver all still need pins. Buy the tall one: it also has to clear the active cooler · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-servo-driver"><label for="shop-servo-driver"><span class="part-name">PCA9685 16-ch servo driver</span> <span class="price">$6–9</span><span class="meta">Fronds — off-SoC servo timing. Feed V+ from its own 5 V rail, never the Pi's 5 V pin: servo inrush browns out the SoC · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-frond-servos"><label for="shop-frond-servos"><span class="part-name">6× sub-micro servo (4–5 g class)</span> <span class="price">$24–48 <span class="spare">+$12–24 spares</span></span><span class="meta">Fronds — build uses 4 (2 fronds × 2 axes; one servo can't drive two axes); order 6 for spares. Sub-micro over MG90S is a fit call: ~¼ the volume and mass, and quieter · Amazon / hobby RC supplier</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-breath-servo"><label for="shop-breath-servo"><span class="part-name">3× MG90S micro servo</span> <span class="price">$3–4 <span class="spare">+$6–8 spares</span></span><span class="meta">Breathing — build uses 1; stays MG90S because it sits deep in the body where volume is free. Order 3: highest duty cycle in the build, it runs whenever Yura is awake · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-glow-leds"><label for="shop-glow-leds"><span class="part-name">APA102 / SK9822 strip, 1 m / 60 LED</span> <span class="price">$10–16</span><span class="meta">Glow — SPI clock+data, not bit-banged timing, which sidesteps the Pi 5 RP1 breakage that stops the usual WS2812B libraries. Give each frond its own addressable segment · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-glow-fiber"><label for="shop-glow-fiber"><span class="part-name">3 mm side-glow fiber optic, 2 m</span> <span class="price">$8–14</span><span class="meta">Glow — inside the frond stems; leave a service loop at the root so the gimbal can move without stressing the fiber · Amazon / craft &amp; lighting supplier</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-touch-ic"><label for="shop-touch-ic"><span class="part-name">MPR121 capacitive breakout</span> <span class="price">$6–10</span><span class="meta">Touch — I²C 0x5A, no clash with the PCA9685 at 0x40 · Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-touch-fabric"><label for="shop-touch-fabric"><span class="part-name">Conductive fabric + thread zones</span> <span class="price">$8–15</span><span class="meta">Touch — under the pelt · Adafruit / fabric store</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-purr"><label for="shop-purr"><span class="part-name">ERM/LRA vibration motor + driver</span> <span class="price">$6–12</span><span class="meta">Purr — needs its own driver; a bare motor can't hang off a GPIO pin · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-audio"><label for="shop-audio"><span class="part-name">40 mm speaker</span> <span class="price">$4–8</span><span class="meta">Purr — sound layer only, Yura never speaks. The MAX98357 was dropped: the mic HAT already carries a codec and speaker out, and both want the Pi's single I²S bus. Verify your HAT revision has the speaker connector · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-power-a"><label for="shop-power-a"><span class="part-name">5 V/5 A supply — mains USB-C PD</span> <span class="price">$0–30</span><span class="meta">Power — $0 if a suitable one is in the drawer. Stage A doesn't move, so mains is simpler and unlimited; most PD banks only give 5 V/3 A and many auto-shut-off at the low draw an idle pet presents · Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-pelt"><label for="shop-pelt"><span class="part-name">Faux fur + zipper + notions, hand-sewn</span> <span class="price">$20–35</span><span class="meta">Pelt — the first zip-off pelt test · fabric store / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-print-a"><label for="shop-print-a"><span class="part-name">Print order #1 — shell (MJF PA12) + frond stems (TPU 95A) + gimbals</span> <span class="price">$40–90</span><span class="meta">Body — batch variants into one order, shipping dominates. Hold this one: there is no CAD yet, and the stack layout has to be resolved first · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-misc"><label for="shop-misc"><span class="part-name">Wiring, JST kit, standoffs, magnets, heat-shrink</span> <span class="price">$15–25</span><span class="meta">Build · Amazon</span></label></li>
+        </ul>
+      </div>
+
+      <div class="shop-stage">
+        <h4>Stage A+ — Active warmth <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted);font-weight:400;">· don't order unless passive warmth fails</span></h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-warmth"><label for="shop-warmth"><span class="part-name">Heater film + ADS1115 + NTC + logic-level MOSFET + 60 °C thermal fuse</span> <span class="price">$18–30</span><span class="meta">Warmth — deferred: Stage A takes warmth from ducted Pi exhaust instead. If built, the thermal fuse in series is non-negotiable under fur, the Pi has no ADC so the NTC needs the ADS1115, and the MOSFET must be logic-level to switch off 3.3 V GPIO · Amazon / Digi-Key</span></label></li>
+        </ul>
+      </div>
+
+      <div class="shop-stage">
+        <h4>Stage B — Comprehension</h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-eye-cam"><label for="shop-eye-cam"><span class="part-name">Pi Camera Module 3 Wide</span> <span class="price">$35–40</span><span class="meta">Eyes — the camera eye of the mono-split pair · Raspberry Pi reseller / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-cam-cable"><label for="shop-cam-cable"><span class="part-name">Pi 5 camera cable (22-pin to 15-pin)</span> <span class="price">$3–6</span><span class="meta">Eyes — the Pi 5 uses a narrower connector than the module ships for; without this the camera simply will not plug in · Raspberry Pi reseller / Adafruit</span></label></li>
+        </ul>
+      </div>
+
+      <div class="shop-stage">
+        <h4>Stage C — Glide</h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-reflex-mcu"><label for="shop-reflex-mcu"><span class="part-name">ESP32 devkit</span> <span class="price">$6–10</span><span class="meta">Instinct MCU — reflexes + motor safety, mirrors the two-brain split · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-drive"><label for="shop-drive"><span class="part-name">3× N20 gear motor w/ encoder</span> <span class="price">$15–24</span><span class="meta">Drive · Pololu / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-motor-driver"><label for="shop-motor-driver"><span class="part-name">2× DRV8833 dual driver</span> <span class="price">$4–8</span><span class="meta">Drive · Adafruit / Pololu</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-wheels"><label for="shop-wheels"><span class="part-name">3× 48 mm omniwheel</span> <span class="price">$12–25</span><span class="meta">Drive · Amazon / robotics supplier</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-tof"><label for="shop-tof"><span class="part-name">VL53L5CX ToF breakout</span> <span class="price">$20–30</span><span class="meta">Eyes — the depth eye of the mono-split pair · Adafruit / SparkFun</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-power-c"><label for="shop-power-c"><span class="part-name">2× 18650 + holder + 2S BMS + buck</span> <span class="price">$18–30</span><span class="meta">Power — untethered at last · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-print-c"><label for="shop-print-c"><span class="part-name">Print order #2 — drive base + dock funnel</span> <span class="price">$40–90</span><span class="meta">Body · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
+        </ul>
+      </div>
+
+      <div class="shop-total">
+        <span>Build cost <span class="num">$424–750</span></span>
+        <span>Spares <span class="num">+$18–32</span></span>
+        <span class="cart">Cart total <b class="num">$442–782</b></span>
+      </div>
+
+      <p class="shop-progress" id="shopProgress"></p>
+      <div class="shop-actions">
+        <button type="button" id="shopReset">Reset checks</button>
+        <button type="button" id="shopPrint">Print</button>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -215,5 +350,58 @@
   <p class="foot">YURA · prototype plan v0.1 · July 2026 · <a href="/ailab/pet/">back to concept →</a></p>
 </div>
 
+<script>
+(function(){
+  // v4: warmth moved to the deferred A+ stage. Bumping the key clears
+  // stale checks rather than silently re-attaching them to parts that
+  // have changed stage or meaning.
+  var STORE_KEY = 'yura-proto-shopping-list-v4';
+  var toggle = document.getElementById('shopToggle');
+  var list = document.getElementById('shopList');
+  var items = Array.prototype.slice.call(list.querySelectorAll('.shop-item'));
+  var progress = document.getElementById('shopProgress');
+  var resetBtn = document.getElementById('shopReset');
+  var printBtn = document.getElementById('shopPrint');
+
+  var checked;
+  try { checked = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch (e) { checked = {}; }
+
+  function updateProgress(){
+    var done = items.filter(function(li){ return li.classList.contains('checked'); }).length;
+    progress.innerHTML = '<b>' + done + ' / ' + items.length + '</b> checked off';
+  }
+
+  items.forEach(function(li){
+    var box = li.querySelector('input[type="checkbox"]');
+    if (checked[box.id]) { box.checked = true; li.classList.add('checked'); }
+    box.addEventListener('change', function(){
+      li.classList.toggle('checked', box.checked);
+      if (box.checked) checked[box.id] = true; else delete checked[box.id];
+      localStorage.setItem(STORE_KEY, JSON.stringify(checked));
+      updateProgress();
+    });
+  });
+  updateProgress();
+
+  toggle.addEventListener('click', function(){
+    var open = list.classList.toggle('on');
+    toggle.setAttribute('aria-expanded', open);
+    toggle.textContent = open ? 'Hide shopping list' : 'Open as shopping list';
+  });
+
+  resetBtn.addEventListener('click', function(){
+    checked = {};
+    localStorage.removeItem(STORE_KEY);
+    items.forEach(function(li){
+      li.classList.remove('checked');
+      li.querySelector('input[type="checkbox"]').checked = false;
+    });
+    updateProgress();
+  });
+
+  printBtn.addEventListener('click', function(){ window.print(); });
+})();
+</script>
 </body>
 </html>
