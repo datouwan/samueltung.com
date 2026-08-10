@@ -198,7 +198,7 @@
       <aside class="hero-card" aria-label="Project objective">
         <span class="pill"><i class="dot"></i> M9.3 real-photo failures classified</span>
         <h2>The next recognition defect is now measurable.</h2>
-        <p>Key-aware sampling improves real-photo TER to 0.1814. Direct 2× altered-token weighting raises synthetic emission but regresses real-photo TER to 0.2008, so it is rejected; larger key-aware rendered data is next.</p>
+        <p>A 4,500-system key-aware corpus improves real-photo pitch TER to 0.3585 and exact recognition to 10/100, but altered-note transfer remains weak at 3/276. Scale helped structure, not the targeted accidental defect.</p>
         <div class="hero-meta"><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></div>
       </aside>
     </div>
@@ -248,7 +248,7 @@
           <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model &amp; scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
           <article class="milestone done"><span class="phase">M8.5</span><div><h3>Clean recognition gate</h3><p>27,039-system development, 579 exact validation systems, and exact systems on a token-disjoint independent PDMX final.</p></div></article>
           <article class="milestone done"><span class="phase">M9.1–2</span><div><h3>Camera/print robustness</h3><p>Moderate augmentation transfers to a sealed 50-system iPhone gold set: 0.1496 TER, 2 exact systems, and 100% valid outputs.</p></div></article>
-          <article class="milestone now"><span class="phase">M9.3</span><div><h3>Real-photo development</h3><p>Sampling epoch 32 remains the lead. Direct 2× loss weighting is rejected after failing to transfer; the next experiment scales genuinely key-aware rendered notation.</p></div></article>
+          <article class="milestone now"><span class="phase">M9.3</span><div><h3>Real-photo development</h3><p>The scaled checkpoint reaches 0.1818 TER, 0.3585 pitch TER, and 10/100 exact. It improves structure but not altered-note transfer; next isolate key-signature recognition from printed-accidental recognition.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
           <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot &amp; scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
         </div>
@@ -371,8 +371,8 @@ python -m src.evaluate --config configs\train_camera_moderate.yaml `
       <div class="wrap">
         <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Build the real-photo development loop.</h2></div><p>The gold result is frozen. The next dataset is deliberately separate, inspectable, and available for error analysis and training decisions.</p></div>
         <div class="grid next-grid">
-          <article class="card next"><span class="priority">Current priority</span><h3>Scale key-aware rendered data</h3><ol><li>Keep key-aware sampling epoch 32 as the development control.</li><li>Generate substantially more notation where key, printed accidentals, and pitch tokens agree.</li><li>Pair clean and camera views without changing the V1 vocabulary.</li><li>Compare all three development domains in one gate.</li><li>Require material real-photo altered-output and TER gains together.</li></ol></article>
-          <article class="card next definition"><h3>Definition of done for M9.3</h3><p>Beat the 0.1880 development TER and 0.3702 pitch TER while improving 69% event-count accuracy, preserving 100% validity and termination, and leaving M9.2 gold untouched.</p><progress class="bar" aria-label="Roadmap progress: milestone 9 in progress" value="87" max="100">87%</progress><p><small>M8 clean complete · M9.2 gold sealed · M9.3 baseline and failure classification complete</small></p></article>
+          <article class="card next"><span class="priority">Current priority</span><h3>Separate the altered-pitch visual tasks</h3><ol><li>Keep scaled epoch 32 as the structural control and sampling epoch 32 as the altered-emission control.</li><li>Measure key-signature recognition independently from local printed accidentals.</li><li>Build balanced hard examples for the failing visual distinction.</li><li>Keep the V1 vocabulary and training objective stable until the defect is localized.</li><li>Require altered-output and TER gains together on M9.3 development.</li></ol></article>
+          <article class="card next definition"><h3>Definition of done for M9.3</h3><p>Retain the new 0.3585 pitch TER and 10/100 exact-system gains while materially exceeding 3/276 altered outputs, improving 69% event-count accuracy, preserving 100% validity and termination, and leaving M9.2 gold untouched.</p><progress class="bar" aria-label="Roadmap progress: milestone 9 in progress" value="89" max="100">89%</progress><p><small>M8 clean complete · M9.2 gold sealed · M9.3 scaled key-aware experiment measured</small></p></article>
         </div>
       </div>
     </section>
@@ -381,7 +381,7 @@ python -m src.evaluate --config configs\train_camera_moderate.yaml `
       <div class="wrap">
         <div class="section-head"><div><p class="eyebrow">Two-track development</p><h2>Recognition and score semantics advance in parallel.</h2></div><p>Track A proves the AI can read a score. Track B proves the product can represent and faithfully re-render richer notation. They converge only after recognition is reliable.</p></div>
         <div class="grid scope">
-          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>Real-photo gold remains sealed at 0.1496 TER</li><li>Lead development TER: 0.1814, 7/100 exact</li><li>Clean / camera TER improve to 0.0581 / 0.0596</li><li>2× loss weighting rejected at 0.2008 real-photo TER</li><li>Next: larger key-aware rendered corpus</li></ul></article>
+          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>Real-photo gold remains sealed at 0.1496 TER</li><li>Scaled development result: 0.1818 TER, 0.3585 pitch TER</li><li>Exact systems improve from 6/100 to 10/100</li><li>Altered-note transfer remains weak at 3/276</li><li>Next: separate key signatures from printed accidentals</li></ul></article>
           <article class="card"><p class="eyebrow">Track B · Score semantics</p><h3>Score IR → faithful notation</h3><ul class="checks"><li>Chord and violin double-stop representation</li><li>Explicit beams, levels, and hooks</li><li>Displayed accidental preserved separately</li><li>Per-note fingering in chords</li><li>MusicXML → Verovio round trip proven</li></ul><p class="report-link-wrap"><a class="report-link" href="/ai-omr/score-ir/">Read the Score IR v2 architecture note →</a></p></article>
         </div>
       </div>
