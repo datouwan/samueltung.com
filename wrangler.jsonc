@@ -15,16 +15,13 @@
 
   // SECRETS — set each with `npx wrangler secret put <NAME>`
   // (and add to .dev.vars, git-ignored, for local dev):
-  //   FOOTBALL_DATA_TOKEN  — live World Cup data feed
   //   SITE_PASSWORD        — password gating the whole site except /worldcup
+  // (FOOTBALL_DATA_TOKEN / APIFOOTBALL_KEY are no longer used — the World Cup
+  //  feature is an archive since the 2026 tournament ended.)
 
   // ── Custom domains ──
   "routes": [
     { "pattern": "samueltung.com",     "custom_domain": true },
     { "pattern": "www.samueltung.com", "custom_domain": true }
-  ],
-
-  // Keep api-football squads warm in cache (every 6h) so the Squads tab always
-  // serves real player photos instead of the photo-less Wikipedia fallback.
-  "triggers": { "crons": ["0 */6 * * *"] }
+  ]
 }

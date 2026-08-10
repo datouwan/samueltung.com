@@ -38,8 +38,11 @@
     <button id="themeBtn" title="Toggle light / dark" aria-label="Toggle light or dark theme">🌙</button>
   </div>
   <p class="role" data-i18n="role">FIFA World Cup 2026 · USA · Canada · Mexico</p>
-  <h1><span data-i18n="title">Map, Groups &amp; Live Scores</span><span class="sub" data-i18n="sub">48 teams · 12 groups · live tables</span></h1>
+  <h1><span data-i18n="title">Map, Groups &amp; Final Results</span><span class="sub" data-i18n="sub">48 teams · 104 matches · 2026 archive</span></h1>
 </header>
+
+<!-- 2026 podium — filled by renderPodium() once the archived feed loads -->
+<div id="podium" hidden></div>
 
 <div class="livewrap">
   <div id="liveBar" class="idle"><span class="tag"><span class="dot"></span><span data-i18n="loading_live">Loading live scores…</span></span></div>
@@ -572,6 +575,26 @@ TEAMS.forEach(([name,iso])=> isoByCountry[norm(name)] = iso);
 function countryFlag(nat){ const iso = isoByCountry[norm(nat)]; return iso ? `https://flagcdn.com/w40/${iso}.png` : ''; }
 const esc = s => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const liveBar = document.getElementById('liveBar');
+// Archive mode (tournament over): set from the feed's `archived` flag. Declared
+// up here so everything below (renderLive, rerenderI18n) can read it safely.
+let archivedMode = false, lastPodium = null, pollTimer = null;
+
+/* ───────── 2026 podium (archive) ───────── */
+function renderPodium(p){
+  const el = document.getElementById('podium');
+  if(!p || !el) return;
+  const step = (s, cls, medal, lbl) =>
+    `<div class="pod-step ${cls}"><span class="pod-medal">${medal}</span>`
+    + (s.crest ? `<img class="pod-crest" src="${esc(s.crest)}" alt="">` : '')
+    + `<span class="pod-team">${esc(tn(s.name))}</span><span class="pod-lbl">${esc(lbl)}</span></div>`;
+  const line = (lbl, m) =>
+    `<span class="pod-line"><b>${esc(lbl)}</b> ${esc(tn(m.home))} ${m.hs}–${m.as} ${esc(tn(m.away))}`
+    + (m.aet ? ` <i>${esc(t('pod_aet'))}</i>` : '') + `</span>`;
+  el.innerHTML =
+    `<div class="pod-row">${step(p.runnerUp,'p2','🥈',t('pod_2'))}${step(p.champion,'p1','🏆',t('pod_1'))}${step(p.third,'p3','🥉',t('pod_3'))}</div>`
+    + `<div class="pod-lines">${line(t('pod_final')+':', p.final)}${line(t('pod_3p')+':', p.thirdMatch)}</div>`;
+  el.hidden = false;
+}
 const finalsBar = document.getElementById('finalsBar');
 const groupsEl = document.getElementById('groups');
 const updEl = document.getElementById('updated');
@@ -636,6 +659,9 @@ function finalCard(m){
 function renderLive(live, matches){
   const finished = (matches||[]).filter(m => m.status==='FINISHED')
     .sort((a,b)=> new Date(b.utcDate)-new Date(a.utcDate));
+  // Archive: the feed carries all 104 finished games — the strip below the map
+  // only shows the last 8 (quarter-finals onward); the calendar has the rest.
+  if(archivedMode && finished.length > 8) finished.length = 8;
   // all games sharing the earliest upcoming kickoff (often 2+ start together)
   const upcoming = (matches||[]).filter(m => m.status==='TIMED' || m.status==='SCHEDULED')
     .sort((a,b)=> new Date(a.utcDate)-new Date(b.utcDate));
@@ -974,6 +1000,7 @@ langSel.value = lang;
 function rerenderI18n(){
   applyStaticI18n();
   try{
+    if(archivedMode && lastPodium){ renderPodium(lastPodium); updEl.textContent = t('arch_note'); }
     relabelMarkers();
     renderLive(currentLive||[], lastMatches||[]);
     renderGroups(lastGroups||[], currentLive||[]);
@@ -2000,6 +2027,14 @@ async function refresh(){
       groupsEl.innerHTML = `<div class="state-note">Couldn’t load standings right now (<code>${esc(data.error)}</code>). Will retry automatically.</div>`;
       return;
     }
+    archivedMode = !!data.archived;
+    if(archivedMode){
+      if(data.podium) lastPodium = data.podium;
+      renderPodium(lastPodium);
+      // podium replaces the live-score bar; kill the 15s poll — the data is frozen
+      const lw = document.querySelector('.livewrap'); if(lw) lw.style.display = 'none';
+      if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+    }
     goalCheck(data.live||[]);
     renderLive(data.live||[], data.matches||[]);
     renderGroups(data.groups||[], data.live||[]);
@@ -2012,7 +2047,9 @@ async function refresh(){
     renderMapLive(data.live||[]);
     renderStats(data.scorers||[]);
     renderCountry(data.groups||[]);
-    if(data.updated){
+    if(archivedMode){
+      updEl.textContent = t('arch_note');
+    } else if(data.updated){
       const t = new Date(data.updated).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
       const src = data.source==='api-football' ? ' · live via api-football'
                 : (data.live&&data.live.length ? ' · live (delayed feed)' : '');
@@ -2031,7 +2068,8 @@ async function refresh(){
   }
 }
 refresh();
-setInterval(refresh, 15000); // poll every 15s (Pro — ~matches api-football's live refresh)
+// Poll every 15s while live; the first archived response clears this timer.
+pollTimer = setInterval(refresh, 15000);
 loadRecords(); // Wikipedia all-time records (once)
 </script>
 </body>
