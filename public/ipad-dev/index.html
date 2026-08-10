@@ -56,6 +56,7 @@
       <tr><td>Editor</td><td>VS Code Remote Tunnel + vscode.dev</td><td>Full editor and integrated terminal in Safari — often the nicest iPad experience.</td></tr>
       <tr><td>GUI fallback</td><td>RDP + Windows App</td><td>For Audiveris, score renders, anything graphical. Only over the tailnet.</td></tr>
       <tr><td>Zero-setup</td><td>claude.ai/code</td><td>Cloud sessions against GitHub repos, straight from Safari. Complement, not the main path — it can't touch the home machine.</td></tr>
+      <tr><td class="muted">Next</td><td class="muted">GL.iNet Flint 3</td><td class="muted">Always-on WireGuard front door + Wake-on-LAN, so the PC can sleep. See the last section.</td></tr>
     </table>
 
     <h2>One-time PC setup</h2>
@@ -122,6 +123,17 @@ claude --resume       # or pick from recent sessions</code></pre>
       <tr><td>VaTutor scans fall back to AI reader</td><td>Engine down — see <code>~\.vatutor-omr-server.log</code>, then log on once so the Startup scripts fire.</td></tr>
       <tr><td>vscode.dev can't find the machine</td><td><code>code tunnel service log</code> on the PC; reinstall with <code>code tunnel service install</code>.</td></tr>
     </table>
+
+    <h2>Next: the Flint 3 front door</h2>
+    <p class="muted">Not installed yet — the GL-BE9300 is still in its box. What it changes when it goes in:</p>
+    <p>Today every remote path needs the PC awake. With the router as the VPN endpoint, the always-on
+    device is the router — the PC can sleep and be woken on demand. The upgrade, when ready:</p>
+    <ol class="steps">
+      <li><strong>IP Passthrough</strong> on the AT&amp;T gateway (<code>192.168.1.254</code> → Firewall → IP Passthrough) to the Flint 3's WAN; turn off the gateway's WiFi and let the Flint be the real router. Give the PC a static DHCP lease.</li>
+      <li><strong>WireGuard Server</strong> in the GL Admin Panel, plus GL's built-in DDNS (<code>glddns.com</code>) as the stable endpoint. iPad uses the native WireGuard app (QR-code import, on-demand mode). The BE9300 does ~900&nbsp;Mbps WireGuard.</li>
+      <li><strong>Wake-on-LAN</strong>: enable "Wake on Magic Packet" in the PC BIOS and NIC properties; wake from the iPad via the router admin panel, a WOL plugin, or the GoodCloud app. Then RDP in and log on — that logon also fires the Cloudflare tunnel startup scripts.</li>
+      <li><strong>Then simplify</strong>: PC-side Tailscale becomes optional (keep as fallback, or move Tailscale onto the router as a subnet router). SSH, RDP, and the VS Code tunnel are unchanged — address the PC by its LAN IP.</li>
+    </ol>
 
     <p class="muted" style="margin-top:40px">Last updated August 2026 · lives at <code>public/ipad-dev/</code> in the samueltung.com repo.</p>
   </main>
