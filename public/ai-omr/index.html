@@ -198,7 +198,7 @@
       <aside class="hero-card" aria-label="Project objective">
         <span class="pill"><i class="dot"></i> M9.3 real-photo failures classified</span>
         <h2>The next recognition defect is now measurable.</h2>
-        <p>A low-dose targeted-key mixture advances real-photo TER to 0.1632, pitch TER to 0.3223, 12/100 exact systems, and 61/276 altered outputs. Clean TER rises to 0.0762, so the next step must recover cross-domain balance.</p>
+        <p>A low-dose targeted-key mixture leads at 0.1632 real-photo TER and 0.3223 pitch TER. A same-dose −3-only run is rejected before real evaluation because clean TER remains 0.0754; reduced weighting is next.</p>
         <div class="hero-meta"><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></div>
       </aside>
     </div>
@@ -248,7 +248,7 @@
           <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model &amp; scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
           <article class="milestone done"><span class="phase">M8.5</span><div><h3>Clean recognition gate</h3><p>27,039-system development, 579 exact validation systems, and exact systems on a token-disjoint independent PDMX final.</p></div></article>
           <article class="milestone done"><span class="phase">M9.1–2</span><div><h3>Camera/print robustness</h3><p>Moderate augmentation transfers to a sealed 50-system iPhone gold set: 0.1496 TER, 2 exact systems, and 100% valid outputs.</p></div></article>
-          <article class="milestone now"><span class="phase">M9.3</span><div><h3>Real-photo development</h3><p>Key analysis concentrates 60/64 strict misses in −3, −2, and +3. The low-dose targeted run reaches 0.1632 TER, 0.3223 pitch TER, 12/100 exact, 71% event counts, and 26/73 strict key-default notes; the full dose is rejected for clean regression.</p></div></article>
+          <article class="milestone now"><span class="phase">M9.3</span><div><h3>Real-photo development</h3><p>The mixed low-dose run remains the lead at 0.1632 TER, 0.3223 pitch TER, 12/100 exact, and 26/73 strict key-default notes. Concentrating the same dose in −3 yields 0.0682 camera TER but fails the clean ≤0.07 gate at 0.0754, so M9.3 is not rerun.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
           <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot &amp; scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
         </div>
@@ -371,7 +371,7 @@ python -m src.evaluate --config configs\train_camera_moderate.yaml `
       <div class="wrap">
         <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Build the real-photo development loop.</h2></div><p>The gold result is frozen. The next dataset is deliberately separate, inspectable, and available for error analysis and training decisions.</p></div>
         <div class="grid next-grid">
-          <article class="card next"><span class="priority">Current priority</span><h3>Fix −3 without losing clean accuracy</h3><ol><li>Keep low-dose epoch 31 as the real-photo development lead.</li><li>Focus on −3, which still misses 25/27 strict notes.</li><li>Do not add more +3 data; it now reaches 18/26.</li><li>Constrain the next mixture using clean and camera validation together.</li><li>Preserve the V1 vocabulary and keep M9.2 sealed.</li></ol></article>
+          <article class="card next"><span class="priority">Current priority</span><h3>Reduce weight, retain −3 targeting</h3><ol><li>Keep mixed low-dose epoch 31 as the real-photo lead.</li><li>Retain a small −3-targeted calibrated mixture.</li><li>Reduce global altered loss from 2× toward 1.5×.</li><li>Require clean TER ≤0.07 and competitive camera TER before M9.3.</li><li>Preserve the V1 vocabulary and keep M9.2 sealed.</li></ol></article>
           <article class="card next definition"><h3>Definition of done for M9.3</h3><p>Retain approximately 0.1632 real TER, 0.3223 pitch TER, 12/100 exact systems, and 71% event counts while recovering clean TER toward 0.07 or better, preserving 100% validity and termination, and leaving M9.2 gold untouched.</p><progress class="bar" aria-label="Roadmap progress: milestone 9 in progress" value="95" max="100">95%</progress><p><small>M8 clean complete · M9.2 gold sealed · M9.3 low-dose key targeting selected</small></p></article>
         </div>
       </div>
@@ -381,7 +381,7 @@ python -m src.evaluate --config configs\train_camera_moderate.yaml `
       <div class="wrap">
         <div class="section-head"><div><p class="eyebrow">Two-track development</p><h2>Recognition and score semantics advance in parallel.</h2></div><p>Track A proves the AI can read a score. Track B proves the product can represent and faithfully re-render richer notation. They converge only after recognition is reliable.</p></div>
         <div class="grid scope">
-          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>Real-photo gold remains sealed at 0.1496 TER</li><li>New lead: 0.1632 TER, 0.3223 pitch TER</li><li>12/100 exact systems and 71% event counts</li><li>Altered outputs reach 61/276; strict key-default result is 26/73</li><li>Next: target −3 while recovering clean TER from 0.0762</li></ul></article>
+          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>Real-photo gold remains sealed at 0.1496 TER</li><li>Lead remains 0.1632 TER, 0.3223 pitch TER</li><li>12/100 exact systems and 71% event counts</li><li>−3-only 2× run rejected at 0.0754 clean TER</li><li>Next: test reduced weighting under clean + camera gates</li></ul></article>
           <article class="card"><p class="eyebrow">Track B · Score semantics</p><h3>Score IR → faithful notation</h3><ul class="checks"><li>Chord and violin double-stop representation</li><li>Explicit beams, levels, and hooks</li><li>Displayed accidental preserved separately</li><li>Per-note fingering in chords</li><li>MusicXML → Verovio round trip proven</li></ul><p class="report-link-wrap"><a class="report-link" href="/ai-omr/score-ir/">Read the Score IR v2 architecture note →</a></p></article>
         </div>
       </div>
