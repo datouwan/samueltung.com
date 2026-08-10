@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Developing from the iPad — Samuel Tung</title>
+<meta name="description" content="Setup guide: driving the home Windows PC and Claude Code CLI from an iPad." />
+<link rel="stylesheet" href="/styles.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='10' fill='%23a14a32'/></svg>" />
+<style>
+  .page{max-width:760px}
+  h1{font-size:40px}
+  h2{font-family:var(--serif);font-weight:600;font-size:26px;margin:48px 0 12px;letter-spacing:-.01em}
+  h3{font-size:17px;margin:28px 0 8px}
+  main p{max-width:64ch}
+  .crumb{font-size:14px;margin:18px 0 0}
+  .crumb a{color:var(--muted);text-decoration:none}
+  .crumb a:hover{color:var(--accent-ink)}
+  pre{background:#2b2925;color:#f0ede6;border-radius:10px;padding:14px 16px;overflow-x:auto;
+    font:13.5px/1.55 var(--mono);margin:12px 0}
+  pre code{background:none;color:inherit;padding:0;font-size:inherit}
+  table{border-collapse:collapse;width:100%;font-size:15px;margin:14px 0}
+  th{text-align:left;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  th,td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  .callout{border:1px solid var(--line);border-left:3px solid var(--accent);background:#fff;
+    border-radius:10px;padding:14px 18px;margin:18px 0;font-size:15.5px}
+  .callout strong{color:var(--accent-ink)}
+  ol.steps{padding-left:22px}
+  ol.steps li{margin:8px 0}
+  .muted{color:var(--muted)}
+  kbd{font:600 12.5px var(--mono);background:var(--paper-2);border:1px solid var(--line);
+    border-bottom-width:2px;border-radius:5px;padding:2px 6px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <div class="mark">ST</div>
+    <p class="crumb"><a href="/">← samueltung.com</a></p>
+  </header>
+
+  <main>
+    <p class="role">Guide · Remote development</p>
+    <h1>Developing from the iPad</h1>
+    <p class="lede">
+      How to drive the home Windows 11 PC — and Claude Code CLI — from an iPad,
+      from anywhere. Terminal first, remote desktop when a GUI is unavoidable.
+    </p>
+
+    <h2>The stack at a glance</h2>
+    <table>
+      <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+      <tr><td>Network</td><td>Tailscale</td><td>WireGuard tailnet; runs as a Windows service, so the PC is reachable even before anyone logs in. Nothing exposed to the open internet.</td></tr>
+      <tr><td>Terminal</td><td>OpenSSH Server + Blink Shell</td><td>The primary Claude Code path. Blink has real <kbd>Esc</kbd>/<kbd>Ctrl</kbd> handling; Termius is the free alternative.</td></tr>
+      <tr><td>Editor</td><td>VS Code Remote Tunnel + vscode.dev</td><td>Full editor and integrated terminal in Safari — often the nicest iPad experience.</td></tr>
+      <tr><td>GUI fallback</td><td>RDP + Windows App</td><td>For Audiveris, score renders, anything graphical. Only over the tailnet.</td></tr>
+      <tr><td>Zero-setup</td><td>claude.ai/code</td><td>Cloud sessions against GitHub repos, straight from Safari. Complement, not the main path — it can't touch the home machine.</td></tr>
+    </table>
+
+    <h2>One-time PC setup</h2>
+    <p class="muted">All commands in an <strong>elevated</strong> PowerShell (Run as administrator).</p>
+
+    <h3>1 · Tailscale</h3>
+<pre><code>winget install Tailscale.Tailscale
+tailscale up          # opens a browser — log in once</code></pre>
+    <p>Note the machine name it gets (e.g. <code>desktop-xxxx</code>) — that's the address for everything below. The client updates itself and reconnects on boot.</p>
+
+    <h3>2 · OpenSSH Server</h3>
+<pre><code>Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+Set-Service sshd -StartupType Automatic
+Start-Service sshd
+
+# Land in PowerShell instead of cmd on login:
+New-Item -Path "HKLM:\SOFTWARE\OpenSSH" -Force | Out-Null
+New-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell `
+  -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -PropertyType String -Force</code></pre>
+    <p>Windows adds the <code>OpenSSH-Server-In-TCP</code> firewall rule automatically. Since the PC is only reachable over the tailnet, that's enough.</p>
+
+    <h3>3 · Remote Desktop</h3>
+<pre><code>Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" `
+  -Name fDenyTSConnections -Value 0
+Enable-NetFirewallRule -DisplayGroup "Remote Desktop"</code></pre>
+
+    <h3>4 · VS Code tunnel (optional but recommended)</h3>
+<pre><code>code tunnel service install   # one-time GitHub login</code></pre>
+    <p>Then <code>vscode.dev</code> in Safari → Remote Tunnels → this machine. Editor, file tree, and a real terminal on the PC — run <code>claude</code> right inside it.</p>
+
+    <h2>iPad setup</h2>
+    <ol class="steps">
+      <li><strong>Tailscale</strong> (App Store, free) — log in to the same tailnet, flip it on.</li>
+      <li><strong>Blink Shell</strong> (paid, best) or <strong>Termius</strong> (free) — add host: the PC's tailnet name, user <code>samue</code>. Add a key with <code>ssh-keygen</code> in Blink and append the public key to <code>C:\Users\samue\.ssh\authorized_keys</code> to skip passwords.</li>
+      <li><strong>Windows App</strong> (Microsoft, free) — add PC by tailnet name for RDP.</li>
+      <li>A hardware keyboard. Non-negotiable — the on-screen keyboard has no <kbd>Esc</kbd> or <kbd>Ctrl</kbd>.</li>
+    </ol>
+
+    <h2>Daily workflow</h2>
+<pre><code>ssh samue@&lt;tailnet-name&gt;
+cd C:\GitHub\ai-omr-starter
+claude</code></pre>
+    <p>When the iPad sleeps, the SSH session drops but nothing is lost — reconnect and resume:</p>
+<pre><code>claude --continue     # jump straight back into the last session
+claude --resume       # or pick from recent sessions</code></pre>
+    <p>There's no tmux on native Windows; <code>--continue</code> is the session persistence. Long autonomous runs keep going on the PC side regardless of the connection.</p>
+
+    <div class="callout">
+      <strong>After an unattended reboot</strong> (power cut, Windows Update): Tailscale, SSH,
+      and RDP are services — they come back on their own. But the Cloudflare tunnels
+      (<code>vatutor-omr</code>, <code>gameloop-byom</code>) and their servers start from the
+      Startup folder <em>at logon</em>. So: open the Windows App, RDP in, log in once, done —
+      that logon fires every startup script. Check with
+      <code>Get-Process cloudflared, node</code>.
+    </div>
+
+    <h2>Troubleshooting</h2>
+    <table>
+      <tr><th>Symptom</th><th>Check</th></tr>
+      <tr><td>SSH unreachable</td><td>Tailscale on on both ends? <code>tailscale status</code> on the iPad app; then <code>Test-NetConnection &lt;name&gt; -Port 22</code> from another device.</td></tr>
+      <tr><td>SSH lands in cmd</td><td>The <code>DefaultShell</code> registry value from step 2.</td></tr>
+      <tr><td>RDP refuses</td><td>User must be logged out or the same user; check <code>fDenyTSConnections</code> is 0.</td></tr>
+      <tr><td>VaTutor scans fall back to AI reader</td><td>Engine down — see <code>~\.vatutor-omr-server.log</code>, then log on once so the Startup scripts fire.</td></tr>
+      <tr><td>vscode.dev can't find the machine</td><td><code>code tunnel service log</code> on the PC; reinstall with <code>code tunnel service install</code>.</td></tr>
+    </table>
+
+    <p class="muted" style="margin-top:40px">Last updated August 2026 · lives at <code>public/ipad-dev/</code> in the samueltung.com repo.</p>
+  </main>
+
+  <footer>
+    <span>© <span id="yr">2026</span> Samuel Tung</span>
+    <span class="dot">·</span>
+    <span>samueltung.com/ipad-dev</span>
+  </footer>
+
+</div>
+</body>
+</html>
