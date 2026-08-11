@@ -52,6 +52,13 @@
     .nav-links { display: flex; gap: 24px; font-size: .86rem; font-weight: 700; }
     .nav-links a { text-decoration: none; }
     .nav-links a:hover { color: var(--green); }
+    .mobile-menu { display: none; position: relative; margin-left: auto; }
+    .mobile-menu > summary { display: flex; min-width: 64px; min-height: 44px; align-items: center; justify-content: center; padding: 0 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); cursor: pointer; list-style: none; font-size: .78rem; font-weight: 850; }
+    .mobile-menu > summary::-webkit-details-marker { display: none; }
+    .mobile-menu > summary:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+    .mobile-panel { position: absolute; top: calc(100% + 9px); right: 0; width: min(290px, calc(100vw - 26px)); padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); box-shadow: var(--shadow); }
+    .mobile-panel a { display: flex; min-height: 46px; align-items: center; padding: 0 13px; border-radius: 9px; text-decoration: none; font-size: .88rem; font-weight: 750; }
+    .mobile-panel a:hover, .mobile-panel a:focus-visible { color: var(--green-dark); background: var(--mint); }
 
     header { padding: 86px 0 64px; }
     .hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 42px; align-items: center; }
@@ -154,6 +161,8 @@
     .site-footer small { color: #8fa09a; }
 
     @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .mobile-menu { display: block; }
       .hero, .next-grid { grid-template-columns: 1fr; }
       .hero-card { min-height: 350px; }
       .score-grid, .pipeline, .ladder, .comparison { grid-template-columns: repeat(2, 1fr); }
@@ -162,7 +171,6 @@
     }
     @media (max-width: 640px) {
       .wrap { width: min(100% - 26px, 1160px); }
-      .nav-links { display: none; }
       header { padding-top: 56px; }
       .hero-card { min-height: 390px; }
       section { padding: 54px 0; }
@@ -187,6 +195,7 @@
       <div class="nav-links">
         <a href="/ai-omr/product/">Product</a><a href="/ai-omr/market/">Market</a><a href="#status">Status</a><a href="#roadmap">Roadmap</a><a href="#results">Results</a><a href="#tracks">Tracks</a><a href="#next">M9.4 next</a><a href="/ai-omr/score-ir/">Score IR</a>
       </div>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu">Menu</summary><div class="mobile-panel"><a href="/ai-omr/product/">Product</a><a href="/ai-omr/market/">Market</a><a href="/ai-omr/" aria-current="page">Roadmap</a><a href="/ai-omr/score-ir/">Score IR</a><a href="/ai-omr/symbols/">Symbols</a><a href="#status">Current status</a><a href="#next">M9.4 next</a></div></details>
     </div>
   </nav>
 
