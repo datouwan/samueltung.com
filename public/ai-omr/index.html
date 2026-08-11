@@ -183,7 +183,7 @@
     <div class="wrap nav-inner">
       <a class="brand" href="#top">AI <span>OMR</span></a>
       <div class="nav-links">
-        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#results">Results</a><a href="#m8-5">M8.5</a><a href="#m9-1">M9.1</a><a href="#m9-2">M9.2</a><a href="#tracks">Tracks</a><a href="#next">Next</a>
+        <a href="#status">Status</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="#training">Training</a><a href="#results">Results</a><a href="#m8-5">M8.5</a><a href="#m9-1">M9.1</a><a href="#m9-2">M9.2</a><a href="#tracks">Tracks</a><a href="#next">M9.4 next</a>
       </div>
     </div>
   </nav>
@@ -196,9 +196,9 @@
         <p class="lede">A local-first plan to turn printed sheet music into compact notation tokens, validate the musical structure, and export dependable MusicXML.</p>
       </div>
       <aside class="hero-card" aria-label="Project objective">
-        <span class="pill"><i class="dot"></i> M9.3 bounded decoder evaluated</span>
-        <h2>Semantic reconciliation helps—but does not solve −3.</h2>
-        <p>A 0.10-margin key-conditioned decoder passes clean and camera gates, then improves its balanced checkpoint to 0.1717 real TER and 18/74 strict key-default notes. The 0.1632 mixed low-dose model remains the lead; new domain-matched −3 evidence is next.</p>
+        <span class="pill"><i class="dot"></i> M9.4 benchmark capture in progress</span>
+        <h2>Independent recognition evidence and richer score semantics now advance together.</h2>
+        <p>Track A has prepared a token-disjoint 120-system real-photo final; nine second-session replacement photos remain before cropping and benchmark freezing. Track B now round-trips the complete deterministic Score IR v2 representation milestone through multiple voices.</p>
         <div class="hero-meta"><span class="pill">PyTorch</span><span class="pill">Swin</span><span class="pill">RTX 4090</span></div>
       </aside>
     </div>
@@ -207,12 +207,12 @@
   <main>
     <section id="status">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>Real-photo development has isolated the dominant error.</h2></div><p>M9.2 gold remains sealed. M9.3 adds 100 inspectable daylight systems and identifies key-conditioned altered-pitch emission—not broad photo geometry—as the first controlled target.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Where we are</p><h2>M9.4 is staged without touching its predictions.</h2></div><p>M9.2 and M9.3 remain closed. The selected checkpoint and decoder are frozen, 120 independent systems are prepared, and no M9.4 inference is allowed until capture review and integrity gates pass.</p></div>
         <div class="grid score-grid">
           <article class="card metric good"><span>M8.5 autoregressive TER on 2,563 clean validation systems</span><strong>0.0674</strong></article>
           <article class="card metric good"><span>M9.1 clean validation TER after camera fine-tuning</span><strong>0.0606</strong></article>
           <article class="card metric"><span>M9.3 development lead TER · 12/100 exact</span><strong>0.1632</strong></article>
-          <article class="card metric good"><span>Sealed real-photo gold TER</span><strong>0.1496</strong></article>
+          <article class="card metric good"><span>M9.4 token-disjoint final · 40 general + 40 sharps + 40 flats</span><strong>120</strong></article>
         </div>
       </div>
     </section>
@@ -241,14 +241,15 @@
 
     <section id="roadmap">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>M8 clean recognition and the first M9 real-photo gate are complete. Development now shifts to a separate photographed set for pitch and camera-domain improvement.</p></div>
+        <div class="section-head"><div><p class="eyebrow">M1–M12 roadmap</p><h2>From scaffold to service.</h2></div><p>The clean and real-photo development gates are closed. M9.4 now measures the frozen recognizer on a new independent final while deterministic Score IR v2 advances in parallel.</p></div>
         <div class="roadmap">
           <article class="milestone done"><span class="phase">M1–M3</span><div><h3>Foundation &amp; data contract</h3><p>Repository, CLI, manifests, provenance filters, token vocabulary and MusicXML parsing.</p></div></article>
           <article class="milestone done"><span class="phase">M4–M5</span><div><h3>Rendering &amp; dataset pipeline</h3><p>Verovio-based score rendering, system crops, deterministic splits and training batches.</p></div></article>
           <article class="milestone done"><span class="phase">M6–M7</span><div><h3>Model &amp; scalable trainer</h3><p>Vision encoder, autoregressive decoder, mixed precision, checkpoint resume and evaluation.</p></div></article>
           <article class="milestone done"><span class="phase">M8.5</span><div><h3>Clean recognition gate</h3><p>27,039-system development, 579 exact validation systems, and exact systems on a token-disjoint independent PDMX final.</p></div></article>
           <article class="milestone done"><span class="phase">M9.1–2</span><div><h3>Camera/print robustness</h3><p>Moderate augmentation transfers to a sealed 50-system iPhone gold set: 0.1496 TER, 2 exact systems, and 100% valid outputs.</p></div></article>
-          <article class="milestone now"><span class="phase">M9.3</span><div><h3>Real-photo development</h3><p>The mixed 2× low-dose run remains the lead at 0.1632 TER, 0.3223 pitch TER, and 12/100 exact. Optional 0.10-margin reconciliation safely improves the balanced checkpoint to 0.1717 TER and 18/74 strict key-default notes, but −3 remains 0/25.</p></div></article>
+          <article class="milestone done"><span class="phase">M9.3</span><div><h3>Real-photo development</h3><p>Controlled data, weighting, interpolation, and bounded decoding experiments are closed. The selected inference artifact passes its clean and camera prerequisites without reusing the sealed M9.2 gold set.</p></div></article>
+          <article class="milestone now"><span class="phase">M9.4</span><div><h3>Independent real-photo final</h3><p>120 source- and token-disjoint systems are prepared across general, sharp, and flat strata. Capture is in progress; nine pages must be replaced in a second daylight session before crop review, freezing, and one-time inference.</p></div></article>
           <article class="milestone"><span class="phase">M10</span><div><h3>MusicXML quality</h3><p>Parser hardening, confidence scoring, correction flags and round-trip rendering tests.</p></div></article>
           <article class="milestone"><span class="phase">M11–M12</span><div><h3>Product pilot &amp; scale</h3><p>Correction interface, real-world validation, cloud training and commercial service foundations.</p></div></article>
         </div>
@@ -369,10 +370,10 @@ python -m src.evaluate --config configs\train_camera_moderate.yaml `
 
     <section id="next">
       <div class="wrap">
-        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Add domain-matched evidence for the remaining key defect.</h2></div><p>The gold result stays frozen. Global weighting and wider decoding margins are closed; −3 now needs new photographed supervision selected without reusing M9.3 labels.</p></div>
+        <div class="section-head"><div><p class="eyebrow">Immediate work</p><h2>Complete the second M9.4 capture session.</h2></div><p>The benchmark protocol, checkpoint, decoder, composition, and thresholds are frozen. Finish the missing capture evidence before any cropping or inference.</p></div>
         <div class="grid next-grid">
-          <article class="card next"><span class="priority">Current priority</span><h3>Real-photo −3 calibration tranche</h3><ol><li>Freeze the selected 0.10 decoder; do not widen its margin.</li><li>Create a new token-disjoint photographed tranche with −3 coverage.</li><li>Preserve explicit naturals and chromatic exceptions in its labels.</li><li>Select only with clean, camera, and new real-photo validation gates.</li><li>Keep M9.2 sealed and avoid further tuning on M9.3.</li></ol></article>
-          <article class="card next definition"><h3>Definition of done for M9.3</h3><p>Retain or beat 0.1632 real TER, 0.3223 pitch TER, 12/100 exact systems, and 71% event counts while recovering clean TER to 0.07 or better, preserving 100% validity and termination, and leaving M9.2 gold untouched.</p><progress class="bar" aria-label="Roadmap progress: milestone 9 in progress" value="96" max="100">96%</progress><p><small>M8 clean complete · M9.2 gold sealed · bounded decoder selected · −3 evidence next</small></p></article>
+          <article class="card next"><span class="priority">Current priority</span><h3>Nine second-session replacement photos</h3><ol><li>Recapture pages 07–09 in each of the general, sharps, and flats packages.</li><li>Use the predeclared diffuse daylight, warm indoor, and side-daylight conditions.</li><li>Verify the replacement EXIF dates differ from the retained first-session photos.</li><li>Only then prepare and visually review all 120 lossless system crops.</li><li>Freeze the benchmark before running the selected model exactly once.</li></ol></article>
+          <article class="card next definition"><h3>M9.4 acceptance gate</h3><p>Overall TER ≤0.20, pitch TER ≤0.40, at least 12/120 exact systems, at least 80% event-count matches, strong header and key-default accuracy, and 100% syntax, rhythm, termination, and prediction diversity.</p><progress class="bar" aria-label="Roadmap progress: milestone 9 capture in progress" value="97" max="100">97%</progress><p><small>M8.5 clean complete · M9.2/M9.3 closed · 120-system M9.4 prepared · nine replacement photos next</small></p></article>
         </div>
       </div>
     </section>
@@ -381,8 +382,8 @@ python -m src.evaluate --config configs\train_camera_moderate.yaml `
       <div class="wrap">
         <div class="section-head"><div><p class="eyebrow">Two-track development</p><h2>Recognition and score semantics advance in parallel.</h2></div><p>Track A proves the AI can read a score. Track B proves the product can represent and faithfully re-render richer notation. They converge only after recognition is reliable.</p></div>
         <div class="grid scope">
-          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>Real-photo gold remains sealed at 0.1496 TER</li><li>Lead remains 0.1632 TER, 0.3223 pitch TER</li><li>Bounded decoder passes clean/camera gates at 0.0671/0.0651 TER</li><li>Balanced real TER improves 0.1752 → 0.1717; strict hits 10/74 → 18/74</li><li>−3 remains 0/25; new domain-matched evidence is next</li></ul></article>
-          <article class="card"><p class="eyebrow">Track B · Score semantics</p><h3>Score IR → faithful notation</h3><ul class="checks"><li>Chord and violin double-stop representation</li><li>Explicit beams, levels, and hooks</li><li>Displayed accidental preserved separately</li><li>Per-note fingering in chords</li><li>MusicXML → Verovio round trip proven</li></ul><p class="report-link-wrap"><a class="report-link" href="/ai-omr/score-ir/">Read the Score IR v2 architecture note →</a></p></article>
+          <article class="card"><p class="eyebrow" style="color:var(--coral)">Track A · Recognition</p><h3>Image → correct musical content</h3><ul class="checks"><li>M8.5 clean recognition gate complete</li><li>M9.2 gold and M9.3 development remain closed</li><li>Selected checkpoint and 0.10 decoder are frozen</li><li>120-system M9.4 final is source- and token-disjoint</li><li>Nine second-session photos remain before crop review</li></ul></article>
+          <article class="card"><p class="eyebrow">Track B · Score semantics</p><h3>Score IR → faithful notation</h3><ul class="checks"><li>Chords, beams, displayed accidentals, and per-note fingering</li><li>Slurs, articulations, and violin bowing marks</li><li>Exact-ratio tuplets and event-onset dynamics</li><li>Independent single-staff voices with exact MusicXML backups</li><li>107 tests pass; all 32,073 historical V1 files remain compatible</li><li>Training vocabulary remains fixed at 383 tokens</li></ul><p class="report-link-wrap"><a class="report-link" href="/ai-omr/score-ir/">Read the Score IR v2 implementation update →</a></p></article>
         </div>
       </div>
     </section>
