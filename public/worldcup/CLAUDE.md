@@ -1,51 +1,50 @@
-# World Cup — frontend (`public/worldcup/`)
+# World Cup — frontend (`public/worldcup/`) — ARCHIVE MODE
 
-This is the World Cup 2026 feature's client. The backend lives in `src/worldcup/api.js`
-(see that folder's `CLAUDE.md` too — they share contracts).
+This is the World Cup 2026 feature's client, now an **archive** of the finished
+tournament (Final Jul 19, 2026: Spain 1–0 Argentina a.e.t.; third: England).
+The backend lives in `src/worldcup/api.js` (see that folder's `CLAUDE.md`).
 
 ## Files
 - `index.html` — the page. **One large inline `<script>`** that runs top-to-bottom at load.
-- `data.js` — static data extracted out of the page.
-- `worldcup.css` — styles extracted out of the page.
+- `data.js` — static data (i18n, teams, kits, schedule) extracted out of the page.
+- `worldcup.css` — styles, including the `#podium` archive hero.
 - `report.html` — separate report view.
 
-## CRITICAL: verify the inline script, don't just syntax-check it
-`index.html` is a single inline script executed at page load. A runtime error during that
-top-level run aborts the WHOLE script and leaves the page stuck on "Loading…".
+## Archive behavior
+`/api/wc` returns `archived:true` + a `podium` object. On seeing it, `refresh()`:
+renders the podium hero (`renderPodium`, 🥈🏆🥉 + final/third-place score lines),
+hides the live bar (`.livewrap`), caps the finished-games strip to the last 8
+matches (QF onward — the calendar holds all 104), swaps the updated-label for
+`t('arch_note')`, and **clears the 15s poll timer** — the page fetches `/api/wc`
+once per load. `archivedMode`/`lastPodium`/`pollTimer` are declared near the top
+(by `liveBar`) — keep them above anything that runs at load. Language switches
+re-render the podium via `rerenderI18n()`; podium strings are the `pod_*` /
+`arch_note` keys in all three `I18N` languages.
 
-A real bug shipped this way: a Leaflet legend control's `onAdd` ran synchronously at load and
-read `lastBracket`, which was a `let` declared ~1200 lines lower → temporal-dead-zone
-`ReferenceError` → page never loaded. A `new Function(src)` syntax check PASSED because TDZ is a
-runtime, not a syntax, error.
+Player cards still work: `/api/player` returns `{error:"archived"}` and the card
+falls back to the (live, free) `/api/wiki` bio. Squads come from the archived
+snapshot with photos.
+
+## CRITICAL: verify the inline script, don't just syntax-check it
+`index.html` is a single inline script executed at page load. A runtime error
+during that top-level run aborts the WHOLE script and leaves the page stuck on
+"Loading…". TDZ bugs (a load-time callback reading a `let` declared lower) pass
+a syntax check and only explode at runtime — one shipped this way once.
 
 **Before deploy:**
-1. Anything invoked during synchronous load (Leaflet control `onAdd`, IIFEs, top-level calls)
-   must only reference `let`/`const` declared *earlier*. Hoist shared state (e.g. `lastBracket`)
-   above its first use.
-2. Actually EXECUTE the largest inline script in a stubbed-browser node harness (Proxy
-   auto-stub for `L` / `document` / `window` / `fetch` …) and confirm it runs without
-   ReferenceError — not just that it parses.
-
-## Backend contract
-The page calls the Worker:
-- `GET /api/wc` — group standings, schedule, live fixtures, knockout schedule (`koSched`).
-- `GET /api/lineups?fixture=<id>` — both teams' XI + subs (lazy on click from a live card).
-- `GET /api/squad?team=<name>` — squad roster for the Squads tab.
-
-The live feed uses a WC-only date query on the backend (NOT `/fixtures?live=all`) — don't add
-client logic that assumes the old global live payload.
-
-Live polling: `setInterval(refresh, 15000)`. `refresh()` uses an AbortController fetch timeout
-(~8s), keeps last-good data through blips, and only shows "offline" after 3 cold failures.
-Do NOT remove the timeout — without it a single stalled request freezes the page for minutes.
+1. Anything invoked during synchronous load must only reference `let`/`const`
+   declared *earlier*.
+2. Actually EXECUTE the inline scripts in a stubbed-browser node harness (Proxy
+   auto-stubs for `L`/`document`/`window`/`fetch`, real archived JSON payloads)
+   and assert the archive path renders (podium innerHTML, poll cleared). A
+   ready-made harness pattern: feed `src/worldcup/archive/wc.json` through a
+   stub `fetch` and check `#podium` innerHTML contains the champion.
 
 ## Team-name normalization — keep in sync with backend
-The frontend `ALIAS` map MUST stay in sync with `ALIAS`/`norm()` in `src/worldcup/api.js`.
-Wikipedia headings ("Czech Republic", "Ivory Coast") and the names the page sends ("Czechia",
-"Côte d'Ivoire") must normalize to the same canonical key, or squad lookups 404.
-**Add a team alias on one side → add it on the other.**
+The frontend `ALIAS` map MUST stay in sync with `ALIAS`/`norm()` in
+`src/worldcup/api.js` — archived squad lookups key on the canonical name.
 
 ## Deploy
-After a meaningful change, deploy: from the project root (`C:\GitHub\samueltung.com`) run
-`npx wrangler deploy`. This uploads `public/` and redeploys the Worker. It does NOT commit/push
-to git — only commit/push when explicitly asked.
+After a meaningful change, deploy: from the project root run
+`npx wrangler deploy`. This uploads `public/` and redeploys the Worker. It does
+NOT commit/push to git — only commit/push when explicitly asked.

@@ -5,7 +5,10 @@
 /* I18N */
 const I18N = {
   en:{
-    role:'FIFA World Cup 2026 · USA · Canada · Mexico', title:'Map, Groups & Live Scores', sub:'48 teams · 12 groups · live tables',
+    role:'FIFA World Cup 2026 · USA · Canada · Mexico', title:'Map, Groups & Final Results', sub:'48 teams · 104 matches · 2026 archive',
+    pod_1:'World Champions', pod_2:'Runners-up', pod_3:'Third place',
+    pod_final:'Final', pod_3p:'Third-place match', pod_aet:'a.e.t.',
+    arch_note:'Tournament complete — final results archive',
     tab_groups:'Group stage', tab_schedule:'Schedule', tab_bracket:'Bracket', tab_country:'Country stats', tab_stats:'Player stats', tab_news:'News',
     loading_bracket:'Loading knockout bracket…', bracket_unavail:'Bracket unavailable right now. Try again shortly.',
     bracket_note:'Knockout bracket from Wikipedia — teams and scores fill in as the tournament progresses.',
@@ -53,7 +56,10 @@ const I18N = {
   },
   zh:{
     role:'2026 国际足联世界杯 · 美国 · 加拿大 · 墨西哥',
-    title:'地图、小组与实时比分', sub:'48 支球队 · 12 个小组 · 实时积分',
+    title:'地图、小组与最终结果', sub:'48 支球队 · 104 场比赛 · 2026 存档',
+    pod_1:'世界冠军', pod_2:'亚军', pod_3:'季军',
+    pod_final:'决赛', pod_3p:'季军赛', pod_aet:'加时',
+    arch_note:'赛事已结束 — 最终结果存档',
     tab_groups:'小组赛', tab_schedule:'赛程', tab_bracket:'淘汰赛', tab_country:'国家统计', tab_stats:'球员统计', tab_news:'新闻',
     loading_bracket:'正在加载淘汰赛对阵…', bracket_unavail:'淘汰赛对阵暂时无法加载，请稍后重试。',
     bracket_note:'淘汰赛对阵来自维基百科 — 随赛事进程逐步填入球队与比分。',
@@ -101,7 +107,10 @@ const I18N = {
   },
   es:{
     role:'Copa Mundial FIFA 2026 · EE. UU. · Canadá · México',
-    title:'Mapa, grupos y marcadores', sub:'48 equipos · 12 grupos · tablas en vivo',
+    title:'Mapa, grupos y resultados finales', sub:'48 equipos · 104 partidos · archivo 2026',
+    pod_1:'Campeones del Mundo', pod_2:'Subcampeones', pod_3:'Tercer lugar',
+    pod_final:'Final', pod_3p:'Tercer puesto', pod_aet:'pról.',
+    arch_note:'Torneo finalizado — archivo de resultados finales',
     tab_groups:'Fase de grupos', tab_schedule:'Calendario', tab_bracket:'Eliminatorias', tab_country:'Países', tab_stats:'Jugadores', tab_news:'Noticias',
     loading_bracket:'Cargando el cuadro eliminatorio…', bracket_unavail:'Cuadro no disponible ahora. Inténtalo en breve.',
     bracket_note:'Cuadro eliminatorio de Wikipedia — equipos y resultados se completan según avanza el torneo.',

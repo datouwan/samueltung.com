@@ -63,6 +63,24 @@
   #liveBar.idle{background:var(--paper-2);color:var(--ink-soft);border-bottom:1px solid var(--line)}
   #liveBar.idle .tag{color:var(--muted)}
 
+  /* ── 2026 archive podium (replaces the live bar now the tournament is over) ── */
+  #podium{background:var(--paper-2);border-bottom:1px solid var(--line);padding:20px 16px 14px;text-align:center}
+  .pod-row{display:flex;justify-content:center;align-items:flex-end;gap:14px;flex-wrap:wrap}
+  .pod-step{display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--card);
+    border:1px solid var(--line);border-radius:14px;padding:14px 18px 10px;min-width:136px}
+  .pod-step.p1{border-color:#c9a227;box-shadow:0 4px 18px rgba(201,162,39,.28);padding:20px 26px 14px;min-width:172px}
+  .pod-medal{font-size:26px;line-height:1}
+  .pod-step.p1 .pod-medal{font-size:40px}
+  .pod-crest{width:42px;height:42px;object-fit:contain}
+  .pod-step.p1 .pod-crest{width:64px;height:64px}
+  .pod-team{font-family:var(--serif);font-weight:700;font-size:17px;color:var(--ink)}
+  .pod-step.p1 .pod-team{font-size:24px}
+  .pod-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .pod-step.p1 .pod-lbl{color:#c9a227;font-size:11px}
+  .pod-lines{margin-top:10px;display:flex;justify-content:center;gap:8px 22px;flex-wrap:wrap;color:var(--ink-soft);font-size:13px}
+  .pod-line b{font-weight:600;color:var(--muted)}
+  .pod-line i{color:var(--muted);font-style:normal;font-size:11px}
+
   /* live bar */
   .livewrap{position:relative;display:flex;align-items:stretch}
   .livewrap #liveBar{flex:1;min-width:0}

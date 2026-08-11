@@ -11,7 +11,7 @@
 // Feature code lives in src/worldcup/. Add future features as sibling modules
 // and route them here.
 
-import { handleWorldCupApi, warmSquads } from "./worldcup/api.js";
+import { handleWorldCupApi } from "./worldcup/api.js";
 
 // Paths that stay public (no password): project pages and public APIs.
 function isPublicPath(pathname) {
@@ -176,11 +176,5 @@ export default {
       return asset;
     }
     return new Response("Not found", { status: 404 });
-  },
-
-  // Cron: keep every nation's api-football squad warm in cache so the Squads tab
-  // consistently serves real player photos (see triggers.crons in wrangler.jsonc).
-  async scheduled(event, env, ctx) {
-    ctx.waitUntil(warmSquads(env));
   },
 };
