@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Graphic-first optical music recognition: recognize what is printed, derive what it means. Theory, method, and living roadmap of the parallel AI-OMR track.">
+  <meta name="theme-color" content="#101c19">
+  <title>AI OMR Agnostic — Graphic-First Recognition</title>
+  <style>
+    :root {
+      --ink: #15221f; --muted: #5d6a66; --paper: #f4f0e7; --card: #fffdf8;
+      --line: #d9d4c8; --green: #1e6b55; --green-dark: #10483a; --mint: #bfe7d5;
+      --coral: #e26f51; --gold: #d3a33f; --blue: #5674a8;
+      --radius: 20px; --shadow: 0 18px 50px rgba(18, 44, 36, .09);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; color: var(--ink);
+      background: radial-gradient(circle at 8% 2%, rgba(191,231,213,.42), transparent 28rem), var(--paper);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    nav { position: sticky; z-index: 10; top: 0; background: rgba(244,240,231,.9); border-bottom: 1px solid rgba(21,34,31,.1); backdrop-filter: blur(14px); }
+    .nav-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand span { color: var(--green); }
+    .nav-links { display: flex; gap: 22px; font-size: .86rem; font-weight: 700; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--green); }
+    header { padding: 82px 0 60px; }
+    h1 { max-width: 860px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.9rem, 6.4vw, 5.6rem); font-weight: 500; line-height: .95; letter-spacing: -.055em; }
+    h1 em { color: var(--green); font-style: normal; }
+    .lede { max-width: 720px; margin: 26px 0 0; color: var(--muted); font-size: clamp(1.02rem, 1.6vw, 1.25rem); }
+    section { padding: 66px 0; }
+    .section-head { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 32px; flex-wrap: wrap; }
+    h2 { margin: 0; font: 500 clamp(1.9rem, 3.6vw, 3.2rem)/1.04 Georgia, serif; letter-spacing: -.03em; }
+    .section-head > p { max-width: 520px; margin: 0; color: var(--muted); }
+    .grid { display: grid; gap: 18px; }
+    .cols2 { grid-template-columns: 1fr 1fr; }
+    .cols3 { grid-template-columns: repeat(3, 1fr); }
+    .card { padding: 30px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(28,47,40,.04); }
+    .card h3 { margin: 0 0 12px; font: 500 1.35rem/1.15 Georgia, serif; }
+    .card p, .card li { color: var(--muted); font-size: .93rem; }
+    .metric strong { display: block; font: 500 clamp(2rem, 3.4vw, 3rem)/1 Georgia, serif; letter-spacing: -.04em; }
+    .metric span { color: var(--muted); font-size: .85rem; }
+    .metric.bad { color: white; background: var(--coral); border-color: transparent; }
+    .metric.bad span { color: inherit; opacity: .85; }
+    .metric.good { color: var(--green-dark); background: var(--mint); border-color: transparent; }
+    .metric.good span { color: inherit; opacity: .8; }
+    pre { overflow: auto; margin: 20px 0 0; padding: 20px; color: #d7eee4; background: #0b3027; border: 1px solid rgba(255,255,255,.1); border-radius: 14px; font: .8rem/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .dark { color: white; background: var(--green-dark); }
+    .dark .eyebrow { color: var(--mint); }
+    .dark h2 { color: white; }
+    .dark .section-head > p, .dark p { color: #c4d4ce; }
+    .flow { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 8px; align-items: center; text-align: center; font-size: .78rem; margin-top: 10px; }
+    .flow .node { padding: 14px 6px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; }
+    .flow .node.det { background: rgba(191,231,213,.14); border-color: rgba(191,231,213,.5); }
+    .flow .arrow { color: var(--mint); font-weight: 900; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+    th { font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .roadmap { position: relative; }
+    .roadmap::before { content: ""; position: absolute; top: 15px; bottom: 15px; left: 20px; width: 2px; background: var(--line); }
+    .milestone { position: relative; display: grid; grid-template-columns: 62px 110px 1fr; gap: 20px; padding: 12px 0 30px; }
+    .milestone::before { content: ""; z-index: 1; width: 14px; height: 14px; margin: 4px 0 0 14px; background: var(--card); border: 3px solid var(--line); border-radius: 50%; }
+    .milestone.done::before { background: var(--green); border-color: var(--mint); }
+    .milestone.now::before { background: var(--coral); border-color: #f9c3b5; box-shadow: 0 0 0 6px rgba(226,111,81,.12); }
+    .milestone .phase { color: var(--muted); font-size: .8rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .milestone h3 { margin: 0 0 4px; font-size: 1rem; }
+    .milestone p { margin: 0; color: var(--muted); font-size: .92rem; }
+    .tag { display: inline-block; padding: 4px 9px; border-radius: 999px; font-size: .68rem; font-weight: 900; letter-spacing: .06em; }
+    .tag.done { background: var(--mint); color: var(--green-dark); }
+    .tag.now { background: #f3d9d1; color: #8f402d; }
+    .tag.next { background: #e7e2d6; color: var(--muted); }
+    .tokens { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+    .tokens code { padding: 5px 9px; background: #0b3027; color: #d7eee4; border-radius: 8px; font: .78rem ui-monospace, Consolas, monospace; }
+    .tokens code.acc { background: #6b2f1e; color: #ffd9cb; }
+    footer { padding: 46px 0 60px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+    @media (max-width: 900px) {
+      .cols2, .cols3 { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .flow .arrow { transform: rotate(90deg); }
+      .milestone { grid-template-columns: 40px 1fr; }
+      .milestone .phase { grid-column: 2; }
+      .milestone div:last-child { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap nav-inner">
+      <a class="brand" href="/ai-omr-agnostic/">AI&nbsp;OMR&nbsp;<span>Agnostic</span></a>
+      <div class="nav-links">
+        <a href="#why">Why</a>
+        <a href="#theory">Theory</a>
+        <a href="#method">Method</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#target">Target</a>
+        <a href="/ai-omr/">Track A plan →</a>
+      </div>
+    </div>
+  </nav>
+
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">Parallel research track · founded 2026-08-13</p>
+      <h1>Recognize what is <em>printed</em>.<br>Derive what it <em>means</em>.</h1>
+      <p class="lede">A from-scratch parallel bet on the same goal as the main AI-OMR effort: reliable
+      single-staff recognition from ordinary phone photos. The difference is the factorization —
+      the neural network reads glyphs at staff positions, and a deterministic engraving state
+      machine turns them into music. Pitch spelling is code, not learned behavior.</p>
+    </div>
+  </header>
+
+  <section id="why">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Why this track exists</p>
+          <h2>The main track's own measurements point at the representation.</h2>
+        </div>
+        <p>Track A is a semantic image-to-token transformer with excellent experimental discipline.
+        Its numbers are trustworthy — and they show a structural ceiling, not a tuning problem.</p>
+      </div>
+      <div class="grid cols3">
+        <article class="card metric good"><strong>695 / 733</strong><span>key-default pitch spellings correct on <em>synthetic</em> images when the key header is right — the model can do key arithmetic in-domain</span></article>
+        <article class="card metric bad"><strong>0 / 70</strong><span>the same measurement on <em>real photos</em>, even with 81/100 key headers correct — the learned join collapses under domain shift</span></article>
+        <article class="card metric bad"><strong>87.4%</strong><span>of altered reference notes are emitted as naturals on real photos — the dominant failure class by far</span></article>
+      </div>
+      <div class="grid cols3" style="margin-top:18px">
+        <article class="card"><h3>Loss weighting failed</h3><p>2× altered-token loss raised synthetic altered emission to ~20% but <em>regressed</em> real-photo error. Forcing the class prior does not transfer.</p></article>
+        <article class="card"><h3>Post-hoc fixes are unsafe</h3><p>Applying the key signature to naturals after decoding corrupts legitimate explicit naturals — thousands of them exist. Once the decoder discards the printed/derived distinction, no code can recover it.</p></article>
+        <article class="card"><h3>Gains are asymptoting</h3><p>Every well-run intervention — key-aware corpora, calibrated augmentation, encoder adaptation — buys single-digit relative improvements. Real-photo TER sits at ~0.26 vs ~0.07 clean, with 0/60 exact systems.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="theory" class="dark">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Theory</p>
+          <h2>Split the problem where the evidence says it breaks.</h2>
+        </div>
+        <p>Reading music is two different jobs. Seeing ink is perception. Knowing what the ink means
+        is arithmetic. Only one of them needs a neural network.</p>
+      </div>
+      <div class="flow">
+        <div class="node">Phone photo</div><div class="arrow">→</div>
+        <div class="node">Neural recognizer<br><small>what is printed</small></div><div class="arrow">→</div>
+        <div class="node det">Engraving state machine<br><small>what it means — pure code</small></div><div class="arrow">→</div>
+        <div class="node det">MusicXML → Verovio</div>
+      </div>
+      <p style="margin-top:26px">The model's output vocabulary is <strong>agnostic</strong>: 475 tokens naming printed
+      symbols and their vertical staff positions — notehead shapes, printed accidentals, rests, dots,
+      barlines, ties. Nothing in it encodes sounding pitch, key arithmetic, or measure state. A model
+      trained on this vocabulary <em>cannot</em> exhibit the naturalization defect, because spelling
+      is not its job. Even the key signature is just a run of ordinary accidental glyphs — reading a
+      four-sharp signature becomes four local detections instead of one fragile 15-way classification.</p>
+      <div class="tokens">
+        <code>clef.G2</code><code class="acc">acc.flat@4</code><code class="acc">acc.flat@7</code><code class="acc">acc.flat@3</code>
+        <code>time.2/4</code><code>note.sixteenth@4</code><code>rest.eighth</code>
+        <code class="acc">acc.natural@4</code><code>note.quarter@4</code><code>barline</code>
+      </div>
+      <p style="margin-top:18px;font-size:.9rem">A real target line: three flats, 2/4, a sixteenth on the middle line
+      (B♭ by key — the converter knows, the model doesn't have to), an eighth rest, then an explicit
+      natural. The deterministic converter applies key defaults, measure-scoped accidental memory,
+      and tie carry-over — the standard engraving rules, implemented once, tested exhaustively,
+      identical in both directions.</p>
+    </div>
+  </section>
+
+  <section id="method">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Method</p>
+          <h2>Four deliberate departures from the main track.</h2>
+        </div>
+        <p>Each one targets a measured failure mode, not a hunch.</p>
+      </div>
+      <div class="grid cols2">
+        <article class="card">
+          <h3>1 · Agnostic targets, deterministic semantics</h3>
+          <p>The engraving state machine converts semantic scores to printed-symbol sequences and back,
+          fail-closed in both directions, with round-trip identity proven over randomized sweeps. It is
+          also the ground-truth generator: every rendered system gets exact graphical labels with zero
+          manual annotation — and the MusicXML writer takes its printed accidentals from the same
+          function, so the rendered image and the training target can never disagree.</p>
+        </article>
+        <article class="card">
+          <h3>2 · CTC instead of autoregression</h3>
+          <p>A music staff reads monotonically left to right, and CTC alignment bakes that in as a hard
+          prior. The recognizer physically cannot repeat n-grams, skip around the staff, or fail to
+          terminate — the entire grammar-masking / repetition-blocking / EOS-bias scaffold of the
+          autoregressive approach becomes unnecessary. The model is a 6M-parameter CRNN, ~5× smaller
+          than the main track's encoder alone.</p>
+        </article>
+        <article class="card">
+          <h3>3 · Staff-interline normalization</h3>
+          <p>Every image — clean render, degraded render, real photo — passes one deterministic
+          pipeline: estimate the staff interline from ink-run periods, rescale so the interline is
+          exactly 16 px, center the staff on a fixed 192 px canvas. Position classes then map to
+          stable pixel offsets. Verified on all 180 real training photos without a learned component.</p>
+        </article>
+        <article class="card">
+          <h3>4 · Real photos are evaluation-only</h3>
+          <p>The opposite of the main track's current cycle, on purpose. A measured degradation pipeline
+          (perspective, paper bow, illumination, shadows, gray ink, sensor noise, JPEG) must carry the
+          domain by itself: its output statistics are gated to fall inside the real photos'
+          interquartile windows for brightness, contrast, and sharpness. The gate passed on
+          2026-08-13. Real photos stay unconsumed for honest measurement.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap" style="background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Living roadmap · updated 2026-08-13</p>
+          <h2>Milestones with gates, not vibes.</h2>
+        </div>
+        <p>Each milestone has a predeclared exit gate. Statuses here are updated as the work lands.</p>
+      </div>
+      <div class="roadmap">
+        <div class="milestone done">
+          <span class="tag done">DONE</span><span class="phase">A0</span>
+          <div><h3>Representation core</h3>
+          <p>475-token agnostic vocabulary, semantic score model, fail-closed bidirectional converter
+          with the full engraving state machine. Gate: round-trip identity incl. a 300-case randomized
+          sweep — passed, 26 tests.</p></div>
+        </div>
+        <div class="milestone done">
+          <span class="tag done">DONE</span><span class="phase">A1</span>
+          <div><h3>Data pipeline</h3>
+          <p>Canonical MusicXML writer/reader, seeded key-aware melody generator, Verovio render
+          harness, corpus builder. Gate: 100% round-trip audits on every admitted system — passed
+          (70/70 pilot, render visually verified against its token line).</p></div>
+        </div>
+        <div class="milestone done">
+          <span class="tag done">DONE</span><span class="phase">A2</span>
+          <div><h3>Normalization + measured degradation</h3>
+          <p>Interline normalization proven on all 180 real training crops; seed-deterministic
+          degradation calibrated to real-photo statistics. Gate: degraded-synthetic medians inside
+          real IQR windows for mean / contrast / sharpness — passed (204 vs 202 · 34.3 vs 36.2 ·
+          188 vs 297).</p></div>
+        </div>
+        <div class="milestone now">
+          <span class="tag now">ACTIVE</span><span class="phase">A3</span>
+          <div><h3>CTC recognizer</h3>
+          <p>10,000-system training corpus + 1,000-system validation corpus, fresh degradations every
+          epoch, 6M-parameter CRNN+CTC on an RTX 4090. Gate: degraded-validation performance strong
+          enough that semantic error is at or below the main track's <em>clean</em> TER (~0.07).</p></div>
+        </div>
+        <div class="milestone">
+          <span class="tag next">NEXT</span><span class="phase">A4</span>
+          <div><h3>One-shot real-photo evaluation</h3>
+          <p>The 60-photo M9.5 development validation split, evaluated once with Track-A-comparable
+          metrics. Gate: beat the main track's adapted baseline (TER 0.2561) with altered-note
+          emission near the reference ratio. The sealed M9.4 final benchmark is not touched.</p></div>
+        </div>
+        <div class="milestone">
+          <span class="tag next">NEXT</span><span class="phase">A5</span>
+          <div><h3>Head-to-head decision</h3>
+          <p>Keep / kill / merge writeup. If the bet wins, the deterministic semantics layer and
+          degradation pipeline become the recognition backbone; if it loses, they port back to the
+          main track anyway.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="target">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">The measuring stick</p>
+          <h2>Same images, same metric, different theory.</h2>
+        </div>
+        <p>Agnostic predictions convert deterministically to the main track's token space, so both
+        approaches are scored identically on the same 60 held-out photos.</p>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Real-photo validation (60 systems)</th><th class="num">Track A frozen</th><th class="num">Track A adapted</th><th class="num">This track's target</th></tr></thead>
+          <tbody>
+            <tr><td>Token error rate</td><td class="num">0.2748</td><td class="num">0.2561</td><td class="num"><strong>&lt; 0.2561</strong></td></tr>
+            <tr><td>Exact systems</td><td class="num">0 / 60</td><td class="num">0 / 60</td><td class="num"><strong>&gt; 0</strong></td></tr>
+            <tr><td>Altered-note output/reference</td><td class="num">69 / 203</td><td class="num">85 / 203</td><td class="num"><strong>≈ 203 / 203</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:20px;color:var(--muted);font-size:.92rem">Scope is deliberately identical to the main
+      track's V1: single treble staff, monophonic, nine duration values, keys −7…+7. The richer
+      Score IR v2 representation work (chords, beams, fingerings, voices) remains the shared
+      downstream layer both tracks feed into.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>AI OMR Agnostic — a parallel research track by Samuel Tung. Repo: <code>ai-omr-agnostic</code> ·
+      Main track plan: <a href="/ai-omr/">/ai-omr</a> · This page is the living planning document and is
+      updated as milestones complete.</p>
+    </div>
+  </footer>
+</body>
+</html>

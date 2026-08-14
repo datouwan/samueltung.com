@@ -17,6 +17,8 @@ import { handleWorldCupApi } from "./worldcup/api.js";
 function isPublicPath(pathname) {
   return pathname === "/ai-omr"
     || pathname.startsWith("/ai-omr/")
+    || pathname === "/ai-omr-agnostic"
+    || pathname.startsWith("/ai-omr-agnostic/")
     || pathname === "/worldcup"
     || pathname.startsWith("/worldcup/")
     || pathname === "/ai-omr-deepseek"
