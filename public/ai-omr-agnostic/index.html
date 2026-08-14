@@ -223,7 +223,7 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Living roadmap · updated 2026-08-13 (evening: A3 passed)</p>
+          <p class="eyebrow">Living roadmap · updated 2026-08-13 (night: A0–A5 complete, bet won)</p>
           <h2>Milestones with gates, not vibes.</h2>
         </div>
         <p>Each milestone has a predeclared exit gate. Statuses here are updated as the work lands.</p>
@@ -261,24 +261,37 @@
           monotonic CTC formulation learns this task dramatically faster than autoregressive
           semantic decoding.</p></div>
         </div>
-        <div class="milestone now">
-          <span class="tag now">ACTIVE</span><span class="phase">A4</span>
-          <div><h3>One-shot real-photo evaluation</h3>
-          <p>Pipeline shakedown on 12 <em>training</em>-split photos (validation untouched) already
-          reads real photos at TER 0.244 — Track A's adapted level — from purely synthetic training,
-          with two near-perfect systems. It also exposed two engraving gaps now fixed: training
-          renders lacked beam groups (beamed eighths were read as quarters) and used a single music
-          font. Retraining on beamed multi-font renders, then the 60-photo validation split is
-          evaluated exactly once. Gate: beat the main track's adapted baseline (TER 0.2561) with
-          altered-note emission near the reference ratio. The sealed M9.4 final benchmark is not
-          touched.</p></div>
+        <div class="milestone done">
+          <span class="tag done">DONE</span><span class="phase">A4</span>
+          <div><h3>One-shot real-photo evaluation — gate passed 4×</h3>
+          <p>A 12-photo training-split shakedown exposed two engraving gaps (missing beam groups,
+          single music font), fixed in one renderer iteration. The 60-photo validation split was
+          then evaluated exactly once: <strong>TER 0.0632 vs the main track's adapted 0.2561, with
+          29/60 exact systems vs 0/60</strong> — real-photo error below the main track's
+          clean-synthetic error, from ~25 minutes of purely synthetic training. The model emitted
+          137/203 altered notes: exactly the number physically printable from these pages. The
+          sealed M9.4 benchmark was not touched.</p></div>
+        </div>
+        <div class="milestone done">
+          <span class="tag done">DONE</span><span class="phase">A5</span>
+          <div><h3>Head-to-head decision: KEEP</h3>
+          <p>The graphic-first factorization becomes the recommended recognition backbone. The
+          evaluation also uncovered a shared-dataset defect: capture-package MusicXML carries
+          sounding alterations but no printed-accidental elements, and Verovio does not infer
+          them — so chromatic accidentals were never in the printed ink, making part of the main
+          track's "naturalization" failure unwinnable for any model. Against the
+          <em>printable</em> reference (what the ink actually supports), this track reads the
+          photos at TER 0.0206 with 58/60 exact systems — including every printable accidental
+          (137/137).</p></div>
         </div>
         <div class="milestone">
-          <span class="tag next">NEXT</span><span class="phase">A5</span>
-          <div><h3>Head-to-head decision</h3>
-          <p>Keep / kill / merge writeup. If the bet wins, the deterministic semantics layer and
-          degradation pipeline become the recognition backbone; if it loses, they port back to the
-          main track anyway.</p></div>
+          <span class="tag next">NEXT</span><span class="phase">A6+</span>
+          <div><h3>Beyond the single staff</h3>
+          <p>Fix the capture pipeline's accidental emission so future photo sets carry printable
+          chromatic labels; run a newly sourced sealed final benchmark before any deployment
+          claim; extend the agnostic vocabulary toward Score IR v2 (chords, beams-as-targets,
+          fingerings, slurs); broaden engraving realism (more fonts, lyrics and dynamics as
+          distractor ink, full pages).</p></div>
         </div>
       </div>
     </div>
@@ -296,14 +309,22 @@
       </div>
       <div class="card" style="overflow-x:auto">
         <table>
-          <thead><tr><th>Real-photo validation (60 systems)</th><th class="num">Track A frozen</th><th class="num">Track A adapted</th><th class="num">This track's target</th></tr></thead>
+          <thead><tr><th>Real-photo validation (60 systems)</th><th class="num">Track A frozen</th><th class="num">Track A adapted</th><th class="num">This track — final</th></tr></thead>
           <tbody>
-            <tr><td>Token error rate</td><td class="num">0.2748</td><td class="num">0.2561</td><td class="num"><strong>&lt; 0.2561</strong></td></tr>
-            <tr><td>Exact systems</td><td class="num">0 / 60</td><td class="num">0 / 60</td><td class="num"><strong>&gt; 0</strong></td></tr>
-            <tr><td>Altered-note output/reference</td><td class="num">69 / 203</td><td class="num">85 / 203</td><td class="num"><strong>≈ 203 / 203</strong></td></tr>
+            <tr><td>Token error rate</td><td class="num">0.2748</td><td class="num">0.2561</td><td class="num"><strong>0.0632</strong></td></tr>
+            <tr><td>Pitch TER</td><td class="num">0.4531</td><td class="num">0.4319</td><td class="num"><strong>0.1398</strong></td></tr>
+            <tr><td>Duration TER</td><td class="num">0.2407</td><td class="num">0.2248</td><td class="num"><strong>0.0212</strong></td></tr>
+            <tr><td>Exact systems</td><td class="num">0 / 60</td><td class="num">0 / 60</td><td class="num"><strong>29 / 60</strong></td></tr>
+            <tr><td>Key / time headers</td><td class="num">93% / 95%</td><td class="num">93% / 95%</td><td class="num"><strong>98% / 98%</strong></td></tr>
+            <tr><td>Altered-note output/reference</td><td class="num">69 / 203</td><td class="num">85 / 203</td><td class="num"><strong>137 / 203</strong> (= all 137 printable)</td></tr>
           </tbody>
         </table>
       </div>
+      <p style="margin-top:16px;color:var(--muted);font-size:.92rem"><strong style="color:var(--ink)">Result, 2026-08-13:</strong>
+      one-shot evaluation, identical metric, same 60 held-out photos. Real-photo error landed
+      <em>below the main track's clean-synthetic error</em> (0.0689) from a 6M-parameter model
+      trained ~25 minutes on synthetic renders only. Against the printable reference — what the
+      printed ink actually supports — TER is 0.0206 with 58/60 exact systems.</p>
       <p style="margin-top:20px;color:var(--muted);font-size:.92rem">Scope is deliberately identical to the main
       track's V1: single treble staff, monophonic, nine duration values, keys −7…+7. The richer
       Score IR v2 representation work (chords, beams, fingerings, voices) remains the shared
