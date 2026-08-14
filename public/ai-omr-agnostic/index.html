@@ -63,15 +63,16 @@
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
     th { font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
     td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-    .roadmap { position: relative; }
-    .roadmap::before { content: ""; position: absolute; top: 15px; bottom: 15px; left: 20px; width: 2px; background: var(--line); }
-    .milestone { position: relative; display: grid; grid-template-columns: 62px 110px 1fr; gap: 20px; padding: 12px 0 30px; }
-    .milestone::before { content: ""; z-index: 1; width: 14px; height: 14px; margin: 4px 0 0 14px; background: var(--card); border: 3px solid var(--line); border-radius: 50%; }
-    .milestone.done::before { background: var(--green); border-color: var(--mint); }
-    .milestone.now::before { background: var(--coral); border-color: #f9c3b5; box-shadow: 0 0 0 6px rgba(226,111,81,.12); }
-    .milestone .phase { color: var(--muted); font-size: .8rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-    .milestone h3 { margin: 0 0 4px; font-size: 1rem; }
-    .milestone p { margin: 0; color: var(--muted); font-size: .92rem; }
+    .roadmap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .ms { display: flex; flex-direction: column; gap: 8px; padding: 22px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+    .ms.done { border-top: 4px solid var(--green); }
+    .ms.next { border-top: 4px solid var(--gold); }
+    .ms-head { display: flex; justify-content: space-between; align-items: center; }
+    .ms .phase { color: var(--muted); font-size: .78rem; font-weight: 900; letter-spacing: .12em; }
+    .ms h3 { margin: 0; font: 500 1.12rem/1.2 Georgia, serif; }
+    .ms p { margin: 0; color: var(--muted); font-size: .86rem; }
+    .ms .gate { margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line); font-size: .82rem; color: var(--green-dark); }
+    .ms .gate strong { font-weight: 850; }
     .tag { display: inline-block; padding: 4px 9px; border-radius: 999px; font-size: .68rem; font-weight: 900; letter-spacing: .06em; }
     .tag.done { background: var(--mint); color: var(--green-dark); }
     .tag.now { background: #f3d9d1; color: #8f402d; }
@@ -80,13 +81,14 @@
     .tokens code { padding: 5px 9px; background: #0b3027; color: #d7eee4; border-radius: 8px; font: .78rem ui-monospace, Consolas, monospace; }
     .tokens code.acc { background: #6b2f1e; color: #ffd9cb; }
     footer { padding: 46px 0 60px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+    @media (max-width: 1100px) {
+      .roadmap-grid { grid-template-columns: 1fr 1fr; }
+    }
     @media (max-width: 900px) {
       .cols2, .cols3 { grid-template-columns: 1fr; }
+      .roadmap-grid { grid-template-columns: 1fr; }
       .flow { grid-template-columns: 1fr; }
       .flow .arrow { transform: rotate(90deg); }
-      .milestone { grid-template-columns: 40px 1fr; }
-      .milestone .phase { grid-column: 2; }
-      .milestone div:last-child { grid-column: 2; }
     }
   </style>
 </head>
@@ -228,71 +230,57 @@
         </div>
         <p>Each milestone has a predeclared exit gate. Statuses here are updated as the work lands.</p>
       </div>
-      <div class="roadmap">
-        <div class="milestone done">
-          <span class="tag done">DONE</span><span class="phase">A0</span>
-          <div><h3>Representation core</h3>
-          <p>475-token agnostic vocabulary, semantic score model, fail-closed bidirectional converter
-          with the full engraving state machine. Gate: round-trip identity incl. a 300-case randomized
-          sweep — passed, 26 tests.</p></div>
-        </div>
-        <div class="milestone done">
-          <span class="tag done">DONE</span><span class="phase">A1</span>
-          <div><h3>Data pipeline</h3>
-          <p>Canonical MusicXML writer/reader, seeded key-aware melody generator, Verovio render
-          harness, corpus builder. Gate: 100% round-trip audits on every admitted system — passed
-          (70/70 pilot, render visually verified against its token line).</p></div>
-        </div>
-        <div class="milestone done">
-          <span class="tag done">DONE</span><span class="phase">A2</span>
-          <div><h3>Normalization + measured degradation</h3>
-          <p>Interline normalization proven on all 180 real training crops; seed-deterministic
-          degradation calibrated to real-photo statistics. Gate: degraded-synthetic medians inside
-          real IQR windows for mean / contrast / sharpness — passed (204 vs 202 · 34.3 vs 36.2 ·
-          188 vs 297).</p></div>
-        </div>
-        <div class="milestone done">
-          <span class="tag done">DONE</span><span class="phase">A3</span>
-          <div><h3>CTC recognizer</h3>
-          <p>10,000-system corpus, fresh degradations every epoch, 6M-parameter CRNN+CTC on an
-          RTX 4090. Gate: semantic error at or below the main track's <em>clean</em> TER (~0.07) —
-          <strong>passed by two orders of magnitude</strong>: degraded-validation agnostic TER
-          0.003, 93% exact systems, 100% parseable predictions, ~25 minutes of training. The
-          monotonic CTC formulation learns this task dramatically faster than autoregressive
-          semantic decoding.</p></div>
-        </div>
-        <div class="milestone done">
-          <span class="tag done">DONE</span><span class="phase">A4</span>
-          <div><h3>One-shot real-photo evaluation — gate passed 4×</h3>
-          <p>A 12-photo training-split shakedown exposed two engraving gaps (missing beam groups,
-          single music font), fixed in one renderer iteration. The 60-photo validation split was
-          then evaluated exactly once: <strong>TER 0.0632 vs the main track's adapted 0.2561, with
-          29/60 exact systems vs 0/60</strong> — real-photo error below the main track's
-          clean-synthetic error, from ~25 minutes of purely synthetic training. The model emitted
-          137/203 altered notes: exactly the number physically printable from these pages. The
-          sealed M9.4 benchmark was not touched.</p></div>
-        </div>
-        <div class="milestone done">
-          <span class="tag done">DONE</span><span class="phase">A5</span>
-          <div><h3>Head-to-head decision: KEEP</h3>
-          <p>The graphic-first factorization becomes the recommended recognition backbone. The
-          evaluation also uncovered a shared-dataset defect: capture-package MusicXML carries
-          sounding alterations but no printed-accidental elements, and Verovio does not infer
-          them — so chromatic accidentals were never in the printed ink, making part of the main
-          track's "naturalization" failure unwinnable for any model. Against the
-          <em>printable</em> reference (what the ink actually supports), this track reads the
-          photos at TER 0.0206 with 58/60 exact systems — including every printable accidental
-          (137/137).</p></div>
-        </div>
-        <div class="milestone">
-          <span class="tag next">NEXT</span><span class="phase">A6+</span>
-          <div><h3>Beyond the single staff</h3>
-          <p>Fix the capture pipeline's accidental emission so future photo sets carry printable
-          chromatic labels; run a newly sourced sealed final benchmark before any deployment
-          claim; extend the agnostic vocabulary toward Score IR v2 (chords, beams-as-targets,
-          fingerings, slurs); broaden engraving realism (more fonts, lyrics and dynamics as
-          distractor ink, full pages).</p></div>
-        </div>
+      <div class="roadmap-grid">
+        <article class="ms done">
+          <div class="ms-head"><span class="phase">A0</span><span class="tag done">DONE</span></div>
+          <h3>Representation core</h3>
+          <p>475-token agnostic vocabulary and the fail-closed engraving state machine — pitch
+          spelling as tested code.</p>
+          <p class="gate">Gate: round-trip identity — <strong>passed</strong>, incl. 300-case randomized sweep</p>
+        </article>
+        <article class="ms done">
+          <div class="ms-head"><span class="phase">A1</span><span class="tag done">DONE</span></div>
+          <h3>Data pipeline</h3>
+          <p>MusicXML writer/reader, key-aware melody generator, Verovio render harness, audited
+          corpus builder.</p>
+          <p class="gate">Gate: 100% round-trip audits — <strong>passed</strong>, render verified vs targets</p>
+        </article>
+        <article class="ms done">
+          <div class="ms-head"><span class="phase">A2</span><span class="tag done">DONE</span></div>
+          <h3>Normalize + degrade</h3>
+          <p>Interline-normalized canvas (proven on all 180 real crops) and degradation calibrated
+          to real-photo statistics.</p>
+          <p class="gate">Gate: synthetic medians inside real IQR windows — <strong>passed</strong></p>
+        </article>
+        <article class="ms done">
+          <div class="ms-head"><span class="phase">A3</span><span class="tag done">DONE</span></div>
+          <h3>CTC recognizer</h3>
+          <p>6M-parameter CRNN+CTC, 10k systems, fresh degradations every epoch, ~25 min on an
+          RTX 4090.</p>
+          <p class="gate">Gate: ≤ Track A clean TER 0.07 — <strong>passed 20×</strong> (TER 0.003, 93% exact)</p>
+        </article>
+        <article class="ms done">
+          <div class="ms-head"><span class="phase">A4</span><span class="tag done">DONE</span></div>
+          <h3>Real-photo evaluation</h3>
+          <p>One-shot on the 60 held-out photos after a 12-photo shakedown fixed beam and font
+          engraving gaps.</p>
+          <p class="gate">Gate: beat TER 0.2561 — <strong>passed 4×</strong> (0.0632, 29/60 exact)</p>
+        </article>
+        <article class="ms done">
+          <div class="ms-head"><span class="phase">A5</span><span class="tag done">DONE</span></div>
+          <h3>Decision: KEEP</h3>
+          <p>Graphic-first becomes the recommended backbone. Also found: the prints contain no
+          chromatic-accidental ink — part of Track A's failure was unwinnable.</p>
+          <p class="gate">Printable-reference reading: <strong>TER 0.0206, 58/60 exact</strong></p>
+        </article>
+        <article class="ms next" style="grid-column: 1 / -1">
+          <div class="ms-head"><span class="phase">A6+</span><span class="tag next">NEXT</span></div>
+          <h3>Beyond the single staff</h3>
+          <p>Fix capture-pipeline accidental emission → newly sourced sealed final benchmark →
+          extend the agnostic vocabulary toward Score IR v2 (chords, beams-as-targets, fingerings,
+          slurs) → broaden engraving realism (more fonts, lyrics and dynamics as distractor ink,
+          full pages).</p>
+        </article>
       </div>
     </div>
   </section>
