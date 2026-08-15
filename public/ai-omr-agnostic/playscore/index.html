@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="What PlayScore 2 / ReadScoreLib actually does, why it feels instant and accurate, and a calibrated assessment of whether the graphic-first track can beat it — especially for the teacher WYSIWYG-correction product.">
+  <meta name="theme-color" content="#101c19">
+  <title>PlayScore 2 Assessment — AI OMR Agnostic</title>
+  <style>
+    :root {
+      --ink: #15221f; --muted: #5d6a66; --paper: #f4f0e7; --card: #fffdf8;
+      --line: #d9d4c8; --green: #1e6b55; --green-dark: #10483a; --mint: #bfe7d5;
+      --coral: #e26f51; --gold: #d3a33f; --blue: #5674a8;
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; color: var(--ink);
+      background: radial-gradient(circle at 8% 2%, rgba(191,231,213,.42), transparent 28rem), var(--paper);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    nav { position: sticky; z-index: 10; top: 0; background: rgba(244,240,231,.9); border-bottom: 1px solid rgba(21,34,31,.1); backdrop-filter: blur(14px); }
+    .nav-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand span { color: var(--green); }
+    .nav-links { display: flex; gap: 22px; font-size: .86rem; font-weight: 700; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--green); }
+    header { padding: 82px 0 60px; }
+    h1 { max-width: 900px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.6rem, 5.6vw, 4.8rem); font-weight: 500; line-height: .98; letter-spacing: -.05em; }
+    h1 em { color: var(--green); font-style: normal; }
+    .lede { max-width: 760px; margin: 26px 0 0; color: var(--muted); font-size: clamp(1.02rem, 1.6vw, 1.22rem); }
+    section { padding: 62px 0; }
+    .section-head { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 32px; flex-wrap: wrap; }
+    h2 { margin: 0; font: 500 clamp(1.8rem, 3.4vw, 3rem)/1.06 Georgia, serif; letter-spacing: -.03em; }
+    .section-head > p { max-width: 520px; margin: 0; color: var(--muted); }
+    .grid { display: grid; gap: 18px; }
+    .cols2 { grid-template-columns: 1fr 1fr; }
+    .cols3 { grid-template-columns: repeat(3, 1fr); }
+    .card { padding: 30px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(28,47,40,.04); }
+    .card h3 { margin: 0 0 12px; font: 500 1.3rem/1.18 Georgia, serif; }
+    .card p, .card li { color: var(--muted); font-size: .93rem; }
+    .card ul { margin: 0; padding-left: 20px; }
+    .dark { color: white; background: var(--green-dark); }
+    .dark .eyebrow { color: var(--mint); }
+    .dark h2 { color: white; }
+    .dark .section-head > p, .dark p { color: #c4d4ce; }
+    .dark .card { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.14); box-shadow: none; }
+    .dark .card h3 { color: white; }
+    .dark .card p, .dark .card li { color: #c4d4ce; }
+    .verdict { border-left: 6px solid var(--line); }
+    .verdict.high { border-left-color: var(--green); }
+    .verdict.temper { border-left-color: var(--gold); }
+    .verdict.risk { border-left-color: var(--coral); }
+    .verdict .call { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; font-size: .68rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .verdict.high .call { background: var(--mint); color: var(--green-dark); }
+    .verdict.temper .call { background: #f0e3c2; color: #7a5c14; }
+    .verdict.risk .call { background: #f3d9d1; color: #8f402d; }
+    .num-badge { display: inline-grid; place-items: center; width: 34px; height: 34px; margin-bottom: 12px; border-radius: 10px; background: var(--mint); color: var(--green-dark); font-weight: 900; }
+    footer { padding: 46px 0 60px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+    footer a { color: var(--green-dark); }
+    @media (max-width: 900px) {
+      .cols2, .cols3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap nav-inner">
+      <a class="brand" href="/ai-omr-agnostic/">AI&nbsp;OMR&nbsp;<span>Agnostic</span></a>
+      <div class="nav-links">
+        <a href="#instant">Why instant</a>
+        <a href="#accurate">Why accurate</a>
+        <a href="#confidence">Can we beat it</a>
+        <a href="#actions">Actions</a>
+        <a href="/ai-omr-agnostic/">← Roadmap</a>
+      </div>
+    </div>
+  </nav>
+
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">Competitive assessment · 2026-08-14</p>
+      <h1>The incumbent, <em>measured</em>.<br>PlayScore&nbsp;2 / ReadScoreLib.</h1>
+      <p class="lede">PlayScore 2 is the market's benchmark for "point a phone at a score and hear
+      it play." This note explains — from public sources only — why it feels instant, why it feels
+      highly accurate, where those impressions are real versus perceptual, and a calibrated answer
+      to the question that matters: can this track beat it for a product where the sheet is
+      <strong>rendered as notation and corrected WYSIWYG</strong> by a teacher who then shares it
+      with students?</p>
+    </div>
+  </header>
+
+  <section id="instant">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Why it feels instant</p>
+          <h2>Cheap pipeline, streaming architecture, playback-first UX.</h2>
+        </div>
+        <p>All three reasons are confirmed in primary sources — the 2021 Dorico interview with
+        creator Anthony Wilkes, the SeeScore developer pages, and Scoring Notes' reviews.</p>
+      </div>
+      <div class="grid cols3">
+        <article class="card">
+          <h3>Compiled C library, on-device</h3>
+          <p>ReadScoreLib is a native embedded SDK — no cloud round-trip, no large autoregressive
+          decode. Classical compiler-style stages (thresholding, staff finding, symbol
+          classification, parsing) are computationally cheap. Wilkes quotes ~1 page/second,
+          improved to 3–4 pages/second after parallelizing page processing.</p>
+        </article>
+        <article class="card">
+          <h3>Per-page front end, score-wide back end</h3>
+          <p>Early recognition runs page by page; only key/time analysis and cross-page
+          relationships (ties, slurs) need the whole score. Playback can start the moment page one
+          is parsed — the app feels instant by architecture, even on long documents.</p>
+        </article>
+        <article class="card">
+          <h3>Playback-first product design</h3>
+          <p>Text and lyrics recognition is off by default to maximize speed; audio starts
+          immediately after capture. A large share of "instant" is latency-hiding UX, not raw
+          throughput.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="accurate" class="dark">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Why it feels accurate</p>
+          <h2>Half real engineering, half a forgiving metric.</h2>
+        </div>
+        <p>Users report "98% accuracy." Head-to-head reviews rank it mid-tier for notation
+        fidelity. Both are true — they measure different things.</p>
+      </div>
+      <div class="grid cols2">
+        <article class="card">
+          <h3>Real: a grammar layer amplifies raw recognition</h3>
+          <p>Syntax-directed parsing, semantic analysis, and score-wide statistical reconciliation
+          repair visual-layer errors: measures must sum to the time signature, an obscured clef can
+          be deduced from the key signature, missing elements get reconstructed. Musical constraints
+          act as an accuracy multiplier over whatever the symbol classifier alone achieves. This is
+          the genuinely borrowable idea.</p>
+        </article>
+        <article class="card">
+          <h3>Perceptual: playback hides most error classes</h3>
+          <p>Scoring Notes' comparison ranked PlayScore <strong>mid-tier for MusicXML fidelity</strong> —
+          behind the ML-based Newzik and Soundslice — and found it drops cue notes, tempo and
+          dynamic markings, repeats, and measure numbers. None of that is audible when a simple
+          piece plays back. Judged by ear, only pitch and rhythm count — exactly where the grammar
+          layer is strongest. The forgiving metric flatters it.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="confidence" style="background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Calibrated confidence</p>
+          <h2>Can this track beat it?</h2>
+        </div>
+        <p>Honest answer: yes on the declared scope and on the teacher workflow — with one known
+        risk and one deliberately conceded frontier.</p>
+      </div>
+      <div class="grid cols2">
+        <article class="card verdict high">
+          <span class="call">High confidence</span>
+          <h3>Within V1 scope (single staff, monophonic)</h3>
+          <p>The A5 evidence: TER 0.0632 on real photos, 29/60 exact systems, all 137 printable
+          accidentals recovered — from a 6M-parameter CRNN trained ~25 minutes on synthetic renders.
+          The structural bet is the same one ReadScoreLib validates (<em>recognize the ink, derive the
+          semantics in code</em>), but the deterministic engraving state machine makes pitch-spelling
+          errors impossible by construction instead of repairing them afterward.</p>
+        </article>
+        <article class="card verdict high">
+          <span class="call">High confidence</span>
+          <h3>On the teacher workflow as a whole</h3>
+          <p>PlayScore has no editor; correction means export → MuseScore → manual cleanup, with no
+          link back to the photo. This track's graphic-first IR is built for a correction UI:</p>
+          <ul>
+            <li>CTC yields per-token confidence free — tint the few uncertain measures instead of
+            proofreading all of them;</li>
+            <li>object coordinates — click a rendered note, see the original ink beside it;
+            correction becomes verification;</li>
+            <li>Verovio (already the render harness) is the right rights-clean WYSIWYG engine: SVG
+            with element IDs mapping back to the source encoding.</li>
+          </ul>
+          <p style="margin-top:12px">The product metric is <strong>minutes-to-correct-sheet</strong>, not raw
+          TER. A 95%-accurate system with confidence highlighting beats a 98%-accurate black box
+          that emits MusicXML.</p>
+        </article>
+        <article class="card verdict temper">
+          <span class="call">Tempered</span>
+          <h3>On general repertoire</h3>
+          <p>The gap to PlayScore is scope, not per-symbol quality: chords, multiple voices,
+          cross-staff beaming, grace notes, tuplets, multi-page continuity — decades of engineering.
+          Matching that breadth is a multi-year effort. But teacher practice material (etudes,
+          exercises, method-book pieces) skews toward single or two staves with light polyphony —
+          chords plus full-page reading (the A7+ items, in that order) likely cover most of it.</p>
+        </article>
+        <article class="card verdict risk">
+          <span class="call">Known risk</span>
+          <h3>Full-page reading on real photos</h3>
+          <p>All current numbers are per-system crops; the page → systems splitter has not met real
+          photos yet. This is where PlayScore's geometric-normalization stage earns its keep.
+          Engineering risk rather than research risk — but it sits between the current results and
+          a usable product, and deserves its own gate.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="actions">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Actions</p>
+          <h2>Three decisions this assessment locks in.</h2>
+        </div>
+        <p>Recorded in <code>docs/PLAYSCORE_ASSESSMENT.md</code> in the repo; this page is the
+        readable mirror.</p>
+      </div>
+      <div class="grid cols3">
+        <article class="card">
+          <div class="num-badge">1</div>
+          <h3>Benchmark the incumbent, rights-clean</h3>
+          <p>Once the B1 photos are captured, run the same 30 pages through PlayScore 2, export its
+          MusicXML, and score it with the identical TER metric against the same references. The
+          benchmark content is generated in-house, so this is clean — and it replaces estimation
+          with a sealed, apples-to-apples number.</p>
+        </article>
+        <article class="card">
+          <div class="num-badge">2</div>
+          <h3>Promote confidence + coordinates to first-class IR</h3>
+          <p>Per-token confidence and recognized-object coordinates must survive into the Score IR —
+          the WYSIWYG editor depends on both. They stop being debug artifacts and become product
+          requirements.</p>
+        </article>
+        <article class="card">
+          <div class="num-badge">3</div>
+          <h3>Confirm the roadmap ordering</h3>
+          <p>The A7+ sequence — chords/double stops first, then full-page multi-system reading — is
+          exactly the critical path for the teacher persona. No reordering needed; this assessment
+          validates it.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>Sources:
+      <a href="https://blog.dorico.com/2021/09/an-interview-with-playscore-creator-anthony-wilkes/">Dorico interview with Anthony Wilkes</a> ·
+      <a href="https://www.scoringnotes.com/reviews/scanning-the-current-omr-landscape/">Scoring Notes OMR landscape review</a> ·
+      <a href="https://sites.google.com/view/worms2021/program">WoRMS 2021 keynote listing</a> ·
+      <a href="https://www.seescore.co.uk/developers/">SeeScore / ReadScoreLib developer pages</a> ·
+      <a href="https://www.playscore.co/">playscore.co</a>.
+      No claims are made about ReadScoreLib internals beyond public statements.</p>
+      <p style="margin-top:10px">AI OMR Agnostic — a parallel research track by Samuel Tung ·
+      <a href="/ai-omr-agnostic/">Roadmap</a> · <a href="/ai-omr/">Track A plan</a></p>
+    </div>
+  </footer>
+</body>
+</html>

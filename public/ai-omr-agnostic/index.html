@@ -102,6 +102,7 @@
         <a href="#method">Method</a>
         <a href="#roadmap">Roadmap</a>
         <a href="#target">Target</a>
+        <a href="/ai-omr-agnostic/playscore/">PlayScore assessment</a>
         <a href="/ai-omr/">Track A plan →</a>
       </div>
     </div>
@@ -225,7 +226,7 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Living roadmap · updated 2026-08-13 (late: A6 done, B1 ready to print)</p>
+          <p class="eyebrow">Living roadmap · updated 2026-08-14 (B1 sealed benchmark: all gates passed)</p>
           <h2>Milestones with gates, not vibes.</h2>
         </div>
         <p>Each milestone has a predeclared exit gate. Statuses here are updated as the work lands.</p>
@@ -280,19 +281,24 @@
           plus an injector that makes capture MusicXML print its chromatic accidentals.</p>
           <p class="gate">Dev set (180 hard crops): <strong>82 vs 69 exact, key headers 84% vs 75%</strong></p>
         </article>
-        <article class="ms next">
-          <div class="ms-head"><span class="phase">B1</span><span class="tag next">READY</span></div>
+        <article class="ms done">
+          <div class="ms-head"><span class="phase">B1</span><span class="tag done">PASSED</span></div>
           <h3>Sealed final benchmark</h3>
-          <p>120 newly sourced systems, 30 print pages, 110 printable chromatic accidentals —
-          the first capture set whose ink matches its labels. Checkpoint declared by SHA-256
-          before any photo.</p>
-          <p class="gate">Awaiting print &amp; capture · gates predeclared: <strong>TER ≤ 0.10, ≥ 40% exact</strong></p>
+          <p>120 never-photographed systems, 30 pages, two sessions, three lighting
+          conditions; checkpoint declared by SHA-256 before any photo; evaluated exactly
+          once. All eight predeclared gates passed.</p>
+          <p class="gate">Gate: TER ≤ 0.10, ≥ 40% exact — <strong>TER 0.0190, 109/120 exact,
+          97.4% accidentals, 95% measures correction-free</strong></p>
         </article>
         <article class="ms next">
-          <div class="ms-head"><span class="phase">A7+</span><span class="tag next">NEXT</span></div>
+          <div class="ms-head"><span class="phase">A7+</span><span class="tag now">NOW</span></div>
           <h3>Beyond the single staff</h3>
-          <p>Extend the agnostic vocabulary toward Score IR v2 — chords, beams-as-targets,
-          fingerings, slurs — and full-page multi-system reading for real-world editions.</p>
+          <p>Score IR v2 under way: chords landed same-day — one grouping token,
+          per-notehead accidentals through the same engraving state machine, retrained on
+          an 11k-system chord corpus. Next: real-photo chord validation, then full-page
+          multi-system reading.</p>
+          <p class="gate">First gate: synthetic-val TER <strong>0.0046, 88.6% exact, zero
+          monophonic regression</strong> (2026-08-14)</p>
         </article>
       </div>
     </div>
@@ -326,6 +332,11 @@
       <em>below the main track's clean-synthetic error</em> (0.0689) from a 6M-parameter model
       trained ~25 minutes on synthetic renders only. Against the printable reference — what the
       printed ink actually supports — TER is 0.0206 with 58/60 exact systems.</p>
+      <p style="margin-top:12px;color:var(--muted);font-size:.92rem"><strong style="color:var(--ink)">Sealed confirmation, 2026-08-14:</strong>
+      on the independent B1 benchmark — 120 never-photographed systems with fully printable
+      accidentals, checkpoint declared by SHA-256 before capture, evaluated exactly once —
+      <em>TER 0.0190 with 109/120 exact systems and 97.4% altered-note recovery</em>, passing all
+      eight predeclared gates. 95% of measures need zero correction.</p>
       <p style="margin-top:20px;color:var(--muted);font-size:.92rem">Scope is deliberately identical to the main
       track's V1: single treble staff, monophonic, nine duration values, keys −7…+7. The richer
       Score IR v2 representation work (chords, beams, fingerings, voices) remains the shared
@@ -336,8 +347,9 @@
   <footer>
     <div class="wrap">
       <p>AI OMR Agnostic — a parallel research track by Samuel Tung. Repo: <code>ai-omr-agnostic</code> ·
-      Main track plan: <a href="/ai-omr/">/ai-omr</a> · This page is the living planning document and is
-      updated as milestones complete.</p>
+      Main track plan: <a href="/ai-omr/">/ai-omr</a> ·
+      <a href="/ai-omr-agnostic/playscore/">PlayScore 2 competitive assessment</a> · This page is the
+      living planning document and is updated as milestones complete.</p>
     </div>
   </footer>
 </body>

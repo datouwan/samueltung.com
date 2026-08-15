@@ -62,7 +62,7 @@ function decorateAiOmrPlan(response) {
             <p class="eyebrow">Updated development plan · August 2026</p>
             <h2>Two tracks. One product pipeline.</h2>
           </div>
-          <p>Yesterday's plan was mostly a single recognition ladder. The project is now split intentionally: Track A proves the AI can read the score; Track B proves the product can represent and faithfully re-render richer notation.</p>
+          <p>Track A is in the M9.5 real-photo development cycle. Track B's deterministic representation foundation is complete, while neural vocabulary expansion remains behind the real-photo recognition gate.</p>
         </div>
 
         <div class="grid scope" style="align-items:stretch">
@@ -75,13 +75,13 @@ function decorateAiOmrPlan(response) {
               <span style="padding:6px 10px;border-radius:999px;background:#f3d9d1;color:#8f402d;font-size:.72rem;font-weight:900">ACTIVE</span>
             </div>
             <ol style="margin:0;padding-left:21px;color:#5d6a66">
-              <li style="padding:7px 0"><strong style="color:#15221f">M8 now:</strong> genuine image conditioning, not template collapse.</li>
-              <li style="padding:7px 0">Improve key/time/pickup/measure/event supervision.</li>
-              <li style="padding:7px 0">Improve pitch + duration accuracy and exact event/measure counts.</li>
-              <li style="padding:7px 0">Produce the first exact systems on the untouched clean benchmark.</li>
-              <li style="padding:7px 0">Only after that: scale the corpus and add camera/photo augmentation.</li>
+              <li style="padding:7px 0"><strong style="color:#15221f">M9.5 now:</strong> parameter-free dual-view inference is the frozen development lead.</li>
+              <li style="padding:7px 0">Clean/camera gates pass at TER 0.06976 / 0.06581.</li>
+              <li style="padding:7px 0">Real-photo development TER improves to 0.2187 with 3/60 exact systems.</li>
+              <li style="padding:7px 0">Next derive and audit training-only staff-relative notehead and accidental labels.</li>
+              <li style="padding:7px 0">Propose an auxiliary localization head only if the label audit passes.</li>
             </ol>
-            <p style="margin:22px 0 0;color:#5d6a66"><strong style="color:#15221f">Gate:</strong> do not expand the neural target vocabulary to rich notation until the current V1 recognizer proves real visual understanding.</p>
+            <p style="margin:22px 0 0;color:#5d6a66"><strong style="color:#15221f">Gate:</strong> freeze M9.5, preserve the 383-token V1 target and decoder, and reserve a new independent benchmark for the next final claim.</p>
           </article>
 
           <article class="card" style="padding:34px;border-top:5px solid #1e6b55">
@@ -90,16 +90,16 @@ function decorateAiOmrPlan(response) {
                 <p class="eyebrow" style="margin-bottom:5px">Track B · Score semantics</p>
                 <h3 style="margin:0;font:500 1.7rem/1.08 Georgia,serif">Score IR → faithful notation</h3>
               </div>
-              <span style="padding:6px 10px;border-radius:999px;background:#bfe7d5;color:#10483a;font-size:.72rem;font-weight:900">PARALLEL</span>
+              <span style="padding:6px 10px;border-radius:999px;background:#bfe7d5;color:#10483a;font-size:.72rem;font-weight:900">FOUNDATION COMPLETE</span>
             </div>
             <ol style="margin:0;padding-left:21px;color:#5d6a66">
-              <li style="padding:7px 0"><strong style="color:#15221f">Foundation now:</strong> deterministic Score IR v2 + round-trip tests.</li>
-              <li style="padding:7px 0">Add chord / violin double-stop representation.</li>
-              <li style="padding:7px 0">Add explicit beam groups, levels, and beam hooks.</li>
-              <li style="padding:7px 0">Preserve displayed accidentals separately from sounding pitch.</li>
-              <li style="padding:7px 0">Attach fingering to the correct note inside a chord.</li>
+              <li style="padding:7px 0"><strong style="color:#15221f">Conformance complete:</strong> deterministic Score IR v2 + round-trip rendering.</li>
+              <li style="padding:7px 0">Chords/double stops, explicit beams, displayed accidentals, and per-note fingering.</li>
+              <li style="padding:7px 0">Slurs, articulations, bowing techniques, and exact tuplets.</li>
+              <li style="padding:7px 0">Event-onset dynamics and deterministic multiple voices.</li>
+              <li style="padding:7px 0">One rights-clean fixture combines and renders every supported relationship.</li>
             </ol>
-            <p style="margin:22px 0 0;color:#5d6a66"><strong style="color:#15221f">Renderer decision:</strong> keep MusicXML + Verovio. The missing layer is semantic structure, not engraving capability.</p>
+            <p style="margin:22px 0 0;color:#5d6a66"><strong style="color:#15221f">Renderer decision:</strong> keep MusicXML + Verovio. Representation is ready; model-target expansion remains gated by Track A.</p>
           </article>
         </div>
 
@@ -124,22 +124,22 @@ function decorateAiOmrPlan(response) {
         <div class="section-head">
           <div>
             <p class="eyebrow">Track B architecture note</p>
-            <h2>Verovio can render it. The Score IR cannot — yet.</h2>
+            <h2>Score IR v2 now preserves the notation Verovio must render.</h2>
           </div>
-          <p>The next semantic milestone is not a new renderer. It is a richer intermediate representation for chords/double stops, explicit beam groups, printed accidentals, and per-note fingerings.</p>
+          <p>The deterministic conformance pass is complete: rich note relationships survive Score IR, MusicXML round trip, and Verovio rendering without changing the neural vocabulary.</p>
         </div>
         <div class="grid scope">
           <article class="card" style="padding:34px">
-            <h3 style="margin:0 0 14px">Keep the rendering stack</h3>
-            <p style="margin:0;color:#5d6a66">MusicXML + Verovio already cover the rich notation needed for violin practice. Keep the renderer and upgrade the contract between model output and MusicXML.</p>
+            <h3 style="margin:0 0 14px">Rendering stack retained</h3>
+            <p style="margin:0;color:#5d6a66">MusicXML + Verovio now round-trip and visibly render the complete bounded Score IR v2 feature set.</p>
           </article>
           <article class="card" style="padding:34px;background:#bfe7d5;border-color:transparent">
-            <h3 style="margin:0 0 14px;color:#10483a">Score IR v2 first target</h3>
-            <p style="margin:0 0 16px;color:#10483a">Represent the real-world sample that triggered this update: a beamed dotted-eighth + sixteenth figure with violin double stops, stacked fingerings, and a printed sharp.</p>
+            <h3 style="margin:0 0 14px;color:#10483a">Representation-only handoff complete</h3>
+            <p style="margin:0 0 16px;color:#10483a">The conformance fixture combines chords, beams, displayed accidentals, fingerings, relationships, tuplets, dynamics, and two voices in one rights-clean rendered score.</p>
             <a href="/ai-omr/score-ir/" style="font-weight:850;color:#10483a">Read the Score IR v2 architecture note →</a>
           </article>
         </div>
-        <p style="margin:22px 0 0;color:#5d6a66"><strong style="color:#15221f">Sequencing rule:</strong> Track B may be designed and round-trip tested in parallel, but Track A remains the active model-training gate until genuine image conditioning produces credible exact systems.</p>
+        <p style="margin:22px 0 0;color:#5d6a66"><strong style="color:#15221f">Sequencing rule:</strong> deterministic Track B representation may remain complete, but no v2 tokenizer or neural target expansion begins until Track A clears a credible independent real-photo gate.</p>
       </div>
     </section>`;
 

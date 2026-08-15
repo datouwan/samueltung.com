@@ -1,0 +1,123 @@
+.ai-nav {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  border-bottom: 1px solid rgba(21, 34, 31, .1);
+  background: rgba(244, 240, 231, .94);
+  backdrop-filter: blur(16px);
+}
+
+.ai-nav-inner {
+  width: min(1160px, calc(100% - 40px));
+  min-height: 66px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.ai-nav-brand {
+  flex: 0 0 auto;
+  color: #15221f;
+  font-weight: 900;
+  letter-spacing: -.035em;
+  text-decoration: none;
+}
+
+.ai-nav-brand span { color: #1e6b55; }
+
+#roadmap { scroll-margin-top: 82px; }
+
+.ai-nav-links {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  color: #15221f;
+  font-size: .84rem;
+  font-weight: 750;
+}
+
+.ai-nav-links a {
+  position: relative;
+  padding: 22px 0 20px;
+  text-decoration: none;
+}
+
+.ai-nav-links a:hover,
+.ai-nav-links a[aria-current="page"] { color: #1e6b55; }
+
+.ai-nav-links a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 13px;
+  left: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: #1e6b55;
+}
+
+.ai-mobile-menu {
+  display: none;
+  position: relative;
+  margin: 0 0 0 auto;
+  border: 0;
+}
+
+.ai-mobile-menu > summary {
+  min-width: 68px;
+  min-height: 44px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d9d4c8;
+  border-radius: 10px;
+  color: #15221f;
+  background: #fffdf8;
+  cursor: pointer;
+  list-style: none;
+  font-size: .78rem;
+  font-weight: 850;
+}
+
+.ai-mobile-menu > summary::-webkit-details-marker,
+.ai-mobile-menu > summary::after { display: none; content: ""; }
+
+.ai-mobile-panel {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  width: min(290px, calc(100vw - 26px));
+  padding: 8px;
+  border: 1px solid #d9d4c8;
+  border-radius: 14px;
+  background: #fffdf8;
+  box-shadow: 0 18px 50px rgba(18, 44, 36, .16);
+}
+
+.ai-mobile-panel a {
+  min-height: 46px;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  border-radius: 9px;
+  color: #15221f;
+  text-decoration: none;
+  font-size: .88rem;
+  font-weight: 750;
+}
+
+.ai-mobile-panel a:hover,
+.ai-mobile-panel a:focus-visible,
+.ai-mobile-panel a[aria-current="page"] {
+  color: #10483a;
+  background: #e6f4ed;
+}
+
+@media (max-width: 760px) {
+  .ai-nav-inner { width: min(100% - 26px, 1160px); }
+  .ai-nav-links { display: none; }
+  .ai-mobile-menu { display: block; }
+}

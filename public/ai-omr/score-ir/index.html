@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="AI OMR Score IR v2: expanding from monophonic pitch and duration tokens to chords, beams, printed accidentals, fingerings, and faithful MusicXML rendering.">
   <meta name="theme-color" content="#101c19">
+  <link rel="icon" type="image/png" sizes="64x64" href="/ai-omr/favicon.png?v=20260814">
+  <link rel="apple-touch-icon" sizes="180x180" href="/ai-omr/apple-touch-icon.png?v=20260814">
   <title>AI OMR — Score IR v2</title>
   <style>
     :root{--ink:#15221f;--muted:#5d6a66;--paper:#f4f0e7;--card:#fffdf8;--line:#d9d4c8;--green:#1e6b55;--green-dark:#10483a;--mint:#bfe7d5;--coral:#e26f51;--gold:#d3a33f;--blue:#5674a8;--radius:20px;--shadow:0 18px 50px rgba(18,44,36,.09)}
@@ -18,9 +20,10 @@
     @media(max-width:900px){.hero,.two{grid-template-columns:1fr}.four{grid-template-columns:repeat(2,1fr)}.flow{grid-template-columns:repeat(3,1fr)}.flow div:nth-child(3)::after{display:none}}
     @media(max-width:640px){.wrap{width:min(100% - 26px,1160px)}.nav-links{display:none}.section-head{display:block}.section-head>p{margin-top:12px}.four,.flow{grid-template-columns:1fr}.flow div::after{display:none!important}footer .wrap{display:block}footer small{display:block;margin-top:8px}}
   </style>
+  <link rel="stylesheet" href="/ai-omr/nav.css">
 </head>
 <body>
-<nav><div class="wrap nav-inner"><a class="brand" href="/ai-omr/">AI <span>OMR</span></a><div class="nav-links"><a href="/ai-omr/">Plan</a><a href="/ai-omr/symbols/">Symbols</a><a href="#roadmap">Score IR v2</a></div></div></nav>
+<nav class="ai-nav" aria-label="AI OMR navigation"><div class="ai-nav-inner"><a class="ai-nav-brand" href="/ai-omr/">AI <span>OMR</span></a><div class="ai-nav-links"><a href="/ai-omr/product/">Product</a><a href="/ai-omr/market/">Market</a><a href="/ai-omr/#roadmap">Roadmap</a><a href="/ai-omr/score-ir/" aria-current="page">Score IR</a><a href="/ai-omr/symbols/">Symbols</a></div><details class="ai-mobile-menu"><summary aria-label="Open navigation menu">Menu</summary><div class="ai-mobile-panel"><a href="/ai-omr/product/">Product</a><a href="/ai-omr/market/">Market</a><a href="/ai-omr/#roadmap">Roadmap</a><a href="/ai-omr/score-ir/" aria-current="page">Score IR</a><a href="/ai-omr/symbols/">Symbols</a></div></details></div></nav>
 <header><div class="wrap hero"><div><p class="eyebrow">Architecture update · August 2026</p><h1>The renderer can do it.<br><em>The Score IR cannot — yet.</em></h1><p class="lede">Verovio and MusicXML already support the rich notation needed for violin practice: chords and double stops, beam groups, fingerings, ties, slurs, articulations, bowing marks, tuplets, dynamics, and multiple voices. The next semantic bottleneck is our internal score representation.</p></div><aside class="hero-card"><div class="glyph">𝄞 ♪ ♯</div><strong>Keep Verovio.</strong><p>Upgrade the contract between AI output and MusicXML. The model should produce compact musical structure, not raw XML.</p></aside></div></header>
 
 <section><div class="wrap"><div class="section-head"><div><p class="eyebrow">Current state</p><h2>What V1 can and cannot express</h2></div><p>The current representation is intentionally monophonic and was the right choice for proving the first recognition loop.</p></div><div class="grid four"><div class="card good"><h3>Already supported</h3><p>Pitch, duration, rests, key signature, time signature, dotted values, accidentals as pitch alteration, and ties.</p></div><div class="card warn"><h3>Chord / double stop</h3><p>Not supported. The current MusicXML parser explicitly rejects chord notes.</p></div><div class="card warn"><h3>Beam relationships</h3><p>Not represented. Duration exists, but beam membership, level, and hooks are lost.</p></div><div class="card warn"><h3>Fingering & engraving</h3><p>No per-note fingering and no separate representation of an explicitly printed accidental.</p></div></div></div></section>
