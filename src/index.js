@@ -19,6 +19,8 @@ function isPublicPath(pathname) {
     || pathname.startsWith("/ai-omr/")
     || pathname === "/worldcup"
     || pathname.startsWith("/worldcup/")
+    || pathname === "/ai-omr-deepseek"
+    || pathname.startsWith("/ai-omr-deepseek/")
     || pathname.startsWith("/api/");
 }
 

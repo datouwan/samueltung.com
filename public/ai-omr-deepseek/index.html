@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Track C of the AI OMR program: detector-first optical music recognition for printed piano music, on-device iPhone first. The three-track comparison: semantic seq2seq vs graphic-first seq2seq vs detector + assembler.">
+  <meta name="theme-color" content="#101c19">
+  <link rel="icon" type="image/png" sizes="64x64" href="/ai-omr/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/ai-omr/apple-touch-icon.png">
+  <title>AI OMR — Track C · Detector-First Recognition</title>
+  <style>
+    :root {
+      --ink: #15221f;
+      --muted: #5d6a66;
+      --paper: #f4f0e7;
+      --card: #fffdf8;
+      --line: #d9d4c8;
+      --green: #1e6b55;
+      --green-dark: #10483a;
+      --mint: #bfe7d5;
+      --coral: #e26f51;
+      --gold: #d3a33f;
+      --blue: #5674a8;
+      --radius: 20px;
+      --shadow: 0 18px 50px rgba(18, 44, 36, .09);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 2%, rgba(191, 231, 213, .42), transparent 28rem),
+        var(--paper);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    a:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.22); border-radius: 99px; font-size: .78rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #6ee7b7; box-shadow: 0 0 0 5px rgba(110,231,183,.13); }
+
+    nav {
+      position: sticky; z-index: 10; top: 0;
+      background: rgba(244, 240, 231, .9); border-bottom: 1px solid rgba(21,34,31,.1); backdrop-filter: blur(14px);
+    }
+    .nav-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand span { color: var(--green); }
+    .nav-links { display: flex; gap: 22px; font-size: .86rem; font-weight: 700; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--green); }
+
+    header { padding: 86px 0 64px; }
+    .hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 42px; align-items: center; }
+    h1 { max-width: 790px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(3.2rem, 7.2vw, 6.6rem); font-weight: 500; line-height: .91; letter-spacing: -.065em; }
+    h1 em { color: var(--green); font-weight: inherit; }
+    .lede { max-width: 680px; margin: 28px 0 0; color: var(--muted); font-size: clamp(1.05rem, 1.7vw, 1.3rem); }
+    .hero-card { position: relative; overflow: hidden; min-height: 420px; padding: 30px; color: white; background: var(--ink); border-radius: 28px; box-shadow: var(--shadow); }
+    .hero-card::after { content: "𝄞"; position: absolute; right: -20px; bottom: -110px; color: rgba(191,231,213,.11); font-family: serif; font-size: 22rem; line-height: 1; }
+    .hero-card h2 { max-width: 360px; margin: 68px 0 16px; font: 500 2rem/1.08 Georgia, serif; }
+    .hero-card p { max-width: 390px; color: #cdd8d4; }
+    .hero-card .hero-meta { position: absolute; z-index: 1; bottom: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+    section { padding: 72px 0; }
+    .section-head { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 32px; }
+    h2 { margin: 0; font: 500 clamp(2rem, 4vw, 3.6rem)/1.02 Georgia, serif; letter-spacing: -.035em; }
+    .section-head > p { max-width: 520px; margin: 0; color: var(--muted); }
+    .grid { display: grid; gap: 18px; }
+    .score-grid { grid-template-columns: repeat(4, 1fr); }
+    .card { padding: 25px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(28,47,40,.04); }
+    .metric { min-height: 194px; display: flex; flex-direction: column; justify-content: space-between; }
+    .metric strong { display: block; font: 500 clamp(2.2rem, 4vw, 3.6rem)/1 Georgia, serif; letter-spacing: -.05em; }
+    .metric span { color: var(--muted); font-size: .88rem; }
+    .metric.good { color: var(--green-dark); background: var(--mint); border-color: transparent; }
+    .metric.warn { color: white; background: var(--coral); border-color: transparent; }
+    .metric.soon { color: var(--green-dark); background: var(--card); border: 2px dashed var(--green); }
+    .metric.good span, .metric.warn span, .metric.soon span { color: inherit; opacity: .82; }
+
+    .table-scroll { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(28,47,40,.04); }
+    table { width: 100%; border-collapse: collapse; min-width: 860px; font-size: .9rem; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { background: var(--ink); color: #cdd8d4; font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; }
+    td.dim { color: var(--muted); }
+    td strong.good-num { color: var(--green-dark); }
+    tr:last-child td { border-bottom: 0; }
+    .track-c-col { background: rgba(191, 231, 213, .25); }
+    .note { margin-top: 16px; color: var(--muted); font-size: .86rem; }
+
+    .pipeline { grid-template-columns: repeat(3, 1fr); counter-reset: pipeline; }
+    .step { position: relative; min-height: 210px; }
+    .step::before { counter-increment: pipeline; content: "0" counter(pipeline); display: block; margin-bottom: 40px; color: var(--green); font-size: .78rem; font-weight: 900; }
+    .step h3 { margin: 0 0 10px; font-size: 1rem; }
+    .step p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .step code { font-size: .78rem; }
+
+    .keep-risks { grid-template-columns: 1fr 1fr 1fr; }
+    .keep-risks .card { padding: 30px; }
+    .keep-risks h3 { margin: 0 0 12px; font-size: 1rem; }
+    ul { margin: 0; padding: 0; list-style: none; }
+    .checks li { position: relative; padding: 8px 0 8px 27px; border-bottom: 1px solid var(--line); font-size: .9rem; }
+    .checks li:last-child { border: 0; }
+    .checks li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 900; }
+    .risks li::before { content: "!"; color: var(--coral); }
+
+    .roadmap { position: relative; }
+    .roadmap-grid { grid-template-columns: repeat(3, 1fr); }
+    .milestone { min-height: 180px; display: flex; flex-direction: column; }
+    .milestone .phase { color: var(--green); font-size: .74rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+    .milestone h3 { margin: 10px 0 8px; font: 500 1.3rem/1.1 Georgia, serif; }
+    .milestone p { margin: 0; color: var(--muted); font-size: .88rem; }
+    .milestone.done { border-top: 4px solid var(--green); }
+    .milestone.now { border-top: 4px solid var(--coral); }
+
+    .principles { grid-template-columns: repeat(4, 1fr); }
+    .principles .card { padding: 28px; }
+    .principles .num { display: block; margin-bottom: 14px; color: var(--green); font-size: .78rem; font-weight: 900; }
+    .principles strong { display: block; margin-bottom: 8px; font-size: 1rem; }
+    .principles p { margin: 0; color: var(--muted); font-size: .88rem; }
+
+    footer.site-footer { margin-top: 24px; padding: 40px 0 56px; border-top: 1px solid var(--line); }
+    footer.site-footer p { margin: 0 0 6px; }
+    footer.site-footer small { color: var(--muted); }
+    .external-links { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+    .external-links a { color: var(--green-dark); font-weight: 750; text-decoration: none; }
+    .external-links a:hover { text-decoration: underline; }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-card { min-height: 300px; }
+      .score-grid, .pipeline, .keep-risks, .roadmap-grid, .principles { grid-template-columns: 1fr 1fr; }
+      .section-head { flex-direction: column; align-items: start; gap: 12px; }
+    }
+    @media (max-width: 640px) {
+      .score-grid, .pipeline, .keep-risks, .roadmap-grid, .principles { grid-template-columns: 1fr; }
+      .nav-links { gap: 14px; font-size: .78rem; }
+      header { padding: 56px 0 44px; }
+      section { padding: 52px 0; }
+    }
+  </style>
+</head>
+<body>
+  <nav aria-label="Primary">
+    <div class="nav-inner wrap">
+      <a class="brand" href="/ai-omr-deepseek/">AI OMR <span>· Track C</span></a>
+      <div class="nav-links">
+        <a href="#comparison">Comparison</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#benchmarks">Benchmarks</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="/ai-omr/">Track A</a>
+        <a href="/ai-omr-agnostic/">Track B</a>
+      </div>
+    </div>
+  </nav>
+
+  <header>
+    <div class="wrap hero">
+      <div>
+        <p class="eyebrow">Third factorization · detector-first OMR</p>
+        <h1>Recognize the ink. <em>Assemble</em> the meaning.</h1>
+        <p class="lede">Track A learns sounding pitches end-to-end. Track B learns printed glyphs end-to-end and derives pitch in code. Track C removes sequence modeling from perception entirely: a detector localizes symbols with geometry, and a deterministic assembler turns them into a relational Score IR and MusicXML — the architecture family that powers PlayScore and PhotoScore, rebuilt here for printed piano music, on-device on iPhone.</p>
+      </div>
+      <aside class="hero-card" aria-label="Track C summary">
+        <h2>One model sees the whole grand staff.</h2>
+        <p>Boxes, classes, and staff positions instead of a fragile token stream. Grand staff, chords, and voices from day one — with Core ML as the deployment target.</p>
+        <div class="hero-meta">
+          <span class="pill"><span class="dot"></span>Private repo · datouwan/ai-omr-deepseek</span>
+          <span class="pill">MusicXML out</span>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <main>
+    <section id="numbers" style="padding-top:0">
+      <div class="wrap">
+        <div class="grid score-grid">
+          <article class="card metric warn">
+            <span>Track A · M9.5 dev real-photo TER · 0/60 exact systems</span>
+            <strong>0.2561</strong>
+          </article>
+          <article class="card metric good">
+            <span>Track B · B1 sealed benchmark TER · 109/120 exact · all 8 gates passed</span>
+            <strong>0.0190</strong>
+          </article>
+          <article class="card metric">
+            <span>oemer · M8 spike · 2/5 exact · ~213 s/system on CPU</span>
+            <strong>2/5</strong>
+          </article>
+          <article class="card metric soon">
+            <span>Track C · sealed grand-staff benchmark — predeclared, not yet captured</span>
+            <strong>TBD</strong>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="comparison" style="background:rgba(255,253,248,.55);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Three factorizations · one metric</p><h2>The comparison.</h2></div>
+          <p>Every number below shares Track A's tokenizer and token-error-rate definition, so the three tracks and the external baseline are directly comparable. Real-photo numbers only, unless noted.</p>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Dimension</th>
+                <th>Track A · semantic seq2seq</th>
+                <th>Track B · graphic-first seq2seq</th>
+                <th class="track-c-col">Track C · detector + assembler</th>
+                <th>oemer · external baseline</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="dim">Perception target</td>
+                <td>Sounding pitch tokens</td>
+                <td>Printed glyph tokens</td>
+                <td class="track-c-col">Symbol boxes + classes + geometry</td>
+                <td>Detected symbols (same family as C)</td>
+              </tr>
+              <tr>
+                <td class="dim">Semantics</td>
+                <td>Learned by the decoder</td>
+                <td>Deterministic engraving machine</td>
+                <td class="track-c-col">Deterministic Score IR assembly</td>
+                <td>Rule-based reconstruction</td>
+              </tr>
+              <tr>
+                <td class="dim">Model family</td>
+                <td>Swin encoder + autoregressive Transformer</td>
+                <td>CRNN + CTC (6.1M params)</td>
+                <td class="track-c-col">One-stage detector (YOLO family)</td>
+                <td>UNet + detector (MIT)</td>
+              </tr>
+              <tr>
+                <td class="dim">Real-photo TER · shared 60 set</td>
+                <td>0.2561 · 0/60 exact</td>
+                <td><strong class="good-num">0.0632 · 29/60 exact</strong></td>
+                <td class="track-c-col">TBD on the same set</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td class="dim">Sealed 120-system benchmark</td>
+                <td>0.2360 · 15/120 (M9.4 · gate failed)</td>
+                <td><strong class="good-num">0.0190 · 109/120 (B1 · all gates passed)</strong></td>
+                <td class="track-c-col">TBD on the same sets</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td class="dim">Altered-note recovery (photos)</td>
+                <td>~12.6% · measured naturalization</td>
+                <td><strong class="good-num">97.4% · 298/306</strong></td>
+                <td class="track-c-col">By construction: printed glyphs</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td class="dim">Measure-level zero-correction</td>
+                <td>—</td>
+                <td><strong class="good-num">95.0% · 228/240</strong></td>
+                <td class="track-c-col">TBD</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td class="dim">Scope ceiling</td>
+                <td>Single treble staff, monophonic</td>
+                <td>Single staff · chords synthetic</td>
+                <td class="track-c-col"><strong>Grand staff + chords + voices</strong></td>
+                <td>Full pages, but crashes on sparse systems</td>
+              </tr>
+              <tr>
+                <td class="dim">On-device path</td>
+                <td>Hard — grammar-constrained AR decoding</td>
+                <td>Moderate — CTC is single-line</td>
+                <td class="track-c-col"><strong>Natural — Core ML detector</strong></td>
+                <td>Heavy (minutes/system on CPU)</td>
+              </tr>
+              <tr>
+                <td class="dim">Dominant failure mode</td>
+                <td>Learned key/accidental join collapses on photos</td>
+                <td>Sequence alignment drift</td>
+                <td class="track-c-col">Assembly/geometry errors (bounded code)</td>
+                <td>Crashes + measure structure on hard pages</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Sources: Track A <a href="/ai-omr/">M9.4/M9.5 reports</a> and founding analysis; Track B <a href="/ai-omr-agnostic/">A5 head-to-head</a> and sealed B1 result; oemer M8 spike (5 held-out systems, CPU, two workers). Track C scores on the same sealed benchmarks with the same metric, or it does not score.</p>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">What the measurements say</p><h2>Four findings from two sealed benchmarks.</h2></div>
+          <p>Both tracks practiced the same discipline — frozen manifests, sealed benchmarks, predeclared gates, fail-closed audits. The numbers can be trusted, which is what makes the trend informative.</p>
+        </div>
+        <div class="grid keep-risks">
+          <article class="card">
+            <h3>1 · Representation beats capacity</h3>
+            <p>Track B's 6.1M-parameter CRNN out-scored Track A's pretrained-Swin Transformer by 4× on identical real photos, trained ~25 minutes on purely synthetic renders. The difference is the task, not the model.</p>
+          </article>
+          <article class="card">
+            <h3>2 · Deterministic semantics wins</h3>
+            <p>97.4% altered-note recovery and 95.0% zero-correction measures are properties of Track B's engraving machine — code, not behavior. Track C inherits that property unchanged.</p>
+          </article>
+          <article class="card">
+            <h3>3 · The frontier is scope + deployment</h3>
+            <p>Single-staff V1 recognition is closed (B1 sealed, all gates passed). Grand staff, full pages, and on-device latency are the open problems — and sequence models carry structural handicaps on both.</p>
+          </article>
+          <article class="card">
+            <h3>4 · OSS is a benchmark, not an engine</h3>
+            <p>oemer's 2/5 exact with 60% conversion reliability and minute-scale CPU latency confirms the detector family is right while ruling it out as a product dependency. It becomes a benchmark column and a teacher.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture" style="background:rgba(255,253,248,.55);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Staged pipeline · PlayScore-style</p><h2>Detector first. Assembly second.</h2></div>
+          <p>The commercial leader (ReadScoreLib) is a staged, compiler-like detector pipeline — the same architecture. Perception produces geometry; code produces meaning.</p>
+        </div>
+        <div class="grid pipeline">
+          <article class="card step"><h3>Capture &amp; rectify</h3><p>VisionKit document scanner (perspective + deskew built in) or a live session with our own quad rectification. Adaptive thresholding for lighting and shadow.</p></article>
+          <article class="card step"><h3>Staff geometry</h3><p>Locate systems, the five lines of each staff, and staff spacing with deterministic projections and priors — audited on synthetic degraded prints before any photo, like Track B's splitter.</p></article>
+          <article class="card step"><h3>Symbol detection</h3><p>One-stage detector over the full page: ~35 classes with boxes, staff assignment, vertical position, and confidence. Anchor-free heads for dense small glyphs.</p></article>
+          <article class="card step"><h3>Assembly</h3><p>Noteheads → chords by overlap and stem; stems/beams/flags → durations; dots, rests, barlines → measures with beat repair; voices by stem direction. Pure code, property-tested.</p></article>
+          <article class="card step"><h3>Engraving state</h3><p>Clef/key/time headers drive the engraving machine: key defaults, measure-scoped accidentals, ties carrying pitch — the Track B property, extended to two staves.</p></article>
+          <article class="card step"><h3>Score IR → MusicXML</h3><p>A deterministic relational Score IR (voices, dynamics, tuplets) emits canonical MusicXML with explicit accidentals, so the render always matches the ink. Rendered in-app with OSMD or Verovio.</p></article>
+        </div>
+        <div class="grid keep-risks" style="margin-top:18px">
+          <article class="card">
+            <h3>Keeps (from Tracks A/B)</h3>
+            <ul class="checks">
+              <li>Engraving machine — Track B</li>
+              <li>Score IR direction — Track A</li>
+              <li>Verovio synthetic + degradation + distractor ink — Track B</li>
+              <li>Sealed-benchmark protocol — both</li>
+              <li>Shared tokenizer &amp; metric — both</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Changes</h3>
+            <ul class="checks">
+              <li>Perception: detection with geometry</li>
+              <li>Scope: grand staff from day one</li>
+              <li>Voices, chords, both clefs</li>
+              <li>Deployment: on-device Core ML</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Risks &amp; mitigations</h3>
+            <ul class="checks risks">
+              <li>Assembler bugs → round-trip identity audits, fail-closed MusicXML</li>
+              <li>Small-glyph misses → high-res input + geometry head</li>
+              <li>Photo domain gap → Track B's calibrated degradation (B1-proven)</li>
+              <li>Chord ambiguity → explicit accidental detection + measure state</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="benchmarks">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Sealed sets · one shot each</p><h2>Benchmarks, measured honestly.</h2></div>
+          <p>Each benchmark is captured under a frozen protocol, evaluated exactly once, then sealed — its images, labels, and failures never enter training or tuning. The harness re-consumes frozen results; it never re-evaluates.</p>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Benchmark</th>
+                <th>TER</th>
+                <th>Exact systems</th>
+                <th>Altered recovery</th>
+                <th>Measure zero-correction</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>B1 sealed · Track B · 120 systems</td>
+                <td><strong class="good-num">0.0190</strong></td>
+                <td><strong class="good-num">109/120 (90.8%)</strong></td>
+                <td><strong class="good-num">298/306 (97.4%)</strong></td>
+                <td><strong class="good-num">228/240 (95.0%)</strong></td>
+                <td>All 8 gates passed · sealed</td>
+              </tr>
+              <tr>
+                <td>M9.4 sealed · Track A · 120 systems</td>
+                <td>0.2360</td>
+                <td>15/120 (12.5%)</td>
+                <td>—</td>
+                <td>—</td>
+                <td>Gate failed · sealed</td>
+              </tr>
+              <tr>
+                <td>M9.5 dev 60-photo · Track A</td>
+                <td>0.2561</td>
+                <td>0/60</td>
+                <td>~12.6%</td>
+                <td>—</td>
+                <td>Development set</td>
+              </tr>
+              <tr>
+                <td>M9.5 dev 60-photo · Track B (A5 head-to-head)</td>
+                <td><strong class="good-num">0.0632</strong></td>
+                <td><strong class="good-num">29/60</strong></td>
+                <td><strong class="good-num">137/137</strong></td>
+                <td>—</td>
+                <td>Development set</td>
+              </tr>
+              <tr>
+                <td>oemer M8 spike · 5 systems · CPU</td>
+                <td>0.0226 (3 conversions)</td>
+                <td>2/5 (40%)</td>
+                <td>—</td>
+                <td>—</td>
+                <td>Bounded spike</td>
+              </tr>
+              <tr class="track-c-col">
+                <td><strong>Track C grand-staff benchmark</strong> · protocol frozen before capture</td>
+                <td>TBD</td>
+                <td>TBD</td>
+                <td>TBD</td>
+                <td>TBD</td>
+                <td>Not yet captured</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Track C's predeclared C3 gate: TER ≤ 0.10, altered-note recovery ≥ 85%, measure-level zero-correction ≥ 50%, one shot, on 120+ never-before-photographed grand-staff systems.</p>
+      </div>
+    </section>
+
+    <section id="roadmap" style="background:rgba(255,253,248,.55);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="eyebrow">Milestones · predeclared gates</p><h2>Roadmap.</h2></div>
+          <p>Each gate is predeclared and evaluated one shot, following the discipline that produced B1.</p>
+        </div>
+        <div class="grid roadmap-grid">
+          <article class="card milestone done"><span class="phase">C0 · done now</span><h3>Repo, docs, harness</h3><p>Three-track comparison, benchmark harness, sealed numbers rendered end-to-end, public page.</p></article>
+          <article class="card milestone now"><span class="phase">C1 · data</span><h3>Grand-staff corpus</h3><p>10k systems: Verovio renders with geometry labels, Track B degradation, 100% round-trip audits, digest-locked.</p></article>
+          <article class="card milestone"><span class="phase">C2 · model</span><h3>Detector + assembler</h3><p>Clean-synthetic exact gate ≥ 70% and TER ≤ 0.05, then camera-synthetic TER ≤ 0.10. No real-photo tuning.</p></article>
+          <article class="card milestone"><span class="phase">C3 · real photos</span><h3>Sealed grand-staff benchmark</h3><p>Protocol frozen before capture; 120+ systems, one shot; TER ≤ 0.10, altered recovery ≥ 85%.</p></article>
+          <article class="card milestone"><span class="phase">C4 · on-device</span><h3>Core ML loop</h3><p>Capture → recognize → render under 1 second on iPhone; ONNX as the single exchange format.</p></article>
+          <article class="card milestone"><span class="phase">C5 · independent</span><h3>Final sealed benchmark</h3><p>Independent capture, all gates predeclared, one shot — the product claim.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="principles">
+      <div class="wrap">
+        <div class="section-head"><div><p class="eyebrow">Operating principles</p><h2>Accuracy has a provenance.</h2></div></div>
+        <div class="grid principles">
+          <article class="card"><span class="num">01</span><strong>Rights-clean by construction</strong><p>Public-domain or permissively licensed symbolic scores, self-rendered images, provenance preserved end to end.</p></article>
+          <article class="card"><span class="num">02</span><strong>Deterministic where possible</strong><p>The model recognizes ink. Explicit code validates rhythm, spells pitch, and generates MusicXML.</p></article>
+          <article class="card"><span class="num">03</span><strong>Sealed benchmarks, one shot</strong><p>Consumed benchmarks never become training data. Frozen protocols, digest integrity, predeclared gates.</p></article>
+          <article class="card"><span class="num">04</span><strong>Measure real decoding</strong><p>Token error rate, exact systems, altered-note recovery, zero-correction measures — never loss alone.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><strong>AI OMR · Track C</strong> — detector-first recognition for printed piano music, on-device first</p>
+      <small>Living comparison page · updated with every sealed benchmark · B1 and M9.4 numbers frozen</small>
+      <div class="external-links">
+        <a href="/ai-omr/">Track A →</a>
+        <a href="/ai-omr-agnostic/">Track B →</a>
+        <a href="https://github.com/datouwan/ai-omr-deepseek">GitHub (private repo) →</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
