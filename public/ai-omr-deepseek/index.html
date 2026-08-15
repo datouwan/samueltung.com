@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Track C of the AI OMR program: detector-first optical music recognition for printed piano music, on-device iPhone first. The three-track comparison: semantic seq2seq vs graphic-first seq2seq vs detector + assembler.">
+  <meta name="description" content="The detector-first track of the AI OMR program: optical music recognition for printed piano music, on-device iPhone first. The three-way comparison: semantic seq2seq vs graphic-first seq2seq vs detection + assembly.">
   <meta name="theme-color" content="#101c19">
   <link rel="icon" type="image/png" sizes="64x64" href="/ai-omr/favicon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/ai-omr/apple-touch-icon.png">
-  <title>AI OMR — Track C · Detector-First Recognition</title>
+  <title>AI OMR — Detector-first Recognition</title>
   <style>
     :root {
       --ink: #15221f;
@@ -144,14 +144,14 @@
 <body>
   <nav aria-label="Primary">
     <div class="nav-inner wrap">
-      <a class="brand" href="/ai-omr-deepseek/">AI OMR <span>· Track C</span></a>
+      <a class="brand" href="/ai-omr-deepseek/">AI OMR <span>· Detector-first</span></a>
       <div class="nav-links">
         <a href="#comparison">Comparison</a>
         <a href="#architecture">Architecture</a>
         <a href="#benchmarks">Benchmarks</a>
         <a href="#roadmap">Roadmap</a>
-        <a href="/ai-omr/">Track A</a>
-        <a href="/ai-omr-agnostic/">Track B</a>
+        <a href="/ai-omr/">Semantic</a>
+        <a href="/ai-omr-agnostic/">Graphic-first</a>
       </div>
     </div>
   </nav>
@@ -161,9 +161,9 @@
       <div>
         <p class="eyebrow">Third factorization · detector-first OMR</p>
         <h1>Recognize the ink. <em>Assemble</em> the meaning.</h1>
-        <p class="lede">Track A learns sounding pitches end-to-end. Track B learns printed glyphs end-to-end and derives pitch in code. Track C removes sequence modeling from perception entirely: a detector localizes symbols with geometry, and a deterministic assembler turns them into a relational Score IR and MusicXML — the architecture family that powers PlayScore and PhotoScore, rebuilt here for printed piano music, on-device on iPhone.</p>
+        <p class="lede">Semantic learns sounding pitches end-to-end. Graphic-first learns printed glyphs end-to-end and derives pitch in code. Detector-first removes sequence modeling from perception entirely: a detector localizes symbols with geometry, and a deterministic assembler turns them into a relational Score IR and MusicXML — the architecture family that powers PlayScore and PhotoScore, rebuilt here for printed piano music, on-device on iPhone.</p>
       </div>
-      <aside class="hero-card" aria-label="Track C summary">
+      <aside class="hero-card" aria-label="Detector-first summary">
         <h2>One model sees the whole grand staff.</h2>
         <p>Boxes, classes, and staff positions instead of a fragile token stream. Grand staff, chords, and voices from day one — with Core ML as the deployment target.</p>
         <div class="hero-meta">
@@ -179,11 +179,11 @@
       <div class="wrap">
         <div class="grid score-grid">
           <article class="card metric warn">
-            <span>Track A · M9.5 dev real-photo TER · 0/60 exact systems</span>
+            <span>Semantic · M9.5 dev real-photo TER · 0/60 exact systems</span>
             <strong>0.2561</strong>
           </article>
           <article class="card metric good">
-            <span>Track B · B1 sealed benchmark TER · 109/120 exact · all 8 gates passed</span>
+            <span>Graphic-first · B1 sealed benchmark TER · 109/120 exact · all 8 gates passed</span>
             <strong>0.0190</strong>
           </article>
           <article class="card metric">
@@ -191,7 +191,7 @@
             <strong>2/5</strong>
           </article>
           <article class="card metric soon">
-            <span>Track C · sealed grand-staff benchmark — predeclared, not yet captured</span>
+            <span>Detector-first · sealed grand-staff benchmark — predeclared, not yet captured</span>
             <strong>TBD</strong>
           </article>
         </div>
@@ -202,16 +202,16 @@
       <div class="wrap">
         <div class="section-head">
           <div><p class="eyebrow">Three factorizations · one metric</p><h2>The comparison.</h2></div>
-          <p>Every number below shares Track A's tokenizer and token-error-rate definition, so the three tracks and the external baseline are directly comparable. Real-photo numbers only, unless noted.</p>
+          <p>Every number below shares Semantic's tokenizer and token-error-rate definition, so the three tracks and the external baseline are directly comparable. Real-photo numbers only, unless noted.</p>
         </div>
         <div class="table-scroll">
           <table>
             <thead>
               <tr>
                 <th>Dimension</th>
-                <th>Track A · semantic seq2seq</th>
-                <th>Track B · graphic-first seq2seq</th>
-                <th class="track-c-col">Track C · detector + assembler</th>
+                <th>Semantic · seq2seq</th>
+                <th>Graphic-first · seq2seq</th>
+                <th class="track-c-col">Detector-first · detection + assembly</th>
                 <th>oemer · external baseline</th>
               </tr>
             </thead>
@@ -289,7 +289,7 @@
             </tbody>
           </table>
         </div>
-        <p class="note">Sources: Track A <a href="/ai-omr/">M9.4/M9.5 reports</a> and founding analysis; Track B <a href="/ai-omr-agnostic/">A5 head-to-head</a> and sealed B1 result; oemer M8 spike (5 held-out systems, CPU, two workers). Track C scores on the same sealed benchmarks with the same metric, or it does not score.</p>
+        <p class="note">Sources: Semantic <a href="/ai-omr/">M9.4/M9.5 reports</a> and founding analysis; Graphic-first <a href="/ai-omr-agnostic/">A5 head-to-head</a> and sealed B1 result; oemer M8 spike (5 held-out systems, CPU, two workers). Detector-first scores on the same sealed benchmarks with the same metric, or it does not score.</p>
       </div>
     </section>
 
@@ -302,11 +302,11 @@
         <div class="grid keep-risks">
           <article class="card">
             <h3>1 · Representation beats capacity</h3>
-            <p>Track B's 6.1M-parameter CRNN out-scored Track A's pretrained-Swin Transformer by 4× on identical real photos, trained ~25 minutes on purely synthetic renders. The difference is the task, not the model.</p>
+            <p>Graphic-first's 6.1M-parameter CRNN out-scored Semantic's pretrained-Swin Transformer by 4× on identical real photos, trained ~25 minutes on purely synthetic renders. The difference is the task, not the model.</p>
           </article>
           <article class="card">
             <h3>2 · Deterministic semantics wins</h3>
-            <p>97.4% altered-note recovery and 95.0% zero-correction measures are properties of Track B's engraving machine — code, not behavior. Track C inherits that property unchanged.</p>
+            <p>97.4% altered-note recovery and 95.0% zero-correction measures are properties of Graphic-first's engraving machine — code, not behavior. Detector-first inherits that property unchanged.</p>
           </article>
           <article class="card">
             <h3>3 · The frontier is scope + deployment</h3>
@@ -328,19 +328,19 @@
         </div>
         <div class="grid pipeline">
           <article class="card step"><h3>Capture &amp; rectify</h3><p>VisionKit document scanner (perspective + deskew built in) or a live session with our own quad rectification. Adaptive thresholding for lighting and shadow.</p></article>
-          <article class="card step"><h3>Staff geometry</h3><p>Locate systems, the five lines of each staff, and staff spacing with deterministic projections and priors — audited on synthetic degraded prints before any photo, like Track B's splitter.</p></article>
+          <article class="card step"><h3>Staff geometry</h3><p>Locate systems, the five lines of each staff, and staff spacing with deterministic projections and priors — audited on synthetic degraded prints before any photo, like Graphic-first's splitter.</p></article>
           <article class="card step"><h3>Symbol detection</h3><p>One-stage detector over the full page: ~35 classes with boxes, staff assignment, vertical position, and confidence. Anchor-free heads for dense small glyphs.</p></article>
           <article class="card step"><h3>Assembly</h3><p>Noteheads → chords by overlap and stem; stems/beams/flags → durations; dots, rests, barlines → measures with beat repair; voices by stem direction. Pure code, property-tested.</p></article>
-          <article class="card step"><h3>Engraving state</h3><p>Clef/key/time headers drive the engraving machine: key defaults, measure-scoped accidentals, ties carrying pitch — the Track B property, extended to two staves.</p></article>
+          <article class="card step"><h3>Engraving state</h3><p>Clef/key/time headers drive the engraving machine: key defaults, measure-scoped accidentals, ties carrying pitch — the Graphic-first property, extended to two staves.</p></article>
           <article class="card step"><h3>Score IR → MusicXML</h3><p>A deterministic relational Score IR (voices, dynamics, tuplets) emits canonical MusicXML with explicit accidentals, so the render always matches the ink. Rendered in-app with OSMD or Verovio.</p></article>
         </div>
         <div class="grid keep-risks" style="margin-top:18px">
           <article class="card">
             <h3>Keeps (from Tracks A/B)</h3>
             <ul class="checks">
-              <li>Engraving machine — Track B</li>
-              <li>Score IR direction — Track A</li>
-              <li>Verovio synthetic + degradation + distractor ink — Track B</li>
+              <li>Engraving machine — Graphic-first</li>
+              <li>Score IR direction — Semantic</li>
+              <li>Verovio synthetic + degradation + distractor ink — Graphic-first</li>
               <li>Sealed-benchmark protocol — both</li>
               <li>Shared tokenizer &amp; metric — both</li>
             </ul>
@@ -359,7 +359,7 @@
             <ul class="checks risks">
               <li>Assembler bugs → round-trip identity audits, fail-closed MusicXML</li>
               <li>Small-glyph misses → high-res input + geometry head</li>
-              <li>Photo domain gap → Track B's calibrated degradation (B1-proven)</li>
+              <li>Photo domain gap → Graphic-first's calibrated degradation (B1-proven)</li>
               <li>Chord ambiguity → explicit accidental detection + measure state</li>
             </ul>
           </article>
@@ -375,11 +375,11 @@
         </div>
         <div class="table-scroll">
           <!-- OMRBENCH:BEGIN:benchmarks -->
-<table><thead><tr><th>Benchmark</th><th>TER</th><th>Exact systems</th><th>Altered recovery</th><th>Measure zero-correction</th><th>Status</th></tr></thead><tbody><tr><td>B1 sealed · Track B · 120 systems</td><td><strong class="good-num">0.0190</strong></td><td><strong class="good-num">109/120 (90.8%)</strong></td><td><strong class="good-num">298/306 (97.4%)</strong></td><td><strong class="good-num">228/240 (95.0%)</strong></td><td>All 8 gates passed · sealed</td></tr><tr><td>M9.4 sealed · Track A · 120 systems</td><td>0.2360</td><td>15/120 (12.5%)</td><td>—</td><td>—</td><td>Gate failed · sealed</td></tr><tr><td>M9.5 dev 60-photo · Track A</td><td>0.2561</td><td>0/60 (0.0%)</td><td>—</td><td>—</td><td>Development set</td></tr><tr><td>M9.5 dev 60-photo · Track B · A5 head-to-head</td><td><strong class="good-num">0.0632</strong></td><td><strong class="good-num">29/60 (48.3%)</strong></td><td><strong class="good-num">137/137 (100.0%)</strong></td><td>—</td><td>Development set</td></tr><tr><td>oemer M8 spike · 5 systems · CPU</td><td>—</td><td>2/5 (40.0%)</td><td>—</td><td>—</td><td>Bounded spike · mean TER 0.0226 over 3 conversions</td></tr><tr class="track-c-col"><td><strong>Track C grand-staff benchmark</strong> · protocol frozen before capture</td><td>TBD</td><td>TBD</td><td>TBD</td><td>TBD</td><td>Not yet captured</td></tr></tbody></table>
+<table><thead><tr><th>Benchmark</th><th>TER</th><th>Exact systems</th><th>Altered recovery</th><th>Measure zero-correction</th><th>Status</th></tr></thead><tbody><tr><td>B1 sealed · Graphic-first · 120 systems</td><td><strong class="good-num">0.0190</strong></td><td><strong class="good-num">109/120 (90.8%)</strong></td><td><strong class="good-num">298/306 (97.4%)</strong></td><td><strong class="good-num">228/240 (95.0%)</strong></td><td>All 8 gates passed · sealed</td></tr><tr><td>M9.4 sealed · Semantic · 120 systems</td><td>0.2360</td><td>15/120 (12.5%)</td><td>—</td><td>—</td><td>Gate failed · sealed</td></tr><tr><td>M9.5 dev 60-photo · Semantic</td><td>0.2561</td><td>0/60 (0.0%)</td><td>—</td><td>—</td><td>Development set</td></tr><tr><td>M9.5 dev 60-photo · Graphic-first · A5 head-to-head</td><td><strong class="good-num">0.0632</strong></td><td><strong class="good-num">29/60 (48.3%)</strong></td><td><strong class="good-num">137/137 (100.0%)</strong></td><td>—</td><td>Development set</td></tr><tr><td>oemer M8 spike · 5 systems · CPU</td><td>—</td><td>2/5 (40.0%)</td><td>—</td><td>—</td><td>Bounded spike · mean TER 0.0226 over 3 conversions</td></tr><tr class="track-c-col"><td><strong>Detector-first grand-staff benchmark</strong> · protocol frozen before capture</td><td>TBD</td><td>TBD</td><td>TBD</td><td>TBD</td><td>Not yet captured</td></tr></tbody></table>
 <!-- OMRBENCH:END:benchmarks -->
         </div>
         <p class="note">Numbers current as of 2026-08-14 · generated from harness/published/*.json on every sync.</p>
-        <p class="note">Track C's predeclared C3 gate: TER ≤ 0.10, altered-note recovery ≥ 85%, measure-level zero-correction ≥ 50%, one shot, on 120+ never-before-photographed grand-staff systems.</p>
+        <p class="note">Detector-first's predeclared C3 gate: TER ≤ 0.10, altered-note recovery ≥ 85%, measure-level zero-correction ≥ 50%, one shot, on 120+ never-before-photographed grand-staff systems.</p>
       </div>
     </section>
 
@@ -415,11 +415,11 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <p><strong>AI OMR · Track C</strong> — detector-first recognition for printed piano music, on-device first</p>
+      <p><strong>AI OMR · Detector-first</strong> — detector-first recognition for printed piano music, on-device first</p>
       <small>Living comparison page · auto-synced from datouwan/ai-omr-deepseek on every docs update · B1 and M9.4 numbers frozen</small>
       <div class="external-links">
-        <a href="/ai-omr/">Track A →</a>
-        <a href="/ai-omr-agnostic/">Track B →</a>
+        <a href="/ai-omr/">Semantic →</a>
+        <a href="/ai-omr-agnostic/">Graphic-first →</a>
         <a href="https://github.com/datouwan/ai-omr-deepseek">GitHub (private repo) →</a>
       </div>
     </div>
