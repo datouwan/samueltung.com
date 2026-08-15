@@ -63,30 +63,28 @@
     th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
     th { font-size: .76rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
     td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-    .roadmap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .ms { display: flex; flex-direction: column; gap: 8px; padding: 22px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
-    .ms.done { border-top: 4px solid var(--green); }
-    .ms.next { border-top: 4px solid var(--gold); }
-    .ms-head { display: flex; justify-content: space-between; align-items: center; }
-    .ms .phase { color: var(--muted); font-size: .78rem; font-weight: 900; letter-spacing: .12em; }
-    .ms h3 { margin: 0; font: 500 1.12rem/1.2 Georgia, serif; }
-    .ms p { margin: 0; color: var(--muted); font-size: .86rem; }
-    .ms .gate { margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line); font-size: .82rem; color: var(--green-dark); }
-    .ms .gate strong { font-weight: 850; }
-    .tag { display: inline-block; padding: 4px 9px; border-radius: 999px; font-size: .68rem; font-weight: 900; letter-spacing: .06em; }
-    .tag.done { background: var(--mint); color: var(--green-dark); }
-    .tag.now { background: #f3d9d1; color: #8f402d; }
-    .tag.next { background: #e7e2d6; color: var(--muted); }
+    .timeline { position: relative; margin-top: 10px; }
+    .timeline::before { content: ""; position: absolute; top: 14px; bottom: 14px; left: 13px; width: 2px; background: var(--line); }
+    .tl-item { position: relative; display: grid; grid-template-columns: 28px 130px 1fr; gap: 0 34px; align-items: start; padding: 34px 0; }
+    .tl-dot { position: relative; z-index: 1; width: 22px; height: 22px; margin: 2px 0 0 3px; border-radius: 50%; background: var(--paper); border: 2.5px solid var(--line); }
+    .tl-item.done .tl-dot { background: var(--green); border-color: var(--green); }
+    .tl-item.now .tl-dot { background: var(--coral); border-color: var(--coral); box-shadow: 0 0 0 9px rgba(226,111,81,.22); }
+    .tl-phase { margin-top: 3px; color: var(--green-dark); font-size: .8rem; font-weight: 900; letter-spacing: .14em; }
+    .tl-item.now .tl-phase { color: #8f402d; }
+    .tl-body h3 { margin: 0 0 8px; font-size: 1.08rem; font-weight: 800; letter-spacing: -.01em; }
+    .tl-body p { max-width: 860px; margin: 0; color: var(--muted); font-size: .95rem; }
+    .tl-body p strong { color: var(--green-dark); font-weight: 800; }
+    @media (max-width: 720px) {
+      .tl-item { grid-template-columns: 28px 1fr; gap: 0 18px; }
+      .tl-phase { grid-column: 2; }
+      .tl-body { grid-column: 2; margin-top: 6px; }
+    }
     .tokens { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
     .tokens code { padding: 5px 9px; background: #0b3027; color: #d7eee4; border-radius: 8px; font: .78rem ui-monospace, Consolas, monospace; }
     .tokens code.acc { background: #6b2f1e; color: #ffd9cb; }
     footer { padding: 46px 0 60px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
-    @media (max-width: 1100px) {
-      .roadmap-grid { grid-template-columns: 1fr 1fr; }
-    }
     @media (max-width: 900px) {
       .cols2, .cols3 { grid-template-columns: 1fr; }
-      .roadmap-grid { grid-template-columns: 1fr; }
       .flow { grid-template-columns: 1fr; }
       .flow .arrow { transform: rotate(90deg); }
     }
@@ -226,80 +224,85 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Living roadmap · updated 2026-08-14 (B1 sealed benchmark: all gates passed)</p>
+          <p class="eyebrow">Living roadmap · updated 2026-08-14 · B1 passed, A7 chords under way</p>
           <h2>Milestones with gates, not vibes.</h2>
         </div>
-        <p>Each milestone has a predeclared exit gate. Statuses here are updated as the work lands.</p>
+        <p>Every milestone exits through a predeclared gate. Filled dots are sealed results;
+        the highlighted dot is where the work is right now.</p>
       </div>
-      <div class="roadmap-grid">
-        <article class="ms done">
-          <div class="ms-head"><span class="phase">A0</span><span class="tag done">DONE</span></div>
-          <h3>Representation core</h3>
-          <p>475-token agnostic vocabulary and the fail-closed engraving state machine — pitch
-          spelling as tested code.</p>
-          <p class="gate">Gate: round-trip identity — <strong>passed</strong>, incl. 300-case randomized sweep</p>
-        </article>
-        <article class="ms done">
-          <div class="ms-head"><span class="phase">A1</span><span class="tag done">DONE</span></div>
-          <h3>Data pipeline</h3>
-          <p>MusicXML writer/reader, key-aware melody generator, Verovio render harness, audited
-          corpus builder.</p>
-          <p class="gate">Gate: 100% round-trip audits — <strong>passed</strong>, render verified vs targets</p>
-        </article>
-        <article class="ms done">
-          <div class="ms-head"><span class="phase">A2</span><span class="tag done">DONE</span></div>
-          <h3>Normalize + degrade</h3>
-          <p>Interline-normalized canvas (proven on all 180 real crops) and degradation calibrated
-          to real-photo statistics.</p>
-          <p class="gate">Gate: synthetic medians inside real IQR windows — <strong>passed</strong></p>
-        </article>
-        <article class="ms done">
-          <div class="ms-head"><span class="phase">A3</span><span class="tag done">DONE</span></div>
-          <h3>CTC recognizer</h3>
-          <p>6M-parameter CRNN+CTC, 10k systems, fresh degradations every epoch, ~25 min on an
-          RTX 4090.</p>
-          <p class="gate">Gate: ≤ Track A clean TER 0.07 — <strong>passed 20×</strong> (TER 0.003, 93% exact)</p>
-        </article>
-        <article class="ms done">
-          <div class="ms-head"><span class="phase">A4</span><span class="tag done">DONE</span></div>
-          <h3>Real-photo evaluation</h3>
-          <p>One-shot on the 60 held-out photos after a 12-photo shakedown fixed beam and font
-          engraving gaps.</p>
-          <p class="gate">Gate: beat TER 0.2561 — <strong>passed 4×</strong> (0.0632, 29/60 exact)</p>
-        </article>
-        <article class="ms done">
-          <div class="ms-head"><span class="phase">A5</span><span class="tag done">DONE</span></div>
-          <h3>Decision: KEEP</h3>
-          <p>Graphic-first becomes the recommended backbone. Also found: the prints contain no
-          chromatic-accidental ink — part of Track A's failure was unwinnable.</p>
-          <p class="gate">Printable-reference reading: <strong>TER 0.0206, 58/60 exact</strong></p>
-        </article>
-        <article class="ms done">
-          <div class="ms-head"><span class="phase">A6</span><span class="tag done">DONE</span></div>
-          <h3>Distractor ink + accidental fix</h3>
-          <p>Slurs, lyrics, dynamics, and tempo text rendered as clutter (targets untouched);
-          plus an injector that makes capture MusicXML print its chromatic accidentals.</p>
-          <p class="gate">Dev set (180 hard crops): <strong>82 vs 69 exact, key headers 84% vs 75%</strong></p>
-        </article>
-        <article class="ms done">
-          <div class="ms-head"><span class="phase">B1</span><span class="tag done">PASSED</span></div>
-          <h3>Sealed final benchmark</h3>
-          <p>120 never-photographed systems, 30 pages, two sessions, three lighting
-          conditions; checkpoint declared by SHA-256 before any photo; evaluated exactly
-          once. All eight predeclared gates passed.</p>
-          <p class="gate">Gate: TER ≤ 0.10, ≥ 40% exact — <strong>TER 0.0190, 109/120 exact,
-          97.4% accidentals, 95% measures correction-free</strong></p>
-        </article>
-        <article class="ms next">
-          <div class="ms-head"><span class="phase">A7+</span><span class="tag now">NOW</span></div>
-          <h3>Beyond the single staff</h3>
-          <p>Score IR v2 under way: chords landed same-day — one grouping token,
-          per-notehead accidentals through the same engraving state machine, retrained on
-          an 11k-system chord corpus. Next: real-photo chord validation, then full-page
-          multi-system reading.</p>
-          <p class="gate">First gate: synthetic-val TER <strong>0.0046, 88.6% exact, zero
-          monophonic regression</strong> (2026-08-14)</p>
-        </article>
+      <div class="timeline">
+        <div class="tl-item done">
+          <span class="tl-dot"></span><span class="tl-phase">A0–A1</span>
+          <div class="tl-body">
+            <h3>Representation core &amp; data pipeline</h3>
+            <p>475-token agnostic vocabulary, the fail-closed engraving state machine (pitch
+            spelling as tested code), canonical MusicXML writer/reader, key-aware generator,
+            and an audited corpus builder — round-trip identity proven everywhere.</p>
+          </div>
+        </div>
+        <div class="tl-item done">
+          <span class="tl-dot"></span><span class="tl-phase">A2–A3</span>
+          <div class="tl-body">
+            <h3>Normalization, degradation &amp; the CTC recognizer</h3>
+            <p>Interline-normalized canvas, camera-calibrated degradation gated against real-photo
+            statistics, and a 6M-parameter CRNN+CTC: <strong>TER 0.003, 93% exact</strong> on
+            degraded synthetic validation after ~25 minutes of training.</p>
+          </div>
+        </div>
+        <div class="tl-item done">
+          <span class="tl-dot"></span><span class="tl-phase">A4–A5</span>
+          <div class="tl-body">
+            <h3>Real-photo head-to-head: the bet won</h3>
+            <p>Same 60 held-out photos, identical metric: <strong>TER 0.0632 vs Track A's 0.2561,
+            29/60 exact vs 0/60</strong>, every printable accidental recovered. Graphic-first
+            becomes the recommended backbone.</p>
+          </div>
+        </div>
+        <div class="tl-item done">
+          <span class="tl-dot"></span><span class="tl-phase">A6</span>
+          <div class="tl-body">
+            <h3>Distractor ink &amp; the accidental fix</h3>
+            <p>Slurs, lyrics, dynamics and tempo text rendered as clutter with targets untouched;
+            an injector makes capture pages print their chromatic accidentals — the first prints
+            whose ink matches their labels.</p>
+          </div>
+        </div>
+        <div class="tl-item done">
+          <span class="tl-dot"></span><span class="tl-phase">B1</span>
+          <div class="tl-body">
+            <h3>Sealed benchmark: all eight gates passed</h3>
+            <p>120 never-photographed systems, checkpoint declared by SHA-256 before capture,
+            evaluated exactly once: <strong>TER 0.0190, 109/120 exact, 97.4% accidental recovery,
+            95% of measures correction-free</strong>. V1 single-staff development closed.</p>
+          </div>
+        </div>
+        <div class="tl-item now">
+          <span class="tl-dot"></span><span class="tl-phase">A7</span>
+          <div class="tl-body">
+            <h3>Score IR v2: chords</h3>
+            <p>Chord support landed end to end in a day — one grouping token, per-notehead
+            accidentals through the same engraving state machine, retrained on an 11k-system
+            corpus: <strong>synthetic TER 0.0046 with zero monophonic regression</strong>.
+            Now: the C1 real-photo chord validation — printed and awaiting capture.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <span class="tl-dot"></span><span class="tl-phase">A8</span>
+          <div class="tl-body">
+            <h3>Full-page multi-system reading</h3>
+            <p>Generalize the page splitter beyond known layouts — detect system count and
+            positions without a page map — plus denser engraving realism (MuseScore/Leland).</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <span class="tl-dot"></span><span class="tl-phase">PRODUCT</span>
+          <div class="tl-body">
+            <h3>Teacher WYSIWYG foundations</h3>
+            <p>Per-token confidence and object coordinates as first-class Score IR outputs,
+            Verovio click-to-edit rendering, and minutes-to-correct-sheet as the product metric
+            that decides everything above.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
