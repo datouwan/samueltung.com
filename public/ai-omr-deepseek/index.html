@@ -374,69 +374,11 @@
           <p>Each benchmark is captured under a frozen protocol, evaluated exactly once, then sealed — its images, labels, and failures never enter training or tuning. The harness re-consumes frozen results; it never re-evaluates.</p>
         </div>
         <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Benchmark</th>
-                <th>TER</th>
-                <th>Exact systems</th>
-                <th>Altered recovery</th>
-                <th>Measure zero-correction</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>B1 sealed · Track B · 120 systems</td>
-                <td><strong class="good-num">0.0190</strong></td>
-                <td><strong class="good-num">109/120 (90.8%)</strong></td>
-                <td><strong class="good-num">298/306 (97.4%)</strong></td>
-                <td><strong class="good-num">228/240 (95.0%)</strong></td>
-                <td>All 8 gates passed · sealed</td>
-              </tr>
-              <tr>
-                <td>M9.4 sealed · Track A · 120 systems</td>
-                <td>0.2360</td>
-                <td>15/120 (12.5%)</td>
-                <td>—</td>
-                <td>—</td>
-                <td>Gate failed · sealed</td>
-              </tr>
-              <tr>
-                <td>M9.5 dev 60-photo · Track A</td>
-                <td>0.2561</td>
-                <td>0/60</td>
-                <td>~12.6%</td>
-                <td>—</td>
-                <td>Development set</td>
-              </tr>
-              <tr>
-                <td>M9.5 dev 60-photo · Track B (A5 head-to-head)</td>
-                <td><strong class="good-num">0.0632</strong></td>
-                <td><strong class="good-num">29/60</strong></td>
-                <td><strong class="good-num">137/137</strong></td>
-                <td>—</td>
-                <td>Development set</td>
-              </tr>
-              <tr>
-                <td>oemer M8 spike · 5 systems · CPU</td>
-                <td>0.0226 (3 conversions)</td>
-                <td>2/5 (40%)</td>
-                <td>—</td>
-                <td>—</td>
-                <td>Bounded spike</td>
-              </tr>
-              <tr class="track-c-col">
-                <td><strong>Track C grand-staff benchmark</strong> · protocol frozen before capture</td>
-                <td>TBD</td>
-                <td>TBD</td>
-                <td>TBD</td>
-                <td>TBD</td>
-                <td>Not yet captured</td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- OMRBENCH:BEGIN:benchmarks -->
+<table><thead><tr><th>Benchmark</th><th>TER</th><th>Exact systems</th><th>Altered recovery</th><th>Measure zero-correction</th><th>Status</th></tr></thead><tbody><tr><td>B1 sealed · Track B · 120 systems</td><td><strong class="good-num">0.0190</strong></td><td><strong class="good-num">109/120 (90.8%)</strong></td><td><strong class="good-num">298/306 (97.4%)</strong></td><td><strong class="good-num">228/240 (95.0%)</strong></td><td>All 8 gates passed · sealed</td></tr><tr><td>M9.4 sealed · Track A · 120 systems</td><td>0.2360</td><td>15/120 (12.5%)</td><td>—</td><td>—</td><td>Gate failed · sealed</td></tr><tr><td>M9.5 dev 60-photo · Track A</td><td>0.2561</td><td>0/60 (0.0%)</td><td>—</td><td>—</td><td>Development set</td></tr><tr><td>M9.5 dev 60-photo · Track B · A5 head-to-head</td><td><strong class="good-num">0.0632</strong></td><td><strong class="good-num">29/60 (48.3%)</strong></td><td><strong class="good-num">137/137 (100.0%)</strong></td><td>—</td><td>Development set</td></tr><tr><td>oemer M8 spike · 5 systems · CPU</td><td>—</td><td>2/5 (40.0%)</td><td>—</td><td>—</td><td>Bounded spike · mean TER 0.0226 over 3 conversions</td></tr><tr class="track-c-col"><td><strong>Track C grand-staff benchmark</strong> · protocol frozen before capture</td><td>TBD</td><td>TBD</td><td>TBD</td><td>TBD</td><td>Not yet captured</td></tr></tbody></table>
+<!-- OMRBENCH:END:benchmarks -->
         </div>
+        <p class="note">Numbers current as of 2026-08-14 · generated from harness/published/*.json on every sync.</p>
         <p class="note">Track C's predeclared C3 gate: TER ≤ 0.10, altered-note recovery ≥ 85%, measure-level zero-correction ≥ 50%, one shot, on 120+ never-before-photographed grand-staff systems.</p>
       </div>
     </section>
