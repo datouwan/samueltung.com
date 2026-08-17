@@ -224,7 +224,7 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Living roadmap · updated 2026-08-14 · B1 passed, A7 chords under way</p>
+          <p class="eyebrow">Living roadmap · updated 2026-08-17 · A7 chords validated on real photos</p>
           <h2>Milestones with gates, not vibes.</h2>
         </div>
         <p>Every milestone exits through a predeclared gate. Filled dots are sealed results;
@@ -276,22 +276,25 @@
             95% of measures correction-free</strong>. V1 single-staff development closed.</p>
           </div>
         </div>
-        <div class="tl-item now">
+        <div class="tl-item done">
           <span class="tl-dot"></span><span class="tl-phase">A7</span>
           <div class="tl-body">
-            <h3>Score IR v2: chords</h3>
-            <p>Chord support landed end to end in a day — one grouping token, per-notehead
-            accidentals through the same engraving state machine, retrained on an 11k-system
-            corpus: <strong>synthetic TER 0.0046 with zero monophonic regression</strong>.
-            Now: the C1 real-photo chord validation — printed and awaiting capture.</p>
+            <h3>Score IR v2: chords — validated on real photos</h3>
+            <p>One grouping token, per-notehead accidentals through the same engraving state
+            machine, retrained on an 11k-system corpus. The C1 real-photo development set
+            (120 fresh systems, 90 chordful) confirms it: <strong>TER 0.0130, 100/120 exact,
+            99.3% of chord events with correct structure</strong> — chordful real-photo error
+            lands below the sealed monophonic benchmark.</p>
           </div>
         </div>
-        <div class="tl-item">
+        <div class="tl-item now">
           <span class="tl-dot"></span><span class="tl-phase">A8</span>
           <div class="tl-body">
             <h3>Full-page multi-system reading</h3>
             <p>Generalize the page splitter beyond known layouts — detect system count and
-            positions without a page map — plus denser engraving realism (MuseScore/Leland).</p>
+            positions without a page map — plus denser engraving realism (MuseScore/Leland).
+            C1's stray carpet-background photo, which briefly broke page detection, is the
+            problem statement in miniature.</p>
           </div>
         </div>
         <div class="tl-item">
