@@ -25,6 +25,7 @@ td{font-size:.78rem}
 </style></head><body>
 <h1>Training Monitor</h1>
 <div id="meta">loading…</div>
+<div id="pipeline" class="run" style="border-style:dashed;display:none"></div>
 <div id="procs" class="run" style="border-style:dashed"></div>
 <div id="runs"></div>
 <script>
@@ -44,6 +45,16 @@ async function refresh(){
   const ageTxt=age<90?`${age.toFixed(0)}s ago`:`<span class="stale">${(age/60).toFixed(0)} min ago — pusher may be down</span>`;
   const g=s.gpu&&s.gpu.total_mb?` <span class="gpu">GPU ${s.gpu.used_mb}/${s.gpu.total_mb} MB · ${s.gpu.util}%</span>`:"";
   meta.innerHTML=`pushed ${ageTxt}${g}`;
+  const pl=document.getElementById("pipeline");
+  if(s.pipeline){
+    pl.style.display="block";
+    const mark=st=>st==="done"?"✅":st.startsWith("running")?"▶️":st==="waiting"?"⏸":"⭕";
+    pl.innerHTML=`<h2>${s.pipeline.campaign} <span class="badge">pipeline</span></h2>`+
+      `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:.8rem">`+
+      s.pipeline.stages.map(st=>`<span style="background:#1a2420;border:1px solid #2c3a33;
+        border-radius:8px;padding:4px 10px">${mark(st.status)} ${st.name}
+        <span style="color:#8fa79a">${st.status.startsWith("running")?st.status.slice(8):""}</span></span>`).join("")+"</div>";
+  } else { pl.style.display="none"; }
   document.getElementById("procs").innerHTML=`<h2>GPU / python processes
     <span class="badge">machine-wide</span></h2>`+
     ((s.procs&&s.procs.length)?`<table style="width:100%;border-collapse:collapse">`+
