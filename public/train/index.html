@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Training Monitor</title>
+<style>
+body{margin:0;font:14px/1.5 system-ui,sans-serif;background:#101614;color:#e8efe9;padding:18px}
+h1{font:500 1.3rem Georgia,serif;margin:0 0 2px}
+#meta{color:#8fa79a;font-size:.8rem;margin-bottom:14px}
+.gpu{display:inline-block;background:#1a2420;border:1px solid #2c3a33;border-radius:8px;
+padding:4px 12px;margin-left:10px;font-size:.8rem}
+.stale{color:#d3986f;font-weight:700}
+.run{background:#161f1b;border:1px solid #2c3a33;border-radius:12px;padding:12px 16px;margin-bottom:10px}
+.run.active{border-color:#3fa576;box-shadow:0 0 12px rgba(63,165,118,.25)}
+.run h2{margin:0;font-size:1rem;display:flex;align-items:center;gap:10px}
+.badge{font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;background:#26332d;color:#8fa79a}
+.active .badge{background:#1e5c41;color:#b5eacd}
+.bar{height:8px;background:#26332d;border-radius:4px;margin:8px 0;overflow:hidden}
+.bar div{height:100%;background:#3fa576;border-radius:4px}
+.stats{display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem;color:#a9bfb2}
+.stats b{color:#e8efe9}
+svg{margin-top:6px}
+.lbl{font-size:.66rem;color:#68806f;text-transform:uppercase;letter-spacing:.08em}
+td{font-size:.78rem}
+</style></head><body>
+<h1>Training Monitor</h1>
+<div id="meta">loading…</div>
+<div id="procs" class="run" style="border-style:dashed"></div>
+<div id="runs"></div>
+<script>
+function spark(values, color, log){
+  if(!values||values.length<2)return "";
+  const v=log?values.map(x=>Math.log10(Math.max(x,1e-5))):values;
+  const min=Math.min(...v),max=Math.max(...v),W=260,H=40;
+  const pts=v.map((y,i)=>`${(i/(v.length-1)*W).toFixed(1)},${(H-4-(y-min)/(max-min+1e-9)*(H-8)).toFixed(1)}`).join(" ");
+  return `<svg width="${W}" height="${H}"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.6"/></svg>`;
+}
+async function refresh(){
+  const wrapped=await (await fetch("/api/train-status")).json();
+  const meta=document.getElementById("meta");
+  if(!wrapped.state){meta.textContent="No status pushed yet — start the local monitor with --push.";return;}
+  const s=wrapped.state;
+  const age=(Date.now()-Date.parse(wrapped.pushed_at))/1000;
+  const ageTxt=age<90?`${age.toFixed(0)}s ago`:`<span class="stale">${(age/60).toFixed(0)} min ago — pusher may be down</span>`;
+  const g=s.gpu&&s.gpu.total_mb?` <span class="gpu">GPU ${s.gpu.used_mb}/${s.gpu.total_mb} MB · ${s.gpu.util}%</span>`:"";
+  meta.innerHTML=`pushed ${ageTxt}${g}`;
+  document.getElementById("procs").innerHTML=`<h2>GPU / python processes
+    <span class="badge">machine-wide</span></h2>`+
+    ((s.procs&&s.procs.length)?`<table style="width:100%;border-collapse:collapse">`+
+      s.procs.map(p=>`<tr style="border-top:1px solid #26332d">
+        <td style="padding:3px 8px 3px 0;color:#8fa79a;white-space:nowrap">${p.pid??""}</td>
+        <td style="padding:3px 8px">${p.on_gpu?"🟢":"⚪"}</td>
+        <td style="padding:3px 0;word-break:break-all">${p.cmd}${p.mem?` <b>(${p.mem})</b>`:""}</td>
+      </tr>`).join("")+`</table>`:"<span style='color:#68806f'>none</span>");
+  const root=document.getElementById("runs");root.innerHTML="";
+  for(const r of s.runs||[]){
+    const d=document.createElement("div");d.className="run"+(r.active?" active":"");
+    const pct=(r.epoch/r.total*100).toFixed(0);
+    d.innerHTML=`<h2>${r.name} <span class="badge">${r.active?"TRAINING":"idle"}</span></h2>
+      <div class="bar"><div style="width:${pct}%"></div></div>
+      <div class="stats">
+        <span>epoch <b>${r.epoch}/${r.total}</b></span>
+        <span>pace <b>${r.pace_s}s</b></span>
+        ${r.active?`<span>ETA <b>~${r.eta_min} min</b></span>`:""}
+        <span>val TER <b>${r.last.agnostic_ter}</b></span>
+        <span>best <b>${r.best_ter}</b> @ep${r.best_epoch}</span>
+        <span>exact <b>${(r.last.exact_rate*100).toFixed(1)}%</b></span>
+      </div>
+      <div><span class="lbl">val TER (log)</span> ${spark(r.ter_series,"#6fd3a3",true)}
+      <span class="lbl">loss (log)</span> ${spark(r.loss_series,"#d3b46f",true)}</div>`;
+    root.appendChild(d);
+  }
+}
+refresh();setInterval(refresh,15000);
+</script></body></html>

@@ -12,6 +12,7 @@
 // and route them here.
 
 import { handleWorldCupApi } from "./worldcup/api.js";
+import { handleTrainMonApi } from "./trainmon/api.js";
 
 // Paths that stay public (no password): project pages and public APIs.
 function isPublicPath(pathname) {
@@ -168,6 +169,9 @@ export default {
       const denied = checkAuth(request, env);
       if (denied) return denied;
     }
+
+    const trainApi = await handleTrainMonApi(request, env);
+    if (trainApi) return trainApi;
 
     const api = await handleWorldCupApi(request, env, ctx);
     if (api) return api;

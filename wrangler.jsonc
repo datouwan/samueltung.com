@@ -19,6 +19,14 @@
   // (FOOTBALL_DATA_TOKEN / APIFOOTBALL_KEY are no longer used — the World Cup
   //  feature is an archive since the 2026 tournament ended.)
 
+  // ── KV ──
+  // TRAIN_KV: latest training status pushed by the local training monitor
+  // (ai-omr-agnostic scripts/training_monitor.py --push). Secret:
+  //   TRAIN_PUSH_TOKEN — bearer token the pusher must present.
+  "kv_namespaces": [
+    { "binding": "TRAIN_KV", "id": "1306f766258542629c9b76f89e4eeb74" }
+  ],
+
   // ── Custom domains ──
   "routes": [
     { "pattern": "samueltung.com",     "custom_domain": true },
