@@ -63,6 +63,7 @@
     .probe { display: none; }
     .probe.active { display: block; }
     .tabs-hint { color: var(--muted); font-size: .85rem; margin-top: 16px; }
+    @media (min-width: 901px) { body { padding-right: 132px; } }
     @media (max-width: 900px) {
       .tabs { position: static; flex-direction: row; flex-wrap: wrap; gap: 8px; width: min(1160px, calc(100% - 40px)); margin: 0 auto 10px; }
       .tabs a { border-right: 1px solid var(--line); border-radius: 10px; transform: none; box-shadow: none; }
