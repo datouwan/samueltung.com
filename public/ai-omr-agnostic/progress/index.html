@@ -62,6 +62,11 @@
     .tabs a.active small { opacity: .8; }
     .probe { display: none; }
     .probe.active { display: block; }
+    .tabs a.capture { border-left: 4px solid var(--coral); }
+    .tabs a .kind { display: block; font-weight: 700; letter-spacing: 0; font-size: .68rem; color: var(--coral); }
+    .tabs a.active .kind { color: #ffd0c3; }
+    section.probe.reread { background: rgba(21,34,31,.025); }
+    .page .cap { margin: 2px 0 0; font-size: .8rem; color: var(--coral); font-weight: 700; }
     .tabs-hint { color: var(--muted); font-size: .85rem; margin-top: 16px; }
     @media (min-width: 901px) { body { padding-right: 132px; } }
     @media (max-width: 900px) {
@@ -85,283 +90,281 @@
 
   <header>
     <div class="wrap">
-      <p class="eyebrow">Progress on real pages · living page · latest probe 2026-08-27</p>
+      <p class="eyebrow">Progress on real pages · living page · latest read 2026-08-27</p>
       <h1>The photo on the left. What the recognizer <em>read</em> on the right.</h1>
       <p class="lede">The sealed benchmarks (B1, C1, G1–G5) measure printed synthetic pages under controlled
       claims. This page is the other half: ordinary iPhone photos of real sheet music, run through the
       full map-blind pipeline (page detection → staff detection → recognizer → deterministic semantics →
       MusicXML → re-rendered), shown next to the original. Nothing here is a benchmark number — it is
-      what you would get today if you pointed the phone at the page. Each probe is kept as it was, so the
-      page reads as a history — pick a date on the right.</p>
-      <p class="tabs-hint">Every entry is one photographed page and one checkpoint; the same pages recur across dates, so the tabs are the timeline.</p>
+      what you would get today if you pointed the phone at the page. Every day a checkpoint read real pages is a tab on the right; the days you actually took
+      photos are marked as captures, the others re-read earlier photos with newer checkpoints — the cards say which.</p>
+      <p class="tabs-hint">📷 = photos taken that day. Other tabs re-read those same photos with the checkpoints of the day.</p>
     </div>
   </header>
 
   <nav class="tabs" id="tabs" aria-label="probe dates"></nav>
 
-  <section class="probe" id="probe-2026-08-27-live1" data-date="2026-08-27">
+  <section class="probe capture" id="probe-2026-08-27-live1" data-date="2026-08-27" data-kind="capture">
     <div class="wrap">
-      <p class="eyebrow">Probe · 2026-08-27 · live1 — the standing test target</p>
-      <h2>Six real pages, two checkpoints</h2>
-      <p class="meta">Shot handheld on an iPhone in ordinary room light, books left as they lie (curved spreads,
-      pen marks, all). Read with <span class="pill record">p3f-s2 — checkpoint of record</span> (the one that
-      passed G5) and <span class="pill cand">p3j-s1 — capacity campaign candidate</span> (better on every sealed
-      probe, but not selectable: it hallucinates 8va brackets on method-book pages). The right-hand render is
-      exactly what the produced MusicXML says; systems that did not parse are simply absent from it.</p>
-
+      <p class="eyebrow">Capture · 2026-08-27 · live1 — photos taken this day</p>
+      <h2>Six real pages, two checkpoints — the standing test target</h2>
+      <p class="meta">Read with <span class="pill record">p3f-s2 — checkpoint of record</span> and <span class="pill cand">p3j-s1 — candidate</span>. The right-hand render is exactly what the produced MusicXML says; systems that did not parse are absent from it.</p>
       <table>
         <tr><th>page</th><th>staves found</th><th>p3f-s2</th><th>p3j-s1</th><th>what limits it</th></tr>
-        <tr><td>Handel, Sonata in A HWV 361 — violin part</td><td class="num">10 / 10</td><td class="num">9 of 10 systems parsed</td><td class="num"><strong>10 of 10 parsed</strong>, 6/40 measures flagged</td><td>in scope — single printed staff</td></tr>
-        <tr><td>Lesson 70 — E minor scales &amp; chords (piano method, fingerings)</td><td class="num">6 / 6 → 3 pairs</td><td class="num">4 parsed · 1 grand system assembled</td><td class="num">4 parsed · <strong>2 assembled</strong></td><td>a mid-staff clef change in the bass part; the chord block</td></tr>
-        <tr><td>Suzuki-style minuet + string-crossing exercises (pen marks)</td><td class="num">9 / 9</td><td class="num">3 parsed</td><td class="num">3 parsed</td><td>slurs over ties, exercise fragments, pen marks</td></tr>
-        <tr><td>Songbook p. 1 — vocal line + piano, lyrics, chord symbols</td><td class="num">9 of 12</td><td class="num">5 parsed · 1 assembled</td><td class="num">3 parsed · 1 assembled</td><td><strong>two voices on one staff</strong>, chord symbols, three-staff systems paired as two</td></tr>
-        <tr><td>Songbook p. 2</td><td class="num">8 of 12</td><td class="num">0</td><td class="num">0</td><td>same</td></tr>
-        <tr><td>Chopin, Nocturne Op. 9 No. 2</td><td class="num">13 / 13 → 3 pairs</td><td class="num">5 parsed · 2 assembled (left hand only)</td><td class="num">0</td><td>tuplets, grace notes, multiple voices, pedal — out of scope</td></tr>
+        <tr><td>Songbook p.1 — vocal + piano, lyrics, chord symbols</td><td class="num">9</td><td class="num">5 of 9 parsed · 1 grand assembled · 21/27 measures flagged</td><td class="num">3 of 9 parsed · 1 grand assembled · 19/29 measures flagged</td><td>two voices on one staff, chord symbols, vocal+piano three-staff systems paired as two</td></tr>
+        <tr><td>Songbook p.2</td><td class="num">8</td><td class="num">0 of 8 parsed · 8/25 measures flagged</td><td class="num">0 of 8 parsed · 2/25 measures flagged</td><td>same</td></tr>
+        <tr><td>Lesson 70 — E minor scales &amp; chords (piano method)</td><td class="num">6</td><td class="num">4 of 6 parsed · 1 grand assembled · 5/13 measures flagged</td><td class="num">4 of 6 parsed · 2 grand assembled · 5/12 measures flagged</td><td>mid-staff clef change in the bass part; the chord block</td></tr>
+        <tr><td>Handel — Sonata in A HWV 361, violin part</td><td class="num">10</td><td class="num">9 of 10 parsed · 9/41 measures flagged</td><td class="num">10 of 10 parsed · 6/40 measures flagged</td><td>in scope — single printed staff</td></tr>
+        <tr><td>Suzuki-style minuet + string-crossing exercises</td><td class="num">9</td><td class="num">3 of 9 parsed · 8/49 measures flagged</td><td class="num">3 of 9 parsed · 8/49 measures flagged</td><td>slurs over ties, exercise fragments, pen marks</td></tr>
+        <tr><td>Chopin — Nocturne Op. 9 No. 2</td><td class="num">13</td><td class="num">5 of 13 parsed · 2 grand assembled · 21/32 measures flagged</td><td class="num">0 of 13 parsed · 20/34 measures flagged</td><td>tuplets, grace notes, multiple voices, pedal — out of scope</td></tr>
       </table>
-
-      <p class="legend"><strong>Reading it honestly.</strong> Single-staff printed parts are solid. Piano pages read
-      where the writing is one voice per staff (method books, exercises) and fall apart on songbook and romantic
-      writing — several voices on one staff, chord-symbol text, tuplets, grace notes. Photo conditions are no longer
-      the limit: every staff was found on every page except the curved songbook spreads, and those misses are the
-      vocal + piano three-staff systems the pairing does not model yet. The next capability levers are notation
-      scope, not camera robustness.</p>
-
+      <p class="legend"><strong>Reading it honestly.</strong> Single-staff printed parts are solid. Piano pages read where the writing is one voice per staff (method books, exercises) and fall apart on songbook and romantic writing — several voices on one staff, chord-symbol text, tuplets, grace notes. Photo conditions are no longer the limit: every staff was found on every page except the curved songbook spreads, and those misses are the vocal + piano three-staff systems the pairing does not model yet. The next capability levers are notation scope, not camera robustness.</p>
       <div class="page">
-        <h3>Handel — Sonata in A major, HWV 361 (violin)</h3>
-        <p>The strongest case: both movements read as one continuous line, dotted rhythms, ties and accidentals
-        intact. The <strong>6 flagged measures</strong> are where a teacher would look first when correcting.</p>
+        <h3>Songbook p.1 — vocal + piano, lyrics, chord symbols</h3>
+        <p>The wall, seen up close: a whole-note bass voice under a quarter-note melody on the same staff, chord symbols above, lyrics below, and three-staff systems (voice + piano) that the pairing reads as two. The recognizer is confident and wrong in a way the parser rejects — multiple voices per staff is the next representation to add.</p>
         <div class="cmp">
-          <div class="lbl">p3j-s1 · candidate <span>10 of 10 systems parsed</span></div>
-          <img src="img/IMG_2710-p3j-s1.jpg" alt="Handel violin sonata: photo and OMR render, p3j-s1" loading="lazy">
-          <div class="lbl">p3f-s2 · record <span>9 of 10 systems parsed</span></div>
-          <img src="img/IMG_2710-p3f-s2.jpg" alt="Handel violin sonata: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>5 of 9 parsed · 1 grand assembled · 21/27 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-01-p3f-s2.jpg" alt="Songbook p.1 — vocal + piano, lyrics, chord symbols: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>3 of 9 parsed · 1 grand assembled · 19/29 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-01-p3j-s1.jpg" alt="Songbook p.1 — vocal + piano, lyrics, chord symbols: photo and OMR render, p3j-s1" loading="lazy">
         </div>
       </div>
-
       <div class="page">
-        <h3>Lesson 70 — E natural minor scales, chords &amp; inversions (piano method)</h3>
-        <p>The one-octave scale reads cleanly as a line. In the two-octave system the treble run is exact and the
-        bass staff comes out as rests: that staff switches to a treble clef mid-line — a mid-staff clef change in
-        the <em>bass</em> part. The chord block reads the bass chords, not the treble ones. Fingering digits under
-        every note are the clutter that trips the p3j candidate on other pages.</p>
+        <h3>Songbook p.2</h3>
+        <p>Second page of the same songbook: nothing parses, for the same reasons.</p>
         <div class="cmp">
-          <div class="lbl">p3j-s1 · candidate <span>4 parsed · 2 of 2 grand systems assembled</span></div>
-          <img src="img/IMG_2709-p3j-s1.jpg" alt="Lesson 70: photo and OMR render, p3j-s1" loading="lazy">
-          <div class="lbl">p3f-s2 · record <span>4 parsed · 1 assembled</span></div>
-          <img src="img/IMG_2709-p3f-s2.jpg" alt="Lesson 70: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>0 of 8 parsed · 8/25 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-02-p3f-s2.jpg" alt="Songbook p.2: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>0 of 8 parsed · 2/25 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-02-p3j-s1.jpg" alt="Songbook p.2: photo and OMR render, p3j-s1" loading="lazy">
         </div>
       </div>
-
       <div class="page">
-        <h3>Minuet + string-crossing exercises (violin method, red pen marks)</h3>
-        <p>Three of nine systems parse. The rest fail on slurs drawn over ties, the short exercise fragments and
-        the teacher's pen marks — real practice-sheet conditions the corpus does not render yet.</p>
+        <h3>Lesson 70 — E minor scales &amp; chords (piano method)</h3>
+        <p>The one-octave scale reads cleanly as a line. In the two-octave system the treble run is exact and the bass staff comes out as rests: that staff switches to a treble clef mid-line — a mid-staff clef change in the bass part. The chord block reads the bass chords, not the treble ones. Fingering digits under every note are the clutter that trips the p3j candidate on other pages.</p>
         <div class="cmp">
-          <div class="lbl">p3j-s1 · candidate <span>3 of 9 parsed</span></div>
-          <img src="img/IMG_2711-p3j-s1.jpg" alt="Minuet and exercises: photo and OMR render, p3j-s1" loading="lazy">
-          <div class="lbl">p3f-s2 · record <span>3 of 9 parsed</span></div>
-          <img src="img/IMG_2711-p3f-s2.jpg" alt="Minuet and exercises: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>4 of 6 parsed · 1 grand assembled · 5/13 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-03-p3f-s2.jpg" alt="Lesson 70 — E minor scales &amp; chords (piano method): photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>4 of 6 parsed · 2 grand assembled · 5/12 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-03-p3j-s1.jpg" alt="Lesson 70 — E minor scales &amp; chords (piano method): photo and OMR render, p3j-s1" loading="lazy">
         </div>
       </div>
-
       <div class="page">
-        <h3>Songbook — vocal line + piano, lyrics, chord symbols (two pages)</h3>
-        <p>The wall, seen up close: a whole-note bass voice under a quarter-note melody on the same staff, chord
-        symbols above, lyrics below, and three-staff systems (voice + piano) that the pairing reads as two. The
-        recognizer is confident and wrong in a way the parser rejects — <strong>multiple voices per staff</strong>
-        is the next representation to add.</p>
+        <h3>Handel — Sonata in A HWV 361, violin part</h3>
+        <p>The strongest case: both movements read as one continuous line, dotted rhythms, ties and accidentals intact. The flagged measures are where a teacher would look first when correcting.</p>
         <div class="cmp">
-          <div class="lbl">p3f-s2 · record · page 1 <span>5 parsed · 1 assembled</span></div>
-          <img src="img/IMG_2707-p3f-s2.jpg" alt="Songbook page 1: photo and OMR render, p3f-s2" loading="lazy">
-          <div class="lbl">p3j-s1 · candidate · page 1 <span>3 parsed · 1 assembled</span></div>
-          <img src="img/IMG_2707-p3j-s1.jpg" alt="Songbook page 1: photo and OMR render, p3j-s1" loading="lazy">
-          <div class="lbl">p3f-s2 · record · page 2 <span>nothing parsed</span></div>
-          <img src="img/IMG_2708-p3f-s2.jpg" alt="Songbook page 2: photo and OMR render, p3f-s2" loading="lazy">
-          <div class="lbl">p3j-s1 · candidate · page 2 <span>nothing parsed</span></div>
-          <img src="img/IMG_2708-p3j-s1.jpg" alt="Songbook page 2: photo and OMR render, p3j-s1" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>9 of 10 parsed · 9/41 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-04-p3f-s2.jpg" alt="Handel — Sonata in A HWV 361, violin part: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>10 of 10 parsed · 6/40 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-04-p3j-s1.jpg" alt="Handel — Sonata in A HWV 361, violin part: photo and OMR render, p3j-s1" loading="lazy">
         </div>
       </div>
-
       <div class="page">
-        <h3>Chopin — Nocturne in E♭ major, Op. 9 No. 2</h3>
-        <p>Out of scope on purpose, kept as the stretch case: tuplets, grace notes, several voices, pedal marks.
-        All 13 staves are found and paired; the two systems p3f-s2 assembles carry only the left-hand
-        figuration, the right hand comes out empty.</p>
+        <h3>Suzuki-style minuet + string-crossing exercises</h3>
+        <p>Three of nine systems parse. The rest fail on slurs drawn over ties, the short exercise fragments and the teacher&#x27;s pen marks — real practice-sheet conditions the corpus does not render yet.</p>
         <div class="cmp">
-          <div class="lbl">p3f-s2 · record <span>5 parsed · 2 assembled</span></div>
-          <img src="img/IMG_2712-p3f-s2.jpg" alt="Chopin Nocturne: photo and OMR render, p3f-s2" loading="lazy">
-          <div class="lbl">p3j-s1 · candidate <span>nothing parsed</span></div>
-          <img src="img/IMG_2712-p3j-s1.jpg" alt="Chopin Nocturne: photo and OMR render, p3j-s1" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>3 of 9 parsed · 8/49 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-05-p3f-s2.jpg" alt="Suzuki-style minuet + string-crossing exercises: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>3 of 9 parsed · 8/49 measures flagged · 2026-08-27 13:37</span></div>
+          <img src="img/live1-2026-08-27/live1-page-05-p3j-s1.jpg" alt="Suzuki-style minuet + string-crossing exercises: photo and OMR render, p3j-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Chopin — Nocturne Op. 9 No. 2</h3>
+        <p>Out of scope on purpose, kept as the stretch case: tuplets, grace notes, several voices, pedal marks. All 13 staves are found and paired; the systems that assemble carry only the left-hand figuration, the right hand comes out empty.</p>
+        <div class="cmp">
+          <div class="lbl">p3f-s2 · record <span>5 of 13 parsed · 2 grand assembled · 21/32 measures flagged · 2026-08-27 13:38</span></div>
+          <img src="img/live1-2026-08-27/live1-page-06-p3f-s2.jpg" alt="Chopin — Nocturne Op. 9 No. 2: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>0 of 13 parsed · 20/34 measures flagged · 2026-08-27 13:38</span></div>
+          <img src="img/live1-2026-08-27/live1-page-06-p3j-s1.jpg" alt="Chopin — Nocturne Op. 9 No. 2: photo and OMR render, p3j-s1" loading="lazy">
         </div>
       </div>
     </div>
   </section>
-  <section class="probe" id="probe-2026-08-27-history" data-date="2026-08-27">
+  <section class="probe reread" id="probe-2026-08-27-rereads" data-date="2026-08-27" data-kind="reread">
     <div class="wrap">
-      <p class="eyebrow">Probe · 2026-08-27 · checkpoint reads of the day</p>
-      <h2>4 reads on 2 real pages</h2>
-      <p class="meta">p3j capacity campaign: seeds 1 and 2 beat p3f-s2 everywhere except the method book (spurious 8va from fingerings and position brackets) — not selectable; p3k with book clutter launched. Reads reconstructed from the run archive (<code>runs/read/</code>), rendered exactly as the MusicXML of that day says.</p>
+      <p class="eyebrow">Re-read · 2026-08-27 · same photos: ferrante (captured 2026-08-22), ode (captured 2026-08-17)</p>
+      <h2>4 checkpoint reads of 2 real pages</h2>
+      <p class="meta">p3j capacity campaign: seeds 1 and 2 beat p3f-s2 everywhere except the method book (spurious 8va from fingerings and position brackets) — not selectable; p3k with book clutter launched. Rows are the checkpoints of the day, in order; the photos are the same ones as on their capture tab.</p>
+
       <div class="page">
         <h3>Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method)</h3>
+        <p class="cap">photo captured 2026-08-22</p>
         <div class="cmp">
-          <div class="lbl">p3j-s1 <span>6 systems detected · 6 parsed · 3 grand systems assembled · 5/12 measures flagged · 10:23</span></div>
-          <img src="img/history/ferrante-p3j-s1.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3j-s1" loading="lazy">
-          <div class="lbl">p3j-s2 <span>6 systems detected · 4 parsed · 2 grand systems assembled · 3/12 measures flagged · 13:35</span></div>
-          <img src="img/history/ferrante-p3j-s2.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3j-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>6 systems detected · 6 parsed · 3 grand systems assembled · 5/12 measures flagged · 2026-08-27 10:23</span></div>
+          <img src="img/ferrante/ferrante-p3j-s1.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3j-s1" loading="lazy">
+          <div class="lbl">p3j-s2 · candidate <span>6 systems detected · 4 parsed · 2 grand systems assembled · 3/12 measures flagged · 2026-08-27 13:35</span></div>
+          <img src="img/ferrante/ferrante-p3j-s2.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3j-s2" loading="lazy">
         </div>
       </div>
       <div class="page">
-        <h3>Ode to Joy — single-staff handout (reference: p2 perfect read)</h3>
+        <h3>Ode to Joy — single-staff handout (Phase 1 reference page)</h3>
+        <p class="cap">photo captured 2026-08-17</p>
         <div class="cmp">
-          <div class="lbl">p3j-s1 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 10:22</span></div>
-          <img src="img/history/ode-p3j-s1.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3j-s1" loading="lazy">
-          <div class="lbl">p3j-s2 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 13:33</span></div>
-          <img src="img/history/ode-p3j-s2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3j-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-27 10:22</span></div>
+          <img src="img/ode/ode-p3j-s1.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3j-s1" loading="lazy">
+          <div class="lbl">p3j-s2 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-27 13:33</span></div>
+          <img src="img/ode/ode-p3j-s2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3j-s2" loading="lazy">
         </div>
       </div>
     </div>
   </section>
-  <section class="probe" id="probe-2026-08-26-history" data-date="2026-08-26">
+  <section class="probe reread" id="probe-2026-08-26-rereads" data-date="2026-08-26" data-kind="reread">
     <div class="wrap">
-      <p class="eyebrow">Probe · 2026-08-26 · checkpoint reads of the day</p>
-      <h2>2 reads on 2 real pages</h2>
-      <p class="meta">G5 passes the sealed grand-staff benchmark; the post-G5 detector&#x27;s first real-book read found (and fixed) a title/text false pair — these are the reads after the fix. Reads reconstructed from the run archive (<code>runs/read/</code>), rendered exactly as the MusicXML of that day says.</p>
+      <p class="eyebrow">Re-read · 2026-08-26 · same photos: ferrante (captured 2026-08-22), ode (captured 2026-08-17)</p>
+      <h2>2 checkpoint reads of 2 real pages</h2>
+      <p class="meta">G5 passes the sealed grand-staff benchmark; the post-G5 detector&#x27;s first real-book read found (and fixed) a title/text false pair — these are the reads after the fix. Rows are the checkpoints of the day, in order; the photos are the same ones as on their capture tab.</p>
+
       <div class="page">
         <h3>Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method)</h3>
+        <p class="cap">photo captured 2026-08-22</p>
         <div class="cmp">
-          <div class="lbl">p3f-s2 + post-G5 detector <span>6 systems detected · 5 parsed · 3 grand systems assembled · 6/12 measures flagged · 21:39</span></div>
-          <img src="img/history/ferrante-post-g5c.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3f-s2 + post-G5 detector" loading="lazy">
+          <div class="lbl">p3f-s2 + post-G5 detector · record <span>6 systems detected · 5 parsed · 3 grand systems assembled · 6/12 measures flagged · 2026-08-26 21:39</span></div>
+          <img src="img/ferrante/ferrante-post-g5c.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3f-s2 + post-G5 detector" loading="lazy">
         </div>
       </div>
       <div class="page">
-        <h3>Ode to Joy — single-staff handout (reference: p2 perfect read)</h3>
+        <h3>Ode to Joy — single-staff handout (Phase 1 reference page)</h3>
+        <p class="cap">photo captured 2026-08-17</p>
         <div class="cmp">
-          <div class="lbl">p3f-s2 + post-G5 detector <span>3 systems detected · 3 parsed · 1/16 measures flagged · 21:44</span></div>
-          <img src="img/history/ode-post-g5.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3f-s2 + post-G5 detector" loading="lazy">
+          <div class="lbl">post-g5 · candidate <span>3 systems detected · 3 parsed · 1/16 measures flagged · 2026-08-26 21:44</span></div>
+          <img src="img/ode/ode-post-g5.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, post-g5" loading="lazy">
         </div>
       </div>
     </div>
   </section>
-  <section class="probe" id="probe-2026-08-25-history" data-date="2026-08-25">
+  <section class="probe reread" id="probe-2026-08-25-rereads" data-date="2026-08-25" data-kind="reread">
     <div class="wrap">
-      <p class="eyebrow">Probe · 2026-08-25 · checkpoint reads of the day</p>
-      <h2>6 reads on 1 real page</h2>
-      <p class="meta">p3h and p3i campaigns (8va-bracket fix): Ode holds, real-page probes trade skills — not selected; recognizer track parked. Reads reconstructed from the run archive (<code>runs/read/</code>), rendered exactly as the MusicXML of that day says.</p>
+      <p class="eyebrow">Re-read · 2026-08-25 · same photos: ode (captured 2026-08-17)</p>
+      <h2>6 checkpoint reads of 1 real page</h2>
+      <p class="meta">p3h and p3i campaigns (8va-bracket fix): Ode holds, real-page probes trade skills — not selected; recognizer track parked. Rows are the checkpoints of the day, in order; the photos are the same ones as on their capture tab.</p>
+
       <div class="page">
-        <h3>Ode to Joy — single-staff handout (reference: p2 perfect read)</h3>
+        <h3>Ode to Joy — single-staff handout (Phase 1 reference page)</h3>
+        <p class="cap">photo captured 2026-08-17</p>
         <div class="cmp">
-          <div class="lbl">p3h-s1 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 09:28</span></div>
-          <img src="img/history/ode-p3h-s1.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3h-s1" loading="lazy">
-          <div class="lbl">p3h-s2 <span>3 systems detected · 3 parsed · 9/16 measures flagged · 09:29</span></div>
-          <img src="img/history/ode-p3h-s2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3h-s2" loading="lazy">
-          <div class="lbl">p3h-s3 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 09:30</span></div>
-          <img src="img/history/ode-p3h-s3.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3h-s3" loading="lazy">
-          <div class="lbl">p3i-s1 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 22:24</span></div>
-          <img src="img/history/ode-p3i-s1.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3i-s1" loading="lazy">
-          <div class="lbl">p3i-s2 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 22:25</span></div>
-          <img src="img/history/ode-p3i-s2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3i-s2" loading="lazy">
-          <div class="lbl">p3i-s3 <span>3 systems detected · 3 parsed · 1/16 measures flagged · 22:25</span></div>
-          <img src="img/history/ode-p3i-s3.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3i-s3" loading="lazy">
+          <div class="lbl">p3h-s1 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-25 09:28</span></div>
+          <img src="img/ode/ode-p3h-s1.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3h-s1" loading="lazy">
+          <div class="lbl">p3h-s2 · candidate <span>3 systems detected · 3 parsed · 9/16 measures flagged · 2026-08-25 09:29</span></div>
+          <img src="img/ode/ode-p3h-s2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3h-s2" loading="lazy">
+          <div class="lbl">p3h-s3 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-25 09:30</span></div>
+          <img src="img/ode/ode-p3h-s3.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3h-s3" loading="lazy">
+          <div class="lbl">p3i-s1 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-25 22:24</span></div>
+          <img src="img/ode/ode-p3i-s1.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3i-s1" loading="lazy">
+          <div class="lbl">p3i-s2 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-25 22:25</span></div>
+          <img src="img/ode/ode-p3i-s2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3i-s2" loading="lazy">
+          <div class="lbl">p3i-s3 · candidate <span>3 systems detected · 3 parsed · 1/16 measures flagged · 2026-08-25 22:25</span></div>
+          <img src="img/ode/ode-p3i-s3.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3i-s3" loading="lazy">
         </div>
       </div>
     </div>
   </section>
-  <section class="probe" id="probe-2026-08-24-history" data-date="2026-08-24">
+  <section class="probe reread" id="probe-2026-08-24-rereads" data-date="2026-08-24" data-kind="reread">
     <div class="wrap">
-      <p class="eyebrow">Probe · 2026-08-24 · checkpoint reads of the day</p>
-      <h2>3 reads on 1 real page</h2>
-      <p class="meta">p3g residue campaign: Ode 3/3 on every seed, but the method book collapsed (not selected). Reads reconstructed from the run archive (<code>runs/read/</code>), rendered exactly as the MusicXML of that day says.</p>
+      <p class="eyebrow">Re-read · 2026-08-24 · same photos: ode (captured 2026-08-17)</p>
+      <h2>3 checkpoint reads of 1 real page</h2>
+      <p class="meta">p3g residue campaign: Ode 3/3 on every seed, but the method book collapsed — not selected. Rows are the checkpoints of the day, in order; the photos are the same ones as on their capture tab.</p>
+
       <div class="page">
-        <h3>Ode to Joy — single-staff handout (reference: p2 perfect read)</h3>
+        <h3>Ode to Joy — single-staff handout (Phase 1 reference page)</h3>
+        <p class="cap">photo captured 2026-08-17</p>
         <div class="cmp">
-          <div class="lbl">p3g-s1 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 20:49</span></div>
-          <img src="img/history/ode-p3g-s1.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3g-s1" loading="lazy">
-          <div class="lbl">p3g-s2 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 20:49</span></div>
-          <img src="img/history/ode-p3g-s2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3g-s2" loading="lazy">
-          <div class="lbl">p3g-s3 <span>3 systems detected · 3 parsed · 1/16 measures flagged · 20:50</span></div>
-          <img src="img/history/ode-p3g-s3.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3g-s3" loading="lazy">
+          <div class="lbl">p3g-s1 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-24 20:49</span></div>
+          <img src="img/ode/ode-p3g-s1.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3g-s1" loading="lazy">
+          <div class="lbl">p3g-s2 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-24 20:49</span></div>
+          <img src="img/ode/ode-p3g-s2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3g-s2" loading="lazy">
+          <div class="lbl">p3g-s3 · candidate <span>3 systems detected · 3 parsed · 1/16 measures flagged · 2026-08-24 20:50</span></div>
+          <img src="img/ode/ode-p3g-s3.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3g-s3" loading="lazy">
         </div>
       </div>
     </div>
   </section>
-  <section class="probe" id="probe-2026-08-23-history" data-date="2026-08-23">
+  <section class="probe reread" id="probe-2026-08-23-rereads" data-date="2026-08-23" data-kind="reread">
     <div class="wrap">
-      <p class="eyebrow">Probe · 2026-08-23 · checkpoint reads of the day</p>
-      <h2>13 reads on 2 real pages</h2>
-      <p class="meta">The p3d → p3f campaigns, seed by seed. p3f-s2 becomes the checkpoint of record (Lesson 68: 3 of 3 grand systems assembled; Ode 2/3 — the known final-double-bar slip). Reads reconstructed from the run archive (<code>runs/read/</code>), rendered exactly as the MusicXML of that day says.</p>
+      <p class="eyebrow">Re-read · 2026-08-23 · same photos: ferrante (captured 2026-08-22), ode (captured 2026-08-17)</p>
+      <h2>13 checkpoint reads of 2 real pages</h2>
+      <p class="meta">The p3d → p3f campaigns, seed by seed. p3f-s2 becomes the checkpoint of record (Lesson 68: 3 of 3 grand systems assembled; Ode 2/3 — the known final-double-bar slip). Rows are the checkpoints of the day, in order; the photos are the same ones as on their capture tab.</p>
+
       <div class="page">
         <h3>Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method)</h3>
+        <p class="cap">photo captured 2026-08-22</p>
         <div class="cmp">
-          <div class="lbl">p3d-s1 <span>6 systems detected · 2 parsed · 1 grand systems assembled · 7/11 measures flagged · 00:19</span></div>
-          <img src="img/history/IMG_2681-p3d-s1.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3d-s1" loading="lazy">
-          <div class="lbl">p3d-s2 <span>6 systems detected · 2 parsed · 2 grand systems assembled · 5/12 measures flagged · 02:35</span></div>
-          <img src="img/history/IMG_2681-p3d-s2.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3d-s2" loading="lazy">
-          <div class="lbl">p3e-s1 <span>6 systems detected · 4 parsed · 2 grand systems assembled · 7/12 measures flagged · 07:31</span></div>
-          <img src="img/history/IMG_2681-p3e-s1.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3e-s1" loading="lazy">
-          <div class="lbl">p3f-s1 <span>6 systems detected · 6 parsed · 3 grand systems assembled · 7/12 measures flagged · 10:48</span></div>
-          <img src="img/history/IMG_2681-p3f-s1.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3f-s1" loading="lazy">
-          <div class="lbl">p3f-s2 <span>6 systems detected · 6 parsed · 3 grand systems assembled · 5/12 measures flagged · 15:59</span></div>
-          <img src="img/history/IMG_2681-p3f-s2.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3f-s2" loading="lazy">
-          <div class="lbl">p3f-s3 <span>6 systems detected · 3 parsed · 1 grand systems assembled · 9/11 measures flagged · 19:25</span></div>
-          <img src="img/history/IMG_2681-p3f-s3.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3f-s3" loading="lazy">
+          <div class="lbl">p3d-s1 · candidate <span>6 systems detected · 2 parsed · 1 grand systems assembled · 7/11 measures flagged · 2026-08-23 00:19</span></div>
+          <img src="img/ferrante/IMG_2681-p3d-s1.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3d-s1" loading="lazy">
+          <div class="lbl">p3d-s2 · candidate <span>6 systems detected · 2 parsed · 2 grand systems assembled · 5/12 measures flagged · 2026-08-23 02:35</span></div>
+          <img src="img/ferrante/IMG_2681-p3d-s2.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3d-s2" loading="lazy">
+          <div class="lbl">p3e-s1 · candidate <span>6 systems detected · 4 parsed · 2 grand systems assembled · 7/12 measures flagged · 2026-08-23 07:31</span></div>
+          <img src="img/ferrante/IMG_2681-p3e-s1.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3e-s1" loading="lazy">
+          <div class="lbl">p3f-s1 · candidate <span>6 systems detected · 6 parsed · 3 grand systems assembled · 7/12 measures flagged · 2026-08-23 10:48</span></div>
+          <img src="img/ferrante/IMG_2681-p3f-s1.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3f-s1" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>6 systems detected · 6 parsed · 3 grand systems assembled · 5/12 measures flagged · 2026-08-23 15:59</span></div>
+          <img src="img/ferrante/IMG_2681-p3f-s2.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3f-s3 · candidate <span>6 systems detected · 3 parsed · 1 grand systems assembled · 9/11 measures flagged · 2026-08-23 19:25</span></div>
+          <img src="img/ferrante/IMG_2681-p3f-s3.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, p3f-s3" loading="lazy">
         </div>
       </div>
       <div class="page">
-        <h3>Ode to Joy — single-staff handout (reference: p2 perfect read)</h3>
+        <h3>Ode to Joy — single-staff handout (Phase 1 reference page)</h3>
+        <p class="cap">photo captured 2026-08-17</p>
         <div class="cmp">
-          <div class="lbl">p3d-s1 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 00:17</span></div>
-          <img src="img/history/ode-p3d-s1.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3d-s1" loading="lazy">
-          <div class="lbl">p3d-s2 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 02:34</span></div>
-          <img src="img/history/ode-p3d-s2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3d-s2" loading="lazy">
-          <div class="lbl">p3d-s3 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 04:53</span></div>
-          <img src="img/history/ode-p3d-s3.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3d-s3" loading="lazy">
-          <div class="lbl">p3e-s1 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 07:30</span></div>
-          <img src="img/history/ode-p3e-s1.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3e-s1" loading="lazy">
-          <div class="lbl">p3f-s1 <span>3 systems detected · 3 parsed · 2/16 measures flagged · 10:43</span></div>
-          <img src="img/history/ode-p3f-s1.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3f-s1" loading="lazy">
-          <div class="lbl">p3f-s2 <span>3 systems detected · 3 parsed · 1/16 measures flagged · 15:37</span></div>
-          <img src="img/history/ode-p3f-s2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3f-s2" loading="lazy">
-          <div class="lbl">p3f-s3 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 19:25</span></div>
-          <img src="img/history/ode-p3f-s3.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3f-s3" loading="lazy">
+          <div class="lbl">p3d-s1 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-23 00:17</span></div>
+          <img src="img/ode/ode-p3d-s1.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3d-s1" loading="lazy">
+          <div class="lbl">p3d-s2 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-23 02:34</span></div>
+          <img src="img/ode/ode-p3d-s2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3d-s2" loading="lazy">
+          <div class="lbl">p3d-s3 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-23 04:53</span></div>
+          <img src="img/ode/ode-p3d-s3.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3d-s3" loading="lazy">
+          <div class="lbl">p3e-s1 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-23 07:30</span></div>
+          <img src="img/ode/ode-p3e-s1.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3e-s1" loading="lazy">
+          <div class="lbl">p3f-s1 · candidate <span>3 systems detected · 3 parsed · 2/16 measures flagged · 2026-08-23 10:43</span></div>
+          <img src="img/ode/ode-p3f-s1.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3f-s1" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>3 systems detected · 3 parsed · 1/16 measures flagged · 2026-08-23 15:37</span></div>
+          <img src="img/ode/ode-p3f-s2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3f-s3 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-23 19:25</span></div>
+          <img src="img/ode/ode-p3f-s3.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3f-s3" loading="lazy">
         </div>
       </div>
     </div>
   </section>
-  <section class="probe" id="probe-2026-08-22-history" data-date="2026-08-22">
+  <section class="probe capture" id="probe-2026-08-22-rereads" data-date="2026-08-22" data-kind="capture">
     <div class="wrap">
-      <p class="eyebrow">Probe · 2026-08-22 · checkpoint reads of the day</p>
-      <h2>4 reads on 2 real pages</h2>
-      <p class="meta">Phase 3 (grand staff) under way: first Ferrante Lesson 68 read with the pairing detector (checkpoint of that afternoon unrecorded) and the Ode checks for the p3b/p3c seeds. Reads reconstructed from the run archive (<code>runs/read/</code>), rendered exactly as the MusicXML of that day says.</p>
+      <p class="eyebrow">Capture · 2026-08-22 · ferrante — Lesson 68 photographed this day; plus re-reads of ode (captured 2026-08-17)</p>
+      <h2>4 checkpoint reads of 2 real pages</h2>
+      <p class="meta">Phase 3 (grand staff) under way: Lesson 68 photographed and read the same evening (checkpoint of that afternoon unrecorded); Ode checks for the p3b/p3c seeds. Rows are the checkpoints of the day, in order; the photos are the same ones as on their capture tab.</p>
+
       <div class="page">
         <h3>Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method)</h3>
+        
         <div class="cmp">
-          <div class="lbl">unrecorded <span>9 systems detected · 4 parsed · 2 grand systems assembled · 12/19 measures flagged · 21:23</span></div>
-          <img src="img/history/IMG_2681.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, unrecorded" loading="lazy">
+          <div class="lbl">unrecorded checkpoint · candidate <span>9 systems detected · 4 parsed · 2 grand systems assembled · 12/19 measures flagged · 2026-08-22 21:23</span></div>
+          <img src="img/ferrante/IMG_2681.jpg" alt="Ferrante Lesson 68 — D natural minor scales, chords &amp; inversions (piano method): photo and OMR render, unrecorded checkpoint" loading="lazy">
         </div>
       </div>
       <div class="page">
-        <h3>Ode to Joy — single-staff handout (reference: p2 perfect read)</h3>
+        <h3>Ode to Joy — single-staff handout (Phase 1 reference page)</h3>
+        <p class="cap">photo captured 2026-08-17</p>
         <div class="cmp">
-          <div class="lbl">p3c-s1 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 13:46</span></div>
-          <img src="img/history/ode-p3c-s1.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3c-s1" loading="lazy">
-          <div class="lbl">p3b-s2 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 13:49</span></div>
-          <img src="img/history/ode-p3b-s2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3b-s2" loading="lazy">
-          <div class="lbl">p3c-s2 <span>3 systems detected · 3 parsed · 0/16 measures flagged · 16:09</span></div>
-          <img src="img/history/ode-p3c-s2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p3c-s2" loading="lazy">
+          <div class="lbl">p3c-s1 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-22 13:46</span></div>
+          <img src="img/ode/ode-p3c-s1.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3c-s1" loading="lazy">
+          <div class="lbl">p3b-s2 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-22 13:49</span></div>
+          <img src="img/ode/ode-p3b-s2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3b-s2" loading="lazy">
+          <div class="lbl">p3c-s2 · candidate <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-22 16:09</span></div>
+          <img src="img/ode/ode-p3c-s2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p3c-s2" loading="lazy">
         </div>
       </div>
     </div>
   </section>
-  <section class="probe" id="probe-2026-08-20-history" data-date="2026-08-20">
+  <section class="probe reread" id="probe-2026-08-20-rereads" data-date="2026-08-20" data-kind="reread">
     <div class="wrap">
-      <p class="eyebrow">Probe · 2026-08-20 · checkpoint reads of the day</p>
-      <h2>1 read on 1 real page</h2>
-      <p class="meta">Phase 1 (bass clef) closes: the Ode handout read by p2 becomes the reference perfect read that every later checkpoint is compared against. Reads reconstructed from the run archive (<code>runs/read/</code>), rendered exactly as the MusicXML of that day says.</p>
+      <p class="eyebrow">Re-read · 2026-08-20 · same photos: ode (captured 2026-08-17)</p>
+      <h2>1 checkpoint read of 1 real page</h2>
+      <p class="meta"> Rows are the checkpoints of the day, in order; the photos are the same ones as on their capture tab.</p>
+
       <div class="page">
-        <h3>Ode to Joy — single-staff handout (reference: p2 perfect read)</h3>
+        <h3>Ode to Joy — single-staff handout (Phase 1 reference page)</h3>
+        <p class="cap">photo captured 2026-08-17</p>
         <div class="cmp">
-          <div class="lbl">p2 (reference perfect read) <span>3 systems detected · 3 parsed · 0/16 measures flagged · 10:28</span></div>
-          <img src="img/history/ode-p2.jpg" alt="Ode to Joy — single-staff handout (reference: p2 perfect read): photo and OMR render, p2 (reference perfect read)" loading="lazy">
+          <div class="lbl">p2 (reference read) · reference <span>3 systems detected · 3 parsed · 0/16 measures flagged · 2026-08-20 10:28</span></div>
+          <img src="img/ode/ode-p2.jpg" alt="Ode to Joy — single-staff handout (Phase 1 reference page): photo and OMR render, p2 (reference read)" loading="lazy">
         </div>
       </div>
     </div>
@@ -372,7 +375,7 @@
       <p>Comparisons are produced by <code>scripts/compare_read.py</code> from <code>read_page.py</code> output; the
       right-hand side is the produced MusicXML re-rendered, unedited. Sealed benchmark history is on the
       <a href="/ai-omr-agnostic/#roadmap">roadmap</a>; the training monitor is at <a href="/train/">/train</a>.
-      New probes are appended as dated tabs as checkpoints change (`scripts/live_probe.py --publish`).</p>
+      Every read of real pages becomes a dated tab (<code>scripts/live_probe.py --publish</code>): a capture when the photos are new, a re-read otherwise.</p>
     </div>
   </footer>
 
@@ -382,13 +385,14 @@
     const dates=[...new Set(probes.map(p=>p.dataset.date))];   // newest first in DOM order
     const tabs=document.getElementById("tabs");
     const count=d=>probes.filter(p=>p.dataset.date===d).reduce((n,p)=>n+p.querySelectorAll("img").length,0);
+    const isCap=d=>probes.some(p=>p.dataset.date===d&&p.dataset.kind==="capture");
     function show(d){
       probes.forEach(p=>p.classList.toggle("active",p.dataset.date===d));
       [...tabs.children].forEach(a=>a.classList.toggle("active",a.dataset.date===d));
       if(history.replaceState) history.replaceState(null,"","#"+d);
     }
     dates.forEach(d=>{const a=document.createElement("a");a.href="#"+d;a.dataset.date=d;
-      a.innerHTML=`${d}<small>${count(d)} read${count(d)===1?"":"s"}</small>`;a.onclick=e=>{e.preventDefault();show(d);};tabs.appendChild(a);});
+      a.innerHTML=`${d}<small>${count(d)} read${count(d)===1?"":"s"}</small>${isCap(d)?`<span class="kind">📷 capture</span>`:`<span class="kind" style="color:#8a948f">re-read</span>`}`;if(isCap(d))a.classList.add("capture");a.onclick=e=>{e.preventDefault();show(d);};tabs.appendChild(a);});
     const want=location.hash.replace("#","");
     show(dates.includes(want)?want:dates[0]);
     window.addEventListener("hashchange",()=>{const h=location.hash.replace("#","");if(dates.includes(h))show(h);});
