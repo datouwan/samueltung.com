@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Real-life progress of the AI-OMR Agnostic track: phone photos of real sheet music next to what the recognizer read, checkpoint by checkpoint.">
+  <meta name="theme-color" content="#101c19">
+  <title>AI OMR Agnostic — Progress on real pages</title>
+  <style>
+    :root {
+      --ink: #15221f; --muted: #5d6a66; --paper: #f4f0e7; --card: #fffdf8;
+      --line: #d9d4c8; --green: #1e6b55; --green-dark: #10483a; --mint: #bfe7d5;
+      --coral: #e26f51; --gold: #d3a33f; --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: radial-gradient(circle at 8% 2%, rgba(191,231,213,.42), transparent 28rem), var(--paper);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: inherit; }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+    .eyebrow { margin: 0 0 12px; color: var(--green); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    nav { position: sticky; z-index: 10; top: 0; background: rgba(244,240,231,.9); border-bottom: 1px solid rgba(21,34,31,.1); backdrop-filter: blur(14px); }
+    .nav-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand span { color: var(--green); }
+    .nav-links { display: flex; gap: 22px; font-size: .86rem; font-weight: 700; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--green); }
+    header { padding: 72px 0 40px; }
+    h1 { max-width: 900px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.4rem, 5.4vw, 4.4rem); font-weight: 500; line-height: .98; letter-spacing: -.05em; }
+    h1 em { color: var(--green); font-style: normal; }
+    .lede { max-width: 760px; margin: 22px 0 0; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.18rem); }
+    section { padding: 40px 0 56px; border-top: 1px solid var(--line); }
+    h2 { margin: 0 0 10px; font: 500 clamp(1.7rem, 3.2vw, 2.7rem)/1.06 Georgia, serif; letter-spacing: -.03em; }
+    h3 { margin: 0 0 6px; font: 500 1.3rem/1.15 Georgia, serif; }
+    .meta { color: var(--muted); font-size: .9rem; margin: 0 0 22px; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 18px 0 30px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    td strong { color: var(--green-dark); }
+    .page { margin: 34px 0 0; padding: 26px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+    .page p { color: var(--muted); font-size: .95rem; margin: 8px 0 0; max-width: 900px; }
+    .page p strong { color: var(--green-dark); }
+    .cmp { margin-top: 18px; }
+    .cmp .lbl { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: .8rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--green); margin: 14px 0 6px; }
+    .cmp .lbl span { color: var(--muted); font-weight: 600; letter-spacing: 0; text-transform: none; font-size: .82rem; }
+    .cmp img { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 12px; background: white; }
+    .legend { color: var(--muted); font-size: .9rem; max-width: 900px; }
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .74rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+    .pill.record { background: var(--mint); color: var(--green-dark); }
+    .pill.cand { background: rgba(211,163,63,.25); color: #6a4a08; }
+    footer { padding: 36px 0 60px; color: var(--muted); font-size: .86rem; border-top: 1px solid var(--line); }
+    code { font: .85em ui-monospace, SFMono-Regular, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap nav-inner">
+      <a class="brand" href="/">samuel<span>tung</span>.com</a>
+      <div class="nav-links">
+        <a href="/ai-omr-agnostic/">Agnostic track</a>
+        <a href="/ai-omr-agnostic/#roadmap">Roadmap</a>
+        <a href="/ai-omr-agnostic/playscore/">PlayScore assessment</a>
+        <a href="/train/">Training monitor</a>
+      </div>
+    </div>
+  </nav>
+
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">Progress on real pages · living page · latest probe 2026-08-27</p>
+      <h1>The photo on the left. What the recognizer <em>read</em> on the right.</h1>
+      <p class="lede">The sealed benchmarks (B1, C1, G1–G5) measure printed synthetic pages under controlled
+      claims. This page is the other half: ordinary iPhone photos of real sheet music, run through the
+      full map-blind pipeline (page detection → staff detection → recognizer → deterministic semantics →
+      MusicXML → re-rendered), shown next to the original. Nothing here is a benchmark number — it is
+      what you would get today if you pointed the phone at the page. Each probe is kept as it was, so the
+      page reads as a history.</p>
+    </div>
+  </header>
+
+  <section id="probe-2026-08-27">
+    <div class="wrap">
+      <p class="eyebrow">Probe · 2026-08-27</p>
+      <h2>Six real pages, two checkpoints</h2>
+      <p class="meta">Shot handheld on an iPhone in ordinary room light, books left as they lie (curved spreads,
+      pen marks, all). Read with <span class="pill record">p3f-s2 — checkpoint of record</span> (the one that
+      passed G5) and <span class="pill cand">p3j-s1 — capacity campaign candidate</span> (better on every sealed
+      probe, but not selectable: it hallucinates 8va brackets on method-book pages). The right-hand render is
+      exactly what the produced MusicXML says; systems that did not parse are simply absent from it.</p>
+
+      <table>
+        <tr><th>page</th><th>staves found</th><th>p3f-s2</th><th>p3j-s1</th><th>what limits it</th></tr>
+        <tr><td>Handel, Sonata in A HWV 361 — violin part</td><td class="num">10 / 10</td><td class="num">9 of 10 systems parsed</td><td class="num"><strong>10 of 10 parsed</strong>, 6/40 measures flagged</td><td>in scope — single printed staff</td></tr>
+        <tr><td>Lesson 70 — E minor scales &amp; chords (piano method, fingerings)</td><td class="num">6 / 6 → 3 pairs</td><td class="num">4 parsed · 1 grand system assembled</td><td class="num">4 parsed · <strong>2 assembled</strong></td><td>a mid-staff clef change in the bass part; the chord block</td></tr>
+        <tr><td>Suzuki-style minuet + string-crossing exercises (pen marks)</td><td class="num">9 / 9</td><td class="num">3 parsed</td><td class="num">3 parsed</td><td>slurs over ties, exercise fragments, pen marks</td></tr>
+        <tr><td>Songbook p. 1 — vocal line + piano, lyrics, chord symbols</td><td class="num">9 of 12</td><td class="num">5 parsed · 1 assembled</td><td class="num">3 parsed · 1 assembled</td><td><strong>two voices on one staff</strong>, chord symbols, three-staff systems paired as two</td></tr>
+        <tr><td>Songbook p. 2</td><td class="num">8 of 12</td><td class="num">0</td><td class="num">0</td><td>same</td></tr>
+        <tr><td>Chopin, Nocturne Op. 9 No. 2</td><td class="num">13 / 13 → 3 pairs</td><td class="num">5 parsed · 2 assembled (left hand only)</td><td class="num">0</td><td>tuplets, grace notes, multiple voices, pedal — out of scope</td></tr>
+      </table>
+
+      <p class="legend"><strong>Reading it honestly.</strong> Single-staff printed parts are solid. Piano pages read
+      where the writing is one voice per staff (method books, exercises) and fall apart on songbook and romantic
+      writing — several voices on one staff, chord-symbol text, tuplets, grace notes. Photo conditions are no longer
+      the limit: every staff was found on every page except the curved songbook spreads, and those misses are the
+      vocal + piano three-staff systems the pairing does not model yet. The next capability levers are notation
+      scope, not camera robustness.</p>
+
+      <div class="page">
+        <h3>Handel — Sonata in A major, HWV 361 (violin)</h3>
+        <p>The strongest case: both movements read as one continuous line, dotted rhythms, ties and accidentals
+        intact. The <strong>6 flagged measures</strong> are where a teacher would look first when correcting.</p>
+        <div class="cmp">
+          <div class="lbl">p3j-s1 · candidate <span>10 of 10 systems parsed</span></div>
+          <img src="img/IMG_2710-p3j-s1.jpg" alt="Handel violin sonata: photo and OMR render, p3j-s1" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>9 of 10 systems parsed</span></div>
+          <img src="img/IMG_2710-p3f-s2.jpg" alt="Handel violin sonata: photo and OMR render, p3f-s2" loading="lazy">
+        </div>
+      </div>
+
+      <div class="page">
+        <h3>Lesson 70 — E natural minor scales, chords &amp; inversions (piano method)</h3>
+        <p>The one-octave scale reads cleanly as a line. In the two-octave system the treble run is exact and the
+        bass staff comes out as rests: that staff switches to a treble clef mid-line — a mid-staff clef change in
+        the <em>bass</em> part. The chord block reads the bass chords, not the treble ones. Fingering digits under
+        every note are the clutter that trips the p3j candidate on other pages.</p>
+        <div class="cmp">
+          <div class="lbl">p3j-s1 · candidate <span>4 parsed · 2 of 2 grand systems assembled</span></div>
+          <img src="img/IMG_2709-p3j-s1.jpg" alt="Lesson 70: photo and OMR render, p3j-s1" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>4 parsed · 1 assembled</span></div>
+          <img src="img/IMG_2709-p3f-s2.jpg" alt="Lesson 70: photo and OMR render, p3f-s2" loading="lazy">
+        </div>
+      </div>
+
+      <div class="page">
+        <h3>Minuet + string-crossing exercises (violin method, red pen marks)</h3>
+        <p>Three of nine systems parse. The rest fail on slurs drawn over ties, the short exercise fragments and
+        the teacher's pen marks — real practice-sheet conditions the corpus does not render yet.</p>
+        <div class="cmp">
+          <div class="lbl">p3j-s1 · candidate <span>3 of 9 parsed</span></div>
+          <img src="img/IMG_2711-p3j-s1.jpg" alt="Minuet and exercises: photo and OMR render, p3j-s1" loading="lazy">
+          <div class="lbl">p3f-s2 · record <span>3 of 9 parsed</span></div>
+          <img src="img/IMG_2711-p3f-s2.jpg" alt="Minuet and exercises: photo and OMR render, p3f-s2" loading="lazy">
+        </div>
+      </div>
+
+      <div class="page">
+        <h3>Songbook — vocal line + piano, lyrics, chord symbols (two pages)</h3>
+        <p>The wall, seen up close: a whole-note bass voice under a quarter-note melody on the same staff, chord
+        symbols above, lyrics below, and three-staff systems (voice + piano) that the pairing reads as two. The
+        recognizer is confident and wrong in a way the parser rejects — <strong>multiple voices per staff</strong>
+        is the next representation to add.</p>
+        <div class="cmp">
+          <div class="lbl">p3f-s2 · record · page 1 <span>5 parsed · 1 assembled</span></div>
+          <img src="img/IMG_2707-p3f-s2.jpg" alt="Songbook page 1: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate · page 1 <span>3 parsed · 1 assembled</span></div>
+          <img src="img/IMG_2707-p3j-s1.jpg" alt="Songbook page 1: photo and OMR render, p3j-s1" loading="lazy">
+          <div class="lbl">p3f-s2 · record · page 2 <span>nothing parsed</span></div>
+          <img src="img/IMG_2708-p3f-s2.jpg" alt="Songbook page 2: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate · page 2 <span>nothing parsed</span></div>
+          <img src="img/IMG_2708-p3j-s1.jpg" alt="Songbook page 2: photo and OMR render, p3j-s1" loading="lazy">
+        </div>
+      </div>
+
+      <div class="page">
+        <h3>Chopin — Nocturne in E♭ major, Op. 9 No. 2</h3>
+        <p>Out of scope on purpose, kept as the stretch case: tuplets, grace notes, several voices, pedal marks.
+        All 13 staves are found and paired; the two systems p3f-s2 assembles carry only the left-hand
+        figuration, the right hand comes out empty.</p>
+        <div class="cmp">
+          <div class="lbl">p3f-s2 · record <span>5 parsed · 2 assembled</span></div>
+          <img src="img/IMG_2712-p3f-s2.jpg" alt="Chopin Nocturne: photo and OMR render, p3f-s2" loading="lazy">
+          <div class="lbl">p3j-s1 · candidate <span>nothing parsed</span></div>
+          <img src="img/IMG_2712-p3j-s1.jpg" alt="Chopin Nocturne: photo and OMR render, p3j-s1" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <p>Comparisons are produced by <code>scripts/compare_read.py</code> from <code>read_page.py</code> output; the
+      right-hand side is the produced MusicXML re-rendered, unedited. Sealed benchmark history is on the
+      <a href="/ai-omr-agnostic/#roadmap">roadmap</a>; the training monitor is at <a href="/train/">/train</a>.
+      New probes are appended above as checkpoints change.</p>
+    </div>
+  </footer>
+</body>
+</html>
