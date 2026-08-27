@@ -53,7 +53,7 @@ async function refresh(){
       `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:.8rem">`+
       s.pipeline.stages.map(st=>`<span style="background:#1a2420;border:1px solid #2c3a33;
         border-radius:8px;padding:4px 10px">${mark(st.status)} ${st.name}
-        <span style="color:#8fa79a">${st.status.startsWith("running")?st.status.slice(8):""}</span></span>`).join("")+"</div>";
+        <span style="color:#8fa79a">${st.status.startsWith("running")?st.status.slice(8):""}${st.elapsed?` · ${st.elapsed}`:""}</span></span>`).join("")+"</div>";
   } else { pl.style.display="none"; }
   document.getElementById("procs").innerHTML=`<h2>GPU / python processes
     <span class="badge">machine-wide</span></h2>`+
@@ -72,7 +72,8 @@ async function refresh(){
       <div class="stats">
         <span>epoch <b>${r.epoch}/${r.total}</b></span>
         <span>pace <b>${r.pace_s}s</b></span>
-        ${r.active?`<span>ETA <b>~${r.eta_min} min</b></span>`:""}
+        ${r.active?`<span>elapsed <b>${r.elapsed||""}</b></span><span>ETA <b>~${r.eta_min} min</b></span>`:(r.elapsed?`<span>${r.finished?"took":"ran"} <b>${r.elapsed}</b></span>`:"")}
+        ${r.started?`<span class="dim">${r.started}${r.ended?" → "+r.ended:""}</span>`:""}
         <span>val TER <b>${r.last.agnostic_ter}</b></span>
         <span>best <b>${r.best_ter}</b> @ep${r.best_epoch}</span>
         <span>exact <b>${(r.last.exact_rate*100).toFixed(1)}%</b></span>
