@@ -224,7 +224,7 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Living roadmap · updated 2026-08-17 · A8 map-blind full-page reading works end to end</p>
+          <p class="eyebrow">Living roadmap · updated 2026-08-26 · G5: the sealed real-photo grand-staff benchmark passed</p>
           <h2>Milestones with gates, not vibes.</h2>
         </div>
         <p>Every milestone exits through a predeclared gate. Filled dots are sealed results;
@@ -287,7 +287,7 @@
             lands below the sealed monophonic benchmark.</p>
           </div>
         </div>
-        <div class="tl-item now">
+        <div class="tl-item done">
           <span class="tl-dot"></span><span class="tl-phase">A8</span>
           <div class="tl-body">
             <h3>Full-page multi-system reading — core gates passed</h3>
@@ -296,17 +296,77 @@
             staves as evenly-spaced five-line progressions), validated on the C1 photos
             (120/120), a 270-system variable-layout synthetic corpus (270/270), and end to
             end through the recognizer: <strong>map-blind TER 0.0162 vs 0.0130 with known
-            geometry</strong>, zero mis-attributed systems. Remaining: engraving realism
-            (MuseScore/Leland) and the last 0.003 of detection cost.</p>
+            geometry</strong>, zero mis-attributed systems. The page detector then went through
+            four more sealed real-photo rounds — see P3.5 below.</p>
+          </div>
+        </div>
+        <div class="tl-item done">
+          <span class="tl-dot"></span><span class="tl-phase">P1</span>
+          <div class="tl-body">
+            <h3>Bass clef on a single staff</h3>
+            <p>The plan bent toward the end goal — piano grand staff, then violin + piano — so
+            the next step after full pages was the second clef. Checkpoint <strong>p1-s2: C1
+            TER 0.0091, 104/120 exact, the Ode read perfectly, method book 6/9 with repeats
+            read</strong>. Selection rule learned here and kept ever since: the combined
+            criterion (synthetic val + real-page probes), never synthetic val alone — it has
+            mis-selected in every multi-seed campaign.</p>
+          </div>
+        </div>
+        <div class="tl-item done">
+          <span class="tl-dot"></span><span class="tl-phase">P3.1–P3.4</span>
+          <div class="tl-body">
+            <h3>Grand staff: pairing, assembly, synthetic milestone</h3>
+            <p>Two synchronized agnostic lines assemble to piano MusicXML through the same
+            engraving state machine, with tolerant repairs flagged for review; braced pairs are
+            found by the barlines that cross the inter-staff gap; mid-staff clef changes, 8va
+            brackets and chords join the generator. Checkpoint <strong>p3f-s2: C1 0.0032 /
+            111 exact, method book 8/10, synthetic grand end-to-end 16/16 pages · TER 0.0039 ·
+            20/20 assembled, Ferrante Lesson 68 (a real piano page) 3/3 grand systems
+            assembled</strong>. Three follow-up campaigns (p3g/p3h/p3i) were not selected:
+            corpus knobs shift the distribution — each bought a synthetic gain and one
+            real-page skill at the cost of another.</p>
+          </div>
+        </div>
+        <div class="tl-item done">
+          <span class="tl-dot"></span><span class="tl-phase">P3.5</span>
+          <div class="tl-body">
+            <h3>Sealed real-photo grand-staff benchmark — passed on the fifth package</h3>
+            <p>B1's discipline, on piano pages: 60 printed grand systems on 20 pages, checkpoint
+            pinned by SHA-256 before capture, photographed on a desk and a carpet, evaluated
+            exactly once, photos consumed. Gates: structure ≥ 58/60, staff TER ≤ 0.015,
+            assembly ≥ 54/60. <strong>G1 57/60 · 0.135 · 48/60. G2 57/60 · 0.082 · 54/60.
+            G3 60/60 · 0.021 · 56/60. G4 57/60 · 0.127 · 54/60. G5 60/60 · TER 0.0121 · 58/60
+            — passed.</strong> Every failure was the page detector, never the recognizer: a
+            strip of carpet at the page edge, a bright wedge cut along a side-light gradient, a
+            hard cast shadow, a 14-px staff and a beam-saturated one. Each was diagnosed on the
+            sealed run, reproduced and fixed on an unsealed capture, and left the sealed number
+            standing. The recognizer never changed between G1 and G5 and read at 0.006–0.014
+            on every page the detector handled.</p>
+          </div>
+        </div>
+        <div class="tl-item now">
+          <span class="tl-dot"></span><span class="tl-phase">P3.8</span>
+          <div class="tl-body">
+            <h3>Recognizer capacity campaign — running</h3>
+            <p>G5's residue is dots, ties and accidentals: one-token slips, a handful of which
+            also decide assembly. Per the P3.4 lesson, no knobs this time — the same recipe with
+            a <strong>doubled corpus (20k systems + 840 detector-framed grand crops rendered
+            through the hardened detector) and a longer schedule</strong>, three seeds.
+            Selection on the combined criterion; any selected checkpoint is re-checked on a
+            fresh sealed package (G6), because G1–G5's photos are evaluation-only forever.</p>
           </div>
         </div>
         <div class="tl-item">
           <span class="tl-dot"></span><span class="tl-phase">PRODUCT</span>
           <div class="tl-body">
             <h3>Teacher WYSIWYG foundations</h3>
-            <p>Per-token confidence and object coordinates as first-class Score IR outputs,
-            Verovio click-to-edit rendering, and minutes-to-correct-sheet as the product metric
-            that decides everything above.</p>
+            <p>Per-token confidence and object coordinates as first-class Score IR outputs
+            (the review overlays and repair flags already exist), Verovio click-to-edit
+            rendering, and minutes-to-correct-sheet as the product metric that decides
+            everything above. Queued behind the end goal — piano grand staff, then violin +
+            piano — which pulled the plan toward reading real piano pages first. Input
+            conditioning (illumination flattening, capture gating) belongs here, once a
+            checkpoint stands on raw photos.</p>
           </div>
         </div>
       </div>
