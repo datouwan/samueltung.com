@@ -361,13 +361,32 @@
           </div>
         </div>
         <div class="tl-item now">
+          <span class="tl-dot"></span><span class="tl-phase">P4.1</span>
+          <div class="tl-body">
+            <h3>Chord symbols — recognized, not ignored (in training)</h3>
+            <p>The songbook pages in the live probe carry chord symbols the reader had no word
+            for. Decision: recognize them. Score IR gained a chord symbol per event (root,
+            accidental, 14 kinds, slash bass), 30 append-only tokens, MusicXML
+            <code>&lt;harmony&gt;</code> in and out, and a generator that prints them the way
+            songbooks do. The first campaign was stopped after fifteen minutes: the symbols were
+            <em>off the recognizer's canvas</em> — engraving aligns them to the highest ink of the
+            line and stacks them above tempo words, so a quarter of them fell outside the four
+            interlines of headroom the reader had always seen. The canvas grew to ten interlines
+            above the staff and now travels inside the checkpoint (older checkpoints keep theirs,
+            byte-identical), the detector's crop grew with it, and the grand staff carries
+            symbols on its upper staff. p4b is training; the verdict will be the songbook pages,
+            photo next to render, on the <a href="/ai-omr-agnostic/progress/">progress page</a>,
+            then a sealed lead-sheet package.</p>
+          </div>
+        </div>
+        <div class="tl-item">
           <span class="tl-dot"></span><span class="tl-phase">NEXT</span>
           <div class="tl-body">
             <h3>Notation scope on real books</h3>
-            <p>The live probes say where the wall is now: several voices on one staff (songbook and
-            romantic piano writing), chord-symbol text, tuplets
-            and grace notes. Representation and generator work — Score IR v3 — measured the same way:
-            unsealed live pages first, a sealed package to close.</p>
+            <p>The live probes say where the wall is after chord symbols: several voices on one
+            staff (songbook and romantic piano writing), tuplets and grace notes. Representation
+            and generator work — Score IR v3 — measured the same way: unsealed live pages first,
+            a sealed package to close.</p>
           </div>
         </div>
         <div class="tl-item">
