@@ -110,7 +110,7 @@
 
   <header>
     <div class="wrap">
-      <p class="eyebrow">Progress on real pages · living page · latest read 2026-08-29</p>
+      <p class="eyebrow">Progress on real pages · living page · latest read 2026-08-30</p>
       <h1>The photo on the left. What the recognizer <em>read</em> on the right.</h1>
       <p class="lede">The sealed benchmarks (B1, C1, G1–G5) measure printed synthetic pages under controlled
       claims. This page is the other half: ordinary iPhone photos of real sheet music, run through the
@@ -123,6 +123,119 @@
   </header>
 
   <nav class="tabs" id="tabs" aria-label="probe dates"></nav>
+
+  <section class="probe reread" id="probe-2026-08-30-live1" data-date="2026-08-30" data-kind="reread">
+    <div class="wrap">
+      <p class="eyebrow">Re-read · 2026-08-30 · live1 — photos captured 2026-08-27</p>
+      <h2>live1 re-read with the p4c seeds (text clutter): invented symbols 16 → 6, songbook symbols no better</h2>
+      <p class="meta">The live1 pages (captured 2026-08-27) read again with <span class="pill record">p3k-s3 — checkpoint of record</span> and <span class="pill cand">p4b-s1 — candidate</span> and <span class="pill cand">p4c-s1 — candidate</span> and <span class="pill cand">p4c-s2 — candidate</span> and <span class="pill cand">p4c-s3 — candidate</span>. Same photos, new checkpoint: compare with the 2026-08-27 tab.</p>
+      <div class="tablewrap"><table>
+        <tr><th>page</th><th>staves found</th><th>p3k-s3</th><th>p4b-s1</th><th>p4c-s1</th><th>p4c-s2</th><th>p4c-s3</th><th>what limits it</th></tr>
+        <tr><td class="pg" data-label="page">Songbook p.1 — vocal + piano, lyrics, chord symbols</td><td class="num" data-label="staves found">9</td><td class="num" data-label="p3k-s3"><span class="c">3 of 9 parsed</span><span class="c dim">2 grand</span><span class="c dim">20/28 flagged</span></td><td class="num" data-label="p4b-s1"><span class="c">2 of 9 parsed</span><span class="c dim">1 grand</span><span class="c dim">16/26 flagged</span></td><td class="num" data-label="p4c-s1"><span class="c">5 of 9 parsed</span><span class="c dim">2 grand</span><span class="c dim">21/27 flagged</span></td><td class="num" data-label="p4c-s2"><span class="c">4 of 9 parsed</span><span class="c dim">17/28 flagged</span></td><td class="num" data-label="p4c-s3"><span class="c">4 of 9 parsed</span><span class="c dim">2 grand</span><span class="c dim">20/28 flagged</span></td><td class="note" data-label="what limits it">p4c seeds read fewer symbols than p4b-s1, not more: 11 / 12 / 9 read (p4b-s1 18), 6 / 9 / 6 of 24 exact by the aligner (p4b-s1 10). None learned the superscript 7 — s3 reads C Am7 Dm7 G7 C Am7 as C G. Staves unchanged (two voices, lyrics).</td></tr>
+        <tr><td class="pg" data-label="page">Songbook p.2</td><td class="num" data-label="staves found">8</td><td class="num" data-label="p3k-s3"><span class="c">0 of 8 parsed</span><span class="c dim">2/25 flagged</span></td><td class="num" data-label="p4b-s1"><span class="c">0 of 8 parsed</span><span class="c dim">3/22 flagged</span></td><td class="num" data-label="p4c-s1"><span class="c">0 of 8 parsed</span><span class="c dim">1/22 flagged</span></td><td class="num" data-label="p4c-s2"><span class="c">8 of 8 parsed</span><span class="c dim">3 grand</span><span class="c dim">6/24 flagged</span></td><td class="num" data-label="p4c-s3"><span class="c">0 of 8 parsed</span><span class="c dim">5/24 flagged</span></td><td class="note" data-label="what limits it">s2 is the first checkpoint to parse this page at all (8/8 systems, 6 flagged measures); symbols on all four treble staves for every seed (s3: G7 Dm7 E7 Am; G F/D Fm C …), one malformed group each.</td></tr>
+        <tr><td class="pg" data-label="page">Lesson 70 — E minor scales &amp; chords (piano method)</td><td class="num" data-label="staves found">6</td><td class="num" data-label="p3k-s3"><span class="c">6 of 6 parsed</span><span class="c dim">2 grand</span><span class="c dim">2/12 flagged</span></td><td class="num" data-label="p4b-s1"><span class="c">5 of 6 parsed</span><span class="c dim">2 grand</span><span class="c dim">5/12 flagged</span></td><td class="num" data-label="p4c-s1"><span class="c">5 of 6 parsed</span><span class="c dim">2 grand</span><span class="c dim">3/12 flagged</span></td><td class="num" data-label="p4c-s2"><span class="c">5 of 6 parsed</span><span class="c dim">2 grand</span><span class="c dim">3/12 flagged</span></td><td class="num" data-label="p4c-s3"><span class="c">6 of 6 parsed</span><span class="c dim">2 grand</span><span class="c dim">0/12 flagged</span></td><td class="note" data-label="what limits it">clean on all three p4c seeds — zero invented symbols (p4b-s1: 3); s3 parses 6/6 like the record, s2 5/6.</td></tr>
+        <tr><td class="pg" data-label="page">Handel — Sonata in A HWV 361, violin part</td><td class="num" data-label="staves found">10</td><td class="num" data-label="p3k-s3"><span class="c">10 of 10 parsed</span><span class="c dim">1/40 flagged</span></td><td class="num" data-label="p4b-s1"><span class="c">10 of 10 parsed</span><span class="c dim">6/40 flagged</span></td><td class="num" data-label="p4c-s1"><span class="c">10 of 10 parsed</span><span class="c dim">5/40 flagged</span></td><td class="num" data-label="p4c-s2"><span class="c">10 of 10 parsed</span><span class="c dim">2/40 flagged</span></td><td class="num" data-label="p4c-s3"><span class="c">9 of 10 parsed</span><span class="c dim">2/40 flagged</span></td><td class="note" data-label="what limits it">one invented G under the Handel title line on every p4c seed (p4b-s1: 2); s2 parses 10/10, s3 9/10.</td></tr>
+        <tr><td class="pg" data-label="page">Suzuki-style minuet + string-crossing exercises</td><td class="num" data-label="staves found">9</td><td class="num" data-label="p3k-s3"><span class="c">3 of 9 parsed</span><span class="c dim">2/48 flagged</span></td><td class="num" data-label="p4b-s1"><span class="c">3 of 9 parsed</span><span class="c dim">7/48 flagged</span></td><td class="num" data-label="p4c-s1"><span class="c">3 of 9 parsed</span><span class="c dim">4/47 flagged</span></td><td class="num" data-label="p4c-s2"><span class="c">3 of 9 parsed</span><span class="c dim">3/48 flagged</span></td><td class="num" data-label="p4c-s3"><span class="c">3 of 9 parsed</span><span class="c dim">7/48 flagged</span></td><td class="note" data-label="what limits it">s1 and s2 clean; s3 invents one A on a lower system. Same 3/3 parse as the record.</td></tr>
+        <tr><td class="pg" data-label="page">Chopin — Nocturne Op. 9 No. 2</td><td class="num" data-label="staves found">13</td><td class="num" data-label="p3k-s3"><span class="c">10 of 13 parsed</span><span class="c dim">3 grand</span><span class="c dim">18/30 flagged</span></td><td class="num" data-label="p4b-s1"><span class="c">8 of 13 parsed</span><span class="c dim">3 grand</span><span class="c dim">16/30 flagged</span></td><td class="num" data-label="p4c-s1"><span class="c">6 of 13 parsed</span><span class="c dim">2 grand</span><span class="c dim">14/30 flagged</span></td><td class="num" data-label="p4c-s2"><span class="c">10 of 13 parsed</span><span class="c dim">3 grand</span><span class="c dim">16/31 flagged</span></td><td class="num" data-label="p4c-s3"><span class="c">7 of 13 parsed</span><span class="c dim">2 grand</span><span class="c dim">18/30 flagged</span></td><td class="note" data-label="what limits it">the residue of the campaign: 6 / 6 / 4 invented symbols (p4b-s1: 7), 2–3 of them on the title system (A E from the large italic title and “Andante”), the rest A / A+ lower down; s2 parses 10/13 like the record, s1 6, s3 7.</td></tr>
+      </table></div>
+      <div class="page">
+        <h3>Songbook p.1 — vocal + piano, lyrics, chord symbols</h3>
+        <p class="cap">photo captured 2026-08-27</p><p>The p4c corpus prints titles, tempo words, lyric lines and rehearsal boxes around every rendered line, so the reader would learn that words above a staff are not chords. It learned that — and became cautious about symbols in general. All three seeds put fewer symbols on this page than p4b-s1 did (9 to 12 against 18) and none of them reads the book&#x27;s superscript 7: the first system&#x27;s C Am7 Dm7 G7 C Am7 comes out as C G from the best seed. The invented-symbol problem and the missed-symbol problem are the same problem seen from two sides: the corpus has never shown this typography, and clutter alone cannot teach it.</p>
+        <div class="cmp">
+          <div class="lbl">p3k-s3 · record <span>3 of 9 parsed · 2 grand assembled · 20/28 measures flagged · 2026-08-29 04:38</span></div>
+          <img src="img/live1-2026-08-30/live1-page-01-p3k-s3.jpg" alt="Songbook p.1 — vocal + piano, lyrics, chord symbols: photo and OMR render, p3k-s3" loading="lazy">
+          <div class="lbl">p4b-s1 · candidate <span>2 of 9 parsed · 1 grand assembled · 16/26 measures flagged · 2026-08-29 04:38</span></div>
+          <img src="img/live1-2026-08-30/live1-page-01-p4b-s1.jpg" alt="Songbook p.1 — vocal + piano, lyrics, chord symbols: photo and OMR render, p4b-s1" loading="lazy">
+          <div class="lbl">p4c-s1 · candidate <span>5 of 9 parsed · 2 grand assembled · 21/27 measures flagged · 2026-08-29 22:06</span></div>
+          <img src="img/live1-2026-08-30/live1-page-01-p4c-s1.jpg" alt="Songbook p.1 — vocal + piano, lyrics, chord symbols: photo and OMR render, p4c-s1" loading="lazy">
+          <div class="lbl">p4c-s2 · candidate <span>4 of 9 parsed · 17/28 measures flagged · 2026-08-30 11:20</span></div>
+          <img src="img/live1-2026-08-30/live1-page-01-p4c-s2.jpg" alt="Songbook p.1 — vocal + piano, lyrics, chord symbols: photo and OMR render, p4c-s2" loading="lazy">
+          <div class="lbl">p4c-s3 · candidate <span>4 of 9 parsed · 2 grand assembled · 20/28 measures flagged · 2026-08-30 11:20</span></div>
+          <img src="img/live1-2026-08-30/live1-page-01-p4c-s3.jpg" alt="Songbook p.1 — vocal + piano, lyrics, chord symbols: photo and OMR render, p4c-s3" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Songbook p.2</h3>
+        <p class="cap">photo captured 2026-08-27</p>
+        <div class="cmp">
+          <div class="lbl">p3k-s3 · record <span>0 of 8 parsed · 2/25 measures flagged · 2026-08-29 04:38</span></div>
+          <img src="img/live1-2026-08-30/live1-page-02-p3k-s3.jpg" alt="Songbook p.2: photo and OMR render, p3k-s3" loading="lazy">
+          <div class="lbl">p4b-s1 · candidate <span>0 of 8 parsed · 3/22 measures flagged · 2026-08-29 04:38</span></div>
+          <img src="img/live1-2026-08-30/live1-page-02-p4b-s1.jpg" alt="Songbook p.2: photo and OMR render, p4b-s1" loading="lazy">
+          <div class="lbl">p4c-s1 · candidate <span>0 of 8 parsed · 1/22 measures flagged · 2026-08-29 22:07</span></div>
+          <img src="img/live1-2026-08-30/live1-page-02-p4c-s1.jpg" alt="Songbook p.2: photo and OMR render, p4c-s1" loading="lazy">
+          <div class="lbl">p4c-s2 · candidate <span>8 of 8 parsed · 3 grand assembled · 6/24 measures flagged · 2026-08-30 11:20</span></div>
+          <img src="img/live1-2026-08-30/live1-page-02-p4c-s2.jpg" alt="Songbook p.2: photo and OMR render, p4c-s2" loading="lazy">
+          <div class="lbl">p4c-s3 · candidate <span>0 of 8 parsed · 5/24 measures flagged · 2026-08-30 11:20</span></div>
+          <img src="img/live1-2026-08-30/live1-page-02-p4c-s3.jpg" alt="Songbook p.2: photo and OMR render, p4c-s3" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Lesson 70 — E minor scales &amp; chords (piano method)</h3>
+        <p class="cap">photo captured 2026-08-27</p>
+        <div class="cmp">
+          <div class="lbl">p3k-s3 · record <span>6 of 6 parsed · 2 grand assembled · 2/12 measures flagged · 2026-08-29 04:39</span></div>
+          <img src="img/live1-2026-08-30/live1-page-03-p3k-s3.jpg" alt="Lesson 70 — E minor scales &amp; chords (piano method): photo and OMR render, p3k-s3" loading="lazy">
+          <div class="lbl">p4b-s1 · candidate <span>5 of 6 parsed · 2 grand assembled · 5/12 measures flagged · 2026-08-29 04:39</span></div>
+          <img src="img/live1-2026-08-30/live1-page-03-p4b-s1.jpg" alt="Lesson 70 — E minor scales &amp; chords (piano method): photo and OMR render, p4b-s1" loading="lazy">
+          <div class="lbl">p4c-s1 · candidate <span>5 of 6 parsed · 2 grand assembled · 3/12 measures flagged · 2026-08-29 22:07</span></div>
+          <img src="img/live1-2026-08-30/live1-page-03-p4c-s1.jpg" alt="Lesson 70 — E minor scales &amp; chords (piano method): photo and OMR render, p4c-s1" loading="lazy">
+          <div class="lbl">p4c-s2 · candidate <span>5 of 6 parsed · 2 grand assembled · 3/12 measures flagged · 2026-08-30 11:20</span></div>
+          <img src="img/live1-2026-08-30/live1-page-03-p4c-s2.jpg" alt="Lesson 70 — E minor scales &amp; chords (piano method): photo and OMR render, p4c-s2" loading="lazy">
+          <div class="lbl">p4c-s3 · candidate <span>6 of 6 parsed · 2 grand assembled · 0/12 measures flagged · 2026-08-30 11:20</span></div>
+          <img src="img/live1-2026-08-30/live1-page-03-p4c-s3.jpg" alt="Lesson 70 — E minor scales &amp; chords (piano method): photo and OMR render, p4c-s3" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Handel — Sonata in A HWV 361, violin part</h3>
+        <p class="cap">photo captured 2026-08-27</p>
+        <div class="cmp">
+          <div class="lbl">p3k-s3 · record <span>10 of 10 parsed · 1/40 measures flagged · 2026-08-29 04:39</span></div>
+          <img src="img/live1-2026-08-30/live1-page-04-p3k-s3.jpg" alt="Handel — Sonata in A HWV 361, violin part: photo and OMR render, p3k-s3" loading="lazy">
+          <div class="lbl">p4b-s1 · candidate <span>10 of 10 parsed · 6/40 measures flagged · 2026-08-29 04:39</span></div>
+          <img src="img/live1-2026-08-30/live1-page-04-p4b-s1.jpg" alt="Handel — Sonata in A HWV 361, violin part: photo and OMR render, p4b-s1" loading="lazy">
+          <div class="lbl">p4c-s1 · candidate <span>10 of 10 parsed · 5/40 measures flagged · 2026-08-29 22:07</span></div>
+          <img src="img/live1-2026-08-30/live1-page-04-p4c-s1.jpg" alt="Handel — Sonata in A HWV 361, violin part: photo and OMR render, p4c-s1" loading="lazy">
+          <div class="lbl">p4c-s2 · candidate <span>10 of 10 parsed · 2/40 measures flagged · 2026-08-30 11:20</span></div>
+          <img src="img/live1-2026-08-30/live1-page-04-p4c-s2.jpg" alt="Handel — Sonata in A HWV 361, violin part: photo and OMR render, p4c-s2" loading="lazy">
+          <div class="lbl">p4c-s3 · candidate <span>9 of 10 parsed · 2/40 measures flagged · 2026-08-30 11:21</span></div>
+          <img src="img/live1-2026-08-30/live1-page-04-p4c-s3.jpg" alt="Handel — Sonata in A HWV 361, violin part: photo and OMR render, p4c-s3" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Suzuki-style minuet + string-crossing exercises</h3>
+        <p class="cap">photo captured 2026-08-27</p>
+        <div class="cmp">
+          <div class="lbl">p3k-s3 · record <span>3 of 9 parsed · 2/48 measures flagged · 2026-08-29 04:39</span></div>
+          <img src="img/live1-2026-08-30/live1-page-05-p3k-s3.jpg" alt="Suzuki-style minuet + string-crossing exercises: photo and OMR render, p3k-s3" loading="lazy">
+          <div class="lbl">p4b-s1 · candidate <span>3 of 9 parsed · 7/48 measures flagged · 2026-08-29 04:39</span></div>
+          <img src="img/live1-2026-08-30/live1-page-05-p4b-s1.jpg" alt="Suzuki-style minuet + string-crossing exercises: photo and OMR render, p4b-s1" loading="lazy">
+          <div class="lbl">p4c-s1 · candidate <span>3 of 9 parsed · 4/47 measures flagged · 2026-08-29 22:07</span></div>
+          <img src="img/live1-2026-08-30/live1-page-05-p4c-s1.jpg" alt="Suzuki-style minuet + string-crossing exercises: photo and OMR render, p4c-s1" loading="lazy">
+          <div class="lbl">p4c-s2 · candidate <span>3 of 9 parsed · 3/48 measures flagged · 2026-08-30 11:21</span></div>
+          <img src="img/live1-2026-08-30/live1-page-05-p4c-s2.jpg" alt="Suzuki-style minuet + string-crossing exercises: photo and OMR render, p4c-s2" loading="lazy">
+          <div class="lbl">p4c-s3 · candidate <span>3 of 9 parsed · 7/48 measures flagged · 2026-08-30 11:21</span></div>
+          <img src="img/live1-2026-08-30/live1-page-05-p4c-s3.jpg" alt="Suzuki-style minuet + string-crossing exercises: photo and OMR render, p4c-s3" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Chopin — Nocturne Op. 9 No. 2</h3>
+        <p class="cap">photo captured 2026-08-27</p><p>The clutter did what it was built for on three of the four text pages — Lesson 70 is clean on every seed, Handel and Suzuki are down to one stray symbol — and it stopped here. Every seed still reads the Chopin title and “Andante” as two or three chord symbols, because this edition&#x27;s large italic display face sits closer to the staff than anything the clutter draws. Three seeds, the same residue in the same place: this is the recipe&#x27;s ceiling, not luck. p3k-s3 stays the checkpoint of record; p4c-s3 (Ode 3/3, the best synthetic symbol read so far) is the seed to build on. Next: the symbol suffix rendered raised and small in several fonts, and display title faces two to four interlines from the staff.</p>
+        <div class="cmp">
+          <div class="lbl">p3k-s3 · record <span>10 of 13 parsed · 3 grand assembled · 18/30 measures flagged · 2026-08-29 04:39</span></div>
+          <img src="img/live1-2026-08-30/live1-page-06-p3k-s3.jpg" alt="Chopin — Nocturne Op. 9 No. 2: photo and OMR render, p3k-s3" loading="lazy">
+          <div class="lbl">p4b-s1 · candidate <span>8 of 13 parsed · 3 grand assembled · 16/30 measures flagged · 2026-08-29 04:40</span></div>
+          <img src="img/live1-2026-08-30/live1-page-06-p4b-s1.jpg" alt="Chopin — Nocturne Op. 9 No. 2: photo and OMR render, p4b-s1" loading="lazy">
+          <div class="lbl">p4c-s1 · candidate <span>6 of 13 parsed · 2 grand assembled · 14/30 measures flagged · 2026-08-29 22:07</span></div>
+          <img src="img/live1-2026-08-30/live1-page-06-p4c-s1.jpg" alt="Chopin — Nocturne Op. 9 No. 2: photo and OMR render, p4c-s1" loading="lazy">
+          <div class="lbl">p4c-s2 · candidate <span>10 of 13 parsed · 3 grand assembled · 16/31 measures flagged · 2026-08-30 11:21</span></div>
+          <img src="img/live1-2026-08-30/live1-page-06-p4c-s2.jpg" alt="Chopin — Nocturne Op. 9 No. 2: photo and OMR render, p4c-s2" loading="lazy">
+          <div class="lbl">p4c-s3 · candidate <span>7 of 13 parsed · 2 grand assembled · 18/30 measures flagged · 2026-08-30 11:21</span></div>
+          <img src="img/live1-2026-08-30/live1-page-06-p4c-s3.jpg" alt="Chopin — Nocturne Op. 9 No. 2: photo and OMR render, p4c-s3" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section class="probe reread" id="probe-2026-08-29-live1" data-date="2026-08-29" data-kind="reread">
     <div class="wrap">
