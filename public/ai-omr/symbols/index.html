@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A searchable music notation symbol reference and AI-OMR taxonomy: symbol, name, musical meaning, recognition category, MusicXML mapping, and implementation priority.">
+  <meta name="description" content="A searchable bilingual (English / 中文) music notation symbol reference and AI-OMR taxonomy: symbol, name, musical meaning, recognition category, MusicXML mapping, and implementation priority.">
   <meta name="theme-color" content="#101c19">
   <link rel="icon" type="image/png" sizes="64x64" href="/ai-omr/favicon.png?v=20260814">
   <link rel="apple-touch-icon" sizes="180x180" href="/ai-omr/apple-touch-icon.png?v=20260814">
@@ -37,7 +37,7 @@
     .category-block{margin:0 0 40px}.category-title{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}.category-title h3{margin:0;font:500 1.75rem/1.1 Georgia,serif}.category-title span{color:var(--muted);font-size:.8rem}
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.symbol-card{display:grid;grid-template-columns:82px 1fr;min-height:176px;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 7px 24px rgba(28,47,40,.035)}
     .symbol-box{display:grid;place-items:center;padding:14px;background:#f7f2e8;border-right:1px solid var(--line);font:500 2.75rem/1 "Noto Music","Segoe UI Symbol","Arial Unicode MS",serif;text-align:center}.symbol-box.text{font:800 1.2rem/1.05 ui-monospace,SFMono-Regular,Consolas,monospace}
-    .symbol-body{padding:17px}.symbol-body h4{margin:0 0 5px;font-size:1rem}.symbol-body p{margin:0;color:var(--muted);font-size:.84rem;line-height:1.48}.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.tag{padding:4px 7px;border-radius:6px;background:#ece8df;color:#52605c;font-size:.66rem;font-weight:800;letter-spacing:.03em}.tag.p0{background:var(--mint);color:var(--green-dark)}.tag.p1{background:#f3d9d1;color:#8f402d}.tag.xml{background:#e4e9f2;color:#41597e}
+    .symbol-body{padding:17px}.zhname{color:var(--green);font-weight:700;font-size:.88rem}.zhtext{margin-top:4px!important;color:#7a8a84;font-size:.82rem}.zhcat{color:var(--muted);font-size:1.05rem;font-weight:400}.symbol-body h4{margin:0 0 5px;font-size:1rem}.symbol-body p{margin:0;color:var(--muted);font-size:.84rem;line-height:1.48}.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.tag{padding:4px 7px;border-radius:6px;background:#ece8df;color:#52605c;font-size:.66rem;font-weight:800;letter-spacing:.03em}.tag.p0{background:var(--mint);color:var(--green-dark)}.tag.p1{background:#f3d9d1;color:#8f402d}.tag.xml{background:#e4e9f2;color:#41597e}
     .empty{display:none;padding:50px;text-align:center;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:var(--radius)}
     .ontology{color:#fff;background:var(--green-dark)}.ontology .eyebrow{color:var(--mint)}.ontology .section-head>p{color:#c4d4ce}.ontology-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.code-card{padding:26px;background:#0b3027;border:1px solid rgba(255,255,255,.12);border-radius:18px}.code-card pre{overflow:auto;margin:0;color:#d7eee4;font:.82rem/1.65 ui-monospace,SFMono-Regular,Consolas,monospace}.principles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.principle{padding:24px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius)}.principle strong{display:block;margin-bottom:8px}.principle p{margin:0;color:var(--muted);font-size:.9rem}
     .note{padding:22px 24px;background:#fff4d8;border-left:4px solid var(--gold);border-radius:0 12px 12px 0;color:#5f5335}.note strong{color:var(--ink)}
@@ -51,7 +51,7 @@
 <body>
   <nav class="ai-nav" aria-label="AI OMR navigation"><div class="ai-nav-inner"><a class="ai-nav-brand" href="/ai-omr/">AI <span>OMR</span></a><div class="ai-nav-links"><a href="/ai-omr/product/">Product</a><a href="/ai-omr/market/">Market</a><a href="/ai-omr/#roadmap">Roadmap</a><a href="/ai-omr/score-ir/">Score IR</a><a href="/ai-omr/symbols/" aria-current="page">Symbols</a></div><details class="ai-mobile-menu"><summary aria-label="Open navigation menu">Menu</summary><div class="ai-mobile-panel"><a href="/ai-omr/product/">Product</a><a href="/ai-omr/market/">Market</a><a href="/ai-omr/#roadmap">Roadmap</a><a href="/ai-omr/score-ir/">Score IR</a><a href="/ai-omr/symbols/" aria-current="page">Symbols</a></div></details></div></nav>
 
-  <header id="top"><div class="wrap hero"><div><p class="eyebrow">Music notation · model specification</p><h1>Know the <em>symbol.</em><br>Know the music.</h1><p class="lede">A searchable reference for common Western music notation—and a living taxonomy for the AI-OMR model. Each entry connects the visual mark to its musical meaning, recognition category, MusicXML concept, and implementation priority.</p></div><aside class="hero-card"><div class="glyphs">𝄞 ♯ ♪ 𝄐</div><p>This page is both human documentation and model infrastructure: the same vocabulary can drive dataset labels, decoder tokens, MusicXML conversion, evaluation, and product support.</p><small>AI OMR · Symbol Reference v0.1</small></aside></div></header>
+  <header id="top"><div class="wrap hero"><div><p class="eyebrow">Music notation · model specification</p><h1>Know the <em>symbol.</em><br>Know the music.</h1><p class="lede">A searchable bilingual (English / 中文) reference for common Western music notation—and a living taxonomy for the AI-OMR model. Each entry connects the visual mark to its musical meaning, recognition category, MusicXML concept, and implementation priority.</p></div><aside class="hero-card"><div class="glyphs">𝄞 ♯ ♪ 𝄐</div><p>This page is both human documentation and model infrastructure: the same vocabulary can drive dataset labels, decoder tokens, MusicXML conversion, evaluation, and product support.</p><small>AI OMR · Symbol Reference v0.1</small></aside></div></header>
 
   <section><div class="wrap"><div class="summary"><div class="metric"><strong id="symbolCount">0</strong><span>reference entries</span></div><div class="metric"><strong id="categoryCount">0</strong><span>notation categories</span></div><div class="metric"><strong id="p0Count">0</strong><span>V1 / P0 symbols</span></div><div class="metric"><strong>MusicXML</strong><span>structured output target</span></div></div></div></section>
 
@@ -63,7 +63,7 @@
     <figure class="beam-card"><div class="notation-frame"><img src="/ai-omr/symbols/beams/compound-eighths-6-8.svg" alt="Six eighth notes connected as two groups of three in six-eight time"></div><figcaption class="beam-copy"><span class="rhythm-label">Compound meter · 3 + 3</span><h3>Two dotted-quarter beats in 6/8</h3><p>Six eighth notes are normally grouped as two sets of three. Each group represents one compound dotted-quarter pulse.</p></figcaption></figure>
   </div><div class="beam-rule"><div class="beam-rule-mark" aria-hidden="true">♪ → ♫</div><div><strong>Beam placement is relational.</strong> A flag describes one isolated short note; a beam connects two or more eligible notes. Rests, barlines, and metric beat boundaries normally close a group, while higher beam levels or hooks encode shorter subdivisions.</div></div></div></section>
 
-  <div class="toolbar"><div class="wrap tools"><input id="search" class="search" type="search" placeholder="Search: staccato, sharp, repeat, bow…" aria-label="Search music symbols"><div id="filters" class="filters" aria-label="Filter symbol categories"></div></div></div>
+  <div class="toolbar"><div class="wrap tools"><input id="search" class="search" type="search" placeholder="Search 搜尋: staccato, 斷音, 升記號, repeat, 反覆…" aria-label="Search music symbols"><div id="filters" class="filters" aria-label="Filter symbol categories"></div></div></div>
 
   <main id="reference"><section><div class="wrap"><div class="section-head"><div><p class="eyebrow">Reference</p><h2>Common Western notation</h2></div><p>Focused on the notation most relevant to student practice. Specialized contemporary, percussion, microtonal, and historical symbols can be added as the product scope expands.</p></div><div id="catalog"></div><div id="empty" class="empty">No symbols match this search or filter.</div></div></section>
 
@@ -100,139 +100,149 @@ practice + AI feedback</pre></div></div></div></section>
 <script>
 const symbols = [
   // Structure
-  ['Structure','staff','Staff','5 lines','Five horizontal lines that establish vertical pitch positions.','structure','staff','P0'],
-  ['Structure','ledger line','Ledger line','—','Short line extending the staff for notes above or below it.','structure','ledger-line','P0'],
-  ['Structure','barline','Barline','|','Separates measures.','structure','barline','P0'],
-  ['Structure','double barline','Double barline','||','Marks a section boundary or important division.','structure','barline light-light','P1'],
-  ['Structure','final barline','Final barline','|▮','Marks the end of a piece or movement.','structure','barline light-heavy','P1'],
-  ['Structure','brace','Brace','{','Groups related staves, especially piano grand staff.','structure','part-group','Later'],
-  ['Structure','bracket','Bracket','[','Groups instruments or staves into a system.','structure','part-group','Later'],
+  ['Structure','staff 五線譜 譜表','Staff','5 lines','Five horizontal lines that establish vertical pitch positions.','structure','staff','P0','五線譜（譜表）','五條水平線，構成音高位置的座標。'],
+  ['Structure','ledger line 加線','Ledger line','—','Short line extending the staff for notes above or below it.','structure','ledger-line','P0','加線','五線譜上下方的短線，容納超出範圍的音。'],
+  ['Structure','barline 小節線','Barline','|','Separates measures.','structure','barline','P0','小節線','劃分小節的單縱線。'],
+  ['Structure','double barline 複縱線','Double barline','||','Marks a section boundary or important division.','structure','barline light-light','P1','複縱線','段落分界的雙細線。'],
+  ['Structure','final barline 終止線','Final barline','|▮','Marks the end of a piece or movement.','structure','barline light-heavy','P1','終止線','樂曲或樂章結束的細＋粗雙線。'],
+  ['Structure','brace 花括線 大譜表','Brace','{','Groups related staves, especially piano grand staff.','structure','part-group','Later','花括線（大譜表）','連結相關譜表，最常見於鋼琴大譜表。'],
+  ['Structure','bracket 直括線 連譜表','Bracket','[','Groups instruments or staves into a system.','structure','part-group','Later','直括線（連譜表）','把數個聲部的譜表連成一個系統。'],
 
   // Clefs
-  ['Clefs','treble clef','Treble / G clef','𝄞','Places G4 on the second staff line; standard violin clef.','clef','clef G line=2','P0'],
-  ['Clefs','bass clef','Bass / F clef','𝄢','Places F3 on the fourth staff line.','clef','clef F line=4','P1'],
-  ['Clefs','alto clef','Alto / C clef','𝄡','Places middle C on the middle line; common for viola.','clef','clef C line=3','P1'],
-  ['Clefs','tenor clef','Tenor clef','𝄡','C clef positioned so middle C lies on the fourth line.','clef','clef C line=4','Later'],
-  ['Clefs','octave clef','Octave-transposing clef','𝄞⁸','Clef with 8 or 15 indicating octave displacement.','clef','clef-octave-change','Later'],
+  ['Clefs','treble clef G 高音譜號','Treble / G clef','𝄞','Places G4 on the second staff line; standard violin clef.','clef','clef G line=2','P0','高音譜號（G 譜號）','把第二線定為小字一組的 G 音。'],
+  ['Clefs','bass clef F 低音譜號','Bass / F clef','𝄢','Places F3 on the fourth staff line.','clef','clef F line=4','P1','低音譜號（F 譜號）','把第四線定為小字組的 F 音。'],
+  ['Clefs','alto clef C 中音譜號','Alto / C clef','𝄡','Places middle C on the middle line; common for viola.','clef','clef C line=3','P1','中音譜號（C 譜號）','中央 C 在第三線，中提琴常用。'],
+  ['Clefs','tenor clef 次中音譜號','Tenor clef','𝄡','C clef positioned so middle C lies on the fourth line.','clef','clef C line=4','Later','次中音譜號','中央 C 在第四線的 C 譜號。'],
+  ['Clefs','octave clef 移八度譜號','Octave-transposing clef','𝄞⁸','Clef with 8 or 15 indicating octave displacement.','clef','clef-octave-change','Later','移八度譜號','譜號帶 8 或 15，整體移高／移低八度。'],
 
   // Notes / rhythm
-  ['Notes & Rhythm','whole note semibreve','Whole note','𝅝','Sustains for four quarter-note beats in 4/4.','note','type whole','P0'],
-  ['Notes & Rhythm','half note minim','Half note','𝅗𝅥','Sustains for two quarter-note beats.','note','type half','P0'],
-  ['Notes & Rhythm','quarter note crotchet','Quarter note','♩','One quarter-note beat; common beat unit.','note','type quarter','P0'],
-  ['Notes & Rhythm','eighth note quaver','Eighth note','♪','Half of a quarter-note beat.','note','type eighth','P0'],
-  ['Notes & Rhythm','sixteenth note semiquaver','Sixteenth note','𝅘𝅥𝅯','One quarter of a quarter-note beat.','note','type 16th','P0'],
-  ['Notes & Rhythm','thirty-second note','Thirty-second note','𝅘𝅥𝅰','Half the duration of a sixteenth note.','note','type 32nd','P1'],
-  ['Notes & Rhythm','sixty-fourth note','Sixty-fourth note','𝅘𝅥𝅱','Half the duration of a thirty-second note.','note','type 64th','Later'],
-  ['Notes & Rhythm','stem','Stem','│','Vertical line attached to a notehead; helps encode duration and voice direction.','rhythm','stem','P0'],
-  ['Notes & Rhythm','flag','Flag','⌁','Curved stroke on isolated eighth-or-shorter notes; flag count encodes subdivision.','rhythm','flag','P0'],
-  ['Notes & Rhythm','beam','Beam','━','Horizontal/angled stroke grouping eighth-or-shorter notes.','rhythm','beam','P0'],
-  ['Notes & Rhythm','augmentation dot dotted','Augmentation dot','•','Adds half of the note or rest original duration.','rhythm','dot','P0'],
-  ['Notes & Rhythm','double dot','Double augmentation dot','••','Adds three quarters of the original duration.','rhythm','dot dot','Later'],
-  ['Notes & Rhythm','tie','Tie','⌒','Connects identical pitches so their durations are combined.','relation','tie','P0'],
-  ['Notes & Rhythm','triplet tuplet 3','Triplet','3','Three notes performed in the time normally occupied by two of the same value.','rhythm','time-modification 3:2','P1'],
-  ['Notes & Rhythm','tuplet','Tuplet','5:4','Irregular subdivision indicated by a number or ratio.','rhythm','time-modification','Later'],
+  ['Notes & Rhythm','whole note semibreve 全音符','Whole note','𝅝','Sustains for four quarter-note beats in 4/4.','note','type whole','P0','全音符','在 4/4 中持續四拍。'],
+  ['Notes & Rhythm','half note minim 二分音符','Half note','𝅗𝅥','Sustains for two quarter-note beats.','note','type half','P0','二分音符','持續兩拍。'],
+  ['Notes & Rhythm','quarter note crotchet 四分音符','Quarter note','♩','One quarter-note beat; common beat unit.','note','type quarter','P0','四分音符','一拍，最常見的基本拍單位。'],
+  ['Notes & Rhythm','eighth note quaver 八分音符','Eighth note','♪','Half of a quarter-note beat.','note','type eighth','P0','八分音符','半拍。'],
+  ['Notes & Rhythm','sixteenth note semiquaver 十六分音符','Sixteenth note','𝅘𝅥𝅯','One quarter of a quarter-note beat.','note','type 16th','P0','十六分音符','四分之一拍。'],
+  ['Notes & Rhythm','thirty-second note 三十二分音符','Thirty-second note','𝅘𝅥𝅰','Half the duration of a sixteenth note.','note','type 32nd','P1','三十二分音符','十六分音符的一半。'],
+  ['Notes & Rhythm','sixty-fourth note 六十四分音符','Sixty-fourth note','𝅘𝅥𝅱','Half the duration of a thirty-second note.','note','type 64th','Later','六十四分音符','三十二分音符的一半。'],
+  ['Notes & Rhythm','stem 符幹','Stem','│','Vertical line attached to a notehead; helps encode duration and voice direction.','rhythm','stem','P0','符幹','符頭上的直線，方向也標示聲部。'],
+  ['Notes & Rhythm','flag 符尾','Flag','⌁','Curved stroke on isolated eighth-or-shorter notes; flag count encodes subdivision.','rhythm','flag','P0','符尾','單獨短音符的勾狀線，數量表示細分。'],
+  ['Notes & Rhythm','beam 符槓 連音號','Beam','━','Horizontal/angled stroke grouping eighth-or-shorter notes.','rhythm','beam','P0','符槓（連音號）','把相鄰短音符連成節奏組的橫槓。'],
+  ['Notes & Rhythm','augmentation dot dotted 附點','Augmentation dot','•','Adds half of the note or rest original duration.','rhythm','dot','P0','附點','增加原時值的一半。'],
+  ['Notes & Rhythm','double dot 複附點','Double augmentation dot','••','Adds three quarters of the original duration.','rhythm','dot dot','Later','複附點','增加原時值的四分之三。'],
+  ['Notes & Rhythm','tie 延音線','Tie','⌒','Connects identical pitches so their durations are combined.','relation','tie','P0','延音線','連接同高度的音，時值相加。'],
+  ['Notes & Rhythm','triplet tuplet 3 三連音','Triplet','3','Three notes performed in the time normally occupied by two of the same value.','rhythm','time-modification 3:2','P1','三連音','三個音佔原本兩個音的時值。'],
+  ['Notes & Rhythm','duplet 二連音','Duplet','2','Two notes in the time normally occupied by three, common in compound meter.','rhythm','time-modification 2:3','Later','二連音','兩個音佔原本三個音的時值（複拍子常見）。'],
+  ['Notes & Rhythm','tuplet 連音符 多連音','Tuplet','5:4','Irregular subdivision indicated by a number or ratio.','rhythm','time-modification','Later','連音符（多連音）','以數字或比例標示的不規則細分（五連音、七連音…）。'],
+  ['Notes & Rhythm','tremolo 震音','Tremolo','⫻','Slashes on or between stems: rapid repetition or alternation of notes or chords.','rhythm','tremolo','Later','震音記號','符幹上的斜線，表示快速反覆或交替演奏。'],
 
   // Rests
-  ['Rests','whole rest','Whole rest','𝄻','Silence for a whole measure in common contexts / whole-note duration.','rest','rest whole','P0'],
-  ['Rests','half rest','Half rest','𝄼','Silence for a half-note duration.','rest','rest half','P0'],
-  ['Rests','quarter rest','Quarter rest','𝄽','Silence for a quarter-note duration.','rest','rest quarter','P0'],
-  ['Rests','eighth rest','Eighth rest','𝄾','Silence for an eighth-note duration.','rest','rest eighth','P0'],
-  ['Rests','sixteenth rest','Sixteenth rest','𝄿','Silence for a sixteenth-note duration.','rest','rest 16th','P0'],
-  ['Rests','thirty-second rest','Thirty-second rest','𝅀','Silence for a thirty-second-note duration.','rest','rest 32nd','P1'],
+  ['Rests','whole rest 全休止符','Whole rest','𝄻','Silence for a whole measure in common contexts / whole-note duration.','rest','rest whole','P0','全休止符','掛在第四線下，全音符時值或整小節休止。'],
+  ['Rests','half rest 二分休止符','Half rest','𝄼','Silence for a half-note duration.','rest','rest half','P0','二分休止符','放在第三線上，二分音符時值。'],
+  ['Rests','quarter rest 四分休止符','Quarter rest','𝄽','Silence for a quarter-note duration.','rest','rest quarter','P0','四分休止符','一拍休止。'],
+  ['Rests','eighth rest 八分休止符','Eighth rest','𝄾','Silence for an eighth-note duration.','rest','rest eighth','P0','八分休止符','半拍休止。'],
+  ['Rests','sixteenth rest 十六分休止符','Sixteenth rest','𝄿','Silence for a sixteenth-note duration.','rest','rest 16th','P0','十六分休止符','四分之一拍休止。'],
+  ['Rests','thirty-second rest 三十二分休止符','Thirty-second rest','𝅀','Silence for a thirty-second-note duration.','rest','rest 32nd','P1','三十二分休止符','三十二分音符時值的休止。'],
+  ['Rests','multi-measure rest 長休止符','Multi-measure rest','▬8','Thick bar with a number: rest for that many whole measures.','rest','multiple-rest','Later','長休止符','粗橫線加數字，表示連續休止該數目的小節。'],
 
   // Accidentals / key
-  ['Pitch & Key','sharp accidental','Sharp','♯','Raises a note by one semitone.','accidental','sharp','P0'],
-  ['Pitch & Key','flat accidental','Flat','♭','Lowers a note by one semitone.','accidental','flat','P0'],
-  ['Pitch & Key','natural accidental','Natural','♮','Cancels a previous sharp or flat for the note.','accidental','natural','P0'],
-  ['Pitch & Key','double sharp','Double sharp','𝄪','Raises a note by two semitones.','accidental','double-sharp','Later'],
-  ['Pitch & Key','double flat','Double flat','𝄫','Lowers a note by two semitones.','accidental','flat-flat','Later'],
-  ['Pitch & Key','key signature sharps flats','Key signature','♯♯ / ♭♭','Accidentals following the clef that define default altered scale degrees.','key','key fifths','P0'],
+  ['Pitch & Key','sharp accidental 升記號','Sharp','♯','Raises a note by one semitone.','accidental','sharp','P0','升記號','升高半音。'],
+  ['Pitch & Key','flat accidental 降記號','Flat','♭','Lowers a note by one semitone.','accidental','flat','P0','降記號','降低半音。'],
+  ['Pitch & Key','natural accidental 還原記號','Natural','♮','Cancels a previous sharp or flat for the note.','accidental','natural','P0','還原記號','取消先前的升降。'],
+  ['Pitch & Key','double sharp 重升記號','Double sharp','𝄪','Raises a note by two semitones.','accidental','double-sharp','Later','重升記號','升高全音（兩個半音）。'],
+  ['Pitch & Key','double flat 重降記號','Double flat','𝄫','Lowers a note by two semitones.','accidental','flat-flat','Later','重降記號','降低全音（兩個半音）。'],
+  ['Pitch & Key','key signature sharps flats 調號','Key signature','♯♯ / ♭♭','Accidentals following the clef that define default altered scale degrees.','key','key fifths','P0','調號','譜號後的升降記號組，決定整段的預設音高。'],
 
   // Meter
-  ['Meter','four four time signature','4/4','4⁄4','Four quarter-note beats per measure.','meter','time beats=4 beat-type=4','P0'],
-  ['Meter','three four time signature','3/4','3⁄4','Three quarter-note beats per measure.','meter','time 3/4','P0'],
-  ['Meter','two four time signature','2/4','2⁄4','Two quarter-note beats per measure.','meter','time 2/4','P0'],
-  ['Meter','six eight time signature','6/8','6⁄8','Six eighth-note subdivisions, commonly felt in two compound beats.','meter','time 6/8','P0'],
-  ['Meter','common time','Common time','𝄴','Symbol equivalent to 4/4.','meter','time symbol=common','P1'],
-  ['Meter','cut time alla breve','Cut time','𝄵','Symbol equivalent to 2/2.','meter','time symbol=cut','Later'],
+  ['Meter','four four time signature 四四拍','4/4','4⁄4','Four quarter-note beats per measure.','meter','time beats=4 beat-type=4','P0','四四拍','每小節四拍，以四分音符為一拍。'],
+  ['Meter','three four time signature 三四拍','3/4','3⁄4','Three quarter-note beats per measure.','meter','time 3/4','P0','三四拍','每小節三拍。'],
+  ['Meter','two four time signature 二四拍','2/4','2⁄4','Two quarter-note beats per measure.','meter','time 2/4','P0','二四拍','每小節兩拍。'],
+  ['Meter','six eight time signature 六八拍','6/8','6⁄8','Six eighth-note subdivisions, commonly felt in two compound beats.','meter','time 6/8','P0','六八拍','六個八分音符，通常感受為兩個複合拍。'],
+  ['Meter','common time 普通拍號','Common time','𝄴','Symbol equivalent to 4/4.','meter','time symbol=common','P1','普通拍記號（C）','等同 4/4 的記號寫法。'],
+  ['Meter','cut time alla breve 切拍','Cut time','𝄵','Symbol equivalent to 2/2.','meter','time symbol=cut','Later','二二拍記號（切拍）','等同 2/2 的記號寫法。'],
 
   // Articulation / phrasing
-  ['Articulation','staccato','Staccato','•','Play short and detached.','articulation','staccato','P1'],
-  ['Articulation','tenuto','Tenuto','—','Hold for full value, often with gentle emphasis.','articulation','tenuto','P1'],
-  ['Articulation','accent','Accent','>','Emphasize the attack of the note.','articulation','accent','P1'],
-  ['Articulation','marcato','Marcato','^','Strong, marked accent.','articulation','strong-accent','Later'],
-  ['Articulation','fermata','Fermata','𝄐','Hold a note or rest longer than its written value.','articulation','fermata','P1'],
-  ['Articulation','slur legato','Slur','⌒','Curved line over different pitches indicating connected phrasing / legato.','relation','slur','P1'],
-  ['Articulation','breath mark','Breath mark',',','Brief pause or breath between phrases.','articulation','breath-mark','Later'],
-  ['Articulation','caesura','Caesura','//','A deliberate break or pause in the musical flow.','articulation','caesura','Later'],
+  ['Articulation','staccato 斷音 跳音','Staccato','•','Play short and detached.','articulation','staccato','P1','斷音（跳音）','奏出時值的一半，其餘休止。'],
+  ['Articulation','staccatissimo 短斷音','Staccatissimo','▾','Very short and detached: about a quarter of the written value.','articulation','staccatissimo','Later','短斷音','倒三角記號：只奏時值的四分之一，更短促。'],
+  ['Articulation','portato mezzo staccato 次斷音','Portato','–•','Slur or line with dots: between legato and staccato, about three quarters of the value.','articulation','detached-legato','Later','次斷音','橫線／連線加圓點：奏四分之三時值，半連半斷。'],
+  ['Articulation','tenuto 保持音','Tenuto','—','Hold for full value, often with gentle emphasis.','articulation','tenuto','P1','保持音','保持足值並稍加強奏。'],
+  ['Articulation','accent 重音','Accent','>','Emphasize the attack of the note.','articulation','accent','P1','重音記號','此音較相鄰音突出。'],
+  ['Articulation','marcato 特強重音','Marcato','^','Strong, marked accent.','articulation','strong-accent','Later','特強重音','更強烈的重音。'],
+  ['Articulation','fermata 延長記號','Fermata','𝄐','Hold a note or rest longer than its written value.','articulation','fermata','P1','延長記號','自由延長音或休止（約一倍）；記在終止線上表結束。'],
+  ['Articulation','slur legato 圓滑線','Slur','⌒','Curved line over different pitches indicating connected phrasing / legato.','relation','slur','P1','圓滑線','跨不同音高的弧線，表示連貫圓滑地演奏。'],
+  ['Articulation','breath mark 呼吸記號','Breath mark',',','Brief pause or breath between phrases.','articulation','breath-mark','Later','呼吸記號','樂句間換氣或極短停頓。'],
+  ['Articulation','caesura 停頓記號','Caesura','//','A deliberate break or pause in the musical flow.','articulation','caesura','Later','停頓記號','音樂進行中的明確中斷。'],
 
   // Dynamics
-  ['Dynamics','piano soft','Piano','p','Soft dynamic level.','dynamic','p','P1'],
-  ['Dynamics','pianissimo very soft','Pianissimo','pp','Very soft.','dynamic','pp','P1'],
-  ['Dynamics','mezzo piano','Mezzo piano','mp','Moderately soft.','dynamic','mp','P1'],
-  ['Dynamics','mezzo forte','Mezzo forte','mf','Moderately loud.','dynamic','mf','P1'],
-  ['Dynamics','forte loud','Forte','f','Loud.','dynamic','f','P1'],
-  ['Dynamics','fortissimo very loud','Fortissimo','ff','Very loud.','dynamic','ff','P1'],
-  ['Dynamics','crescendo hairpin','Crescendo','<','Gradually increase loudness.','dynamic','wedge crescendo','P1'],
-  ['Dynamics','diminuendo decrescendo hairpin','Diminuendo','>','Gradually decrease loudness.','dynamic','wedge diminuendo','P1'],
-  ['Dynamics','sforzando','Sforzando','sfz','Sudden strong emphasis.','dynamic','sfz','Later'],
-  ['Dynamics','fortepiano','Forte-piano','fp','Loud attack followed immediately by soft dynamic.','dynamic','fp','Later'],
+  ['Dynamics','piano soft 弱','Piano','p','Soft dynamic level.','dynamic','p','P1','弱','小聲演奏。'],
+  ['Dynamics','pianissimo very soft 很弱','Pianissimo','pp','Very soft.','dynamic','pp','P1','很弱','非常小聲。'],
+  ['Dynamics','mezzo piano 中弱','Mezzo piano','mp','Moderately soft.','dynamic','mp','P1','中弱','中等偏弱。'],
+  ['Dynamics','mezzo forte 中強','Mezzo forte','mf','Moderately loud.','dynamic','mf','P1','中強','中等偏強。'],
+  ['Dynamics','forte loud 強','Forte','f','Loud.','dynamic','f','P1','強','大聲演奏。'],
+  ['Dynamics','fortissimo very loud 很強','Fortissimo','ff','Very loud.','dynamic','ff','P1','很強','非常大聲。'],
+  ['Dynamics','crescendo hairpin 漸強','Crescendo','<','Gradually increase loudness.','dynamic','wedge crescendo','P1','漸強','音量逐漸增大。'],
+  ['Dynamics','diminuendo decrescendo hairpin 漸弱','Diminuendo','>','Gradually decrease loudness.','dynamic','wedge diminuendo','P1','漸弱','音量逐漸減小。'],
+  ['Dynamics','sforzando 突強','Sforzando','sfz','Sudden strong emphasis.','dynamic','sfz','Later','突強','突然的強奏。'],
+  ['Dynamics','fortepiano 強後即弱','Forte-piano','fp','Loud attack followed immediately by soft dynamic.','dynamic','fp','Later','強後即弱','強奏起音後立即轉弱。'],
 
   // Tempo
-  ['Tempo','metronome mark bpm','Metronome mark','♩=80','Specifies an exact pulse rate in beats per minute.','tempo','metronome','P0'],
-  ['Tempo','largo','Largo','Largo','Very slow, broad tempo instruction.','tempo','words','Later'],
-  ['Tempo','adagio','Adagio','Adagio','Slow tempo instruction.','tempo','words','Later'],
-  ['Tempo','andante','Andante','Andante','Moderate walking pace.','tempo','words','Later'],
-  ['Tempo','allegro','Allegro','Allegro','Fast and lively tempo instruction.','tempo','words','Later'],
-  ['Tempo','presto','Presto','Presto','Very fast tempo instruction.','tempo','words','Later'],
-  ['Tempo','ritardando rit','Ritardando','rit.','Gradually slow down.','tempo','words','Later'],
-  ['Tempo','accelerando accel','Accelerando','accel.','Gradually speed up.','tempo','words','Later'],
-  ['Tempo','a tempo','A tempo','a tempo','Return to the previous established tempo.','tempo','words','Later'],
+  ['Tempo','metronome mark bpm 節拍器記號','Metronome mark','♩=80','Specifies an exact pulse rate in beats per minute.','tempo','metronome','P0','節拍器記號','標明每分鐘拍數（如 ♩=84–92）。'],
+  ['Tempo','largo 最緩板','Largo','Largo','Very slow, broad tempo instruction.','tempo','words','Later','最緩板','非常緩慢、寬廣。'],
+  ['Tempo','adagio 慢板','Adagio','Adagio','Slow tempo instruction.','tempo','words','Later','慢板','緩慢的速度。'],
+  ['Tempo','andante 行板','Andante','Andante','Moderate walking pace.','tempo','words','Later','行板','行走般的中等速度。'],
+  ['Tempo','allegro 快板','Allegro','Allegro','Fast and lively tempo instruction.','tempo','words','Later','快板','快速而有活力。'],
+  ['Tempo','presto 急板','Presto','Presto','Very fast tempo instruction.','tempo','words','Later','急板','非常快。'],
+  ['Tempo','ritardando rit 漸慢','Ritardando','rit.','Gradually slow down.','tempo','words','Later','漸慢','速度逐漸放慢。'],
+  ['Tempo','accelerando accel 漸快','Accelerando','accel.','Gradually speed up.','tempo','words','Later','漸快','速度逐漸加快。'],
+  ['Tempo','a tempo 回原速','A tempo','a tempo','Return to the previous established tempo.','tempo','words','Later','回原速','回到先前的速度。'],
 
   // Ornaments
-  ['Ornaments','trill','Trill','tr','Rapid alternation with the neighboring note.','ornament','trill-mark','Later'],
-  ['Ornaments','turn','Turn','𝆗','Ornament moving around the principal note.','ornament','turn','Later'],
-  ['Ornaments','mordent','Mordent','𝆹𝅥𝅯','Quick alternation with an adjacent note.','ornament','mordent','Later'],
-  ['Ornaments','grace note acciaccatura','Grace note','♪','Small ornamental note before or around a principal note.','ornament','grace','Later'],
-  ['Ornaments','arpeggio','Arpeggio','↝','Chord tones played in sequence rather than simultaneously.','ornament','arpeggiate','Later'],
+  ['Ornaments','trill 顫音','Trill','tr','Rapid alternation with the upper neighboring note.','ornament','trill-mark','Later','顫音','主音與上方二度音快速均勻交替。'],
+  ['Ornaments','turn 回音','Turn','𝆗','Ornament moving around the principal note.','ornament','turn','Later','回音','環繞主音的旋律型（順回音／逆回音）。'],
+  ['Ornaments','mordent upper 波音 順波音','Mordent','𝆙','Quick alternation with the upper adjacent note.','ornament','mordent','Later','波音（順波音）','與上方鄰音快速交替一次。'],
+  ['Ornaments','inverted mordent lower 逆波音','Inverted mordent','𝆙̷','Mordent with a vertical stroke: quick alternation with the lower adjacent note.','ornament','inverted-mordent','Later','逆波音','帶豎線的波音：與下方鄰音快速交替。'],
+  ['Ornaments','grace note acciaccatura 短倚音','Acciaccatura','♪̷','Small slashed grace note played as fast as possible before the main note.','ornament','grace slash','Later','短倚音','帶斜線的小音符，極短地掛在主音之前（或後）。'],
+  ['Ornaments','appoggiatura 長倚音','Appoggiatura','𝆕','Small unslashed grace note that takes part of the main note value.','ornament','grace','Later','長倚音','不帶斜線的小音符，佔用主音的部分時值。'],
+  ['Ornaments','arpeggio 琶音','Arpeggio','↝','Chord tones played in sequence rather than simultaneously; a downward arrow reverses it.','ornament','arpeggiate','Later','琶音','和弦各音由下而上依次快速彈出；加向下箭頭為逆琶音。'],
 
   // Repeats / navigation
-  ['Repeats & Navigation','start repeat','Start repeat','||:','Beginning of a repeated passage.','navigation','barline repeat forward','P1'],
-  ['Repeats & Navigation','end repeat','End repeat',':||','Return to the matching start-repeat or beginning.','navigation','barline repeat backward','P1'],
-  ['Repeats & Navigation','first ending volta','First ending','1.','Ending used on the first pass through a repeat.','navigation','ending number=1','P1'],
-  ['Repeats & Navigation','second ending volta','Second ending','2.','Alternate ending used on a later pass.','navigation','ending number=2','P1'],
-  ['Repeats & Navigation','segno','Segno','𝄋','Navigation marker used by D.S. instructions.','navigation','segno','Later'],
-  ['Repeats & Navigation','coda','Coda','𝄌','Navigation destination for a coda jump.','navigation','coda','Later'],
-  ['Repeats & Navigation','da capo dc','Da Capo','D.C.','Return to the beginning.','navigation','sound dacapo','Later'],
-  ['Repeats & Navigation','dal segno ds','Dal Segno','D.S.','Return to the segno sign.','navigation','sound dalsegno','Later'],
-  ['Repeats & Navigation','fine','Fine','Fine','End the piece at this instruction.','navigation','sound fine','Later'],
+  ['Repeats & Navigation','start repeat 反覆記號 起','Start repeat','||:','Beginning of a repeated passage.','navigation','barline repeat forward','P1','反覆記號（起）','反覆段落的開始。'],
+  ['Repeats & Navigation','end repeat 反覆記號 止','End repeat',':||','Return to the matching start-repeat or beginning.','navigation','barline repeat backward','P1','反覆記號（止）','回到對應的起始反覆記號或曲首。'],
+  ['Repeats & Navigation','measure repeat simile 小節反覆','Measure repeat','𝄎','Slash-and-dots sign: repeat the previous measure (doubled form: previous two measures).','navigation','measure-repeat','Later','小節反覆記號','斜線加圓點：反覆前一小節（雙斜線為前兩小節）。'],
+  ['Repeats & Navigation','first ending volta 第一結尾','First ending','1.','Ending used on the first pass through a repeat.','navigation','ending number=1','P1','第一結尾（1 號房子）','第一次經過反覆時使用的結尾。'],
+  ['Repeats & Navigation','second ending volta 第二結尾','Second ending','2.','Alternate ending used on a later pass.','navigation','ending number=2','P1','第二結尾（2 號房子）','之後經過時使用的替代結尾。'],
+  ['Repeats & Navigation','segno 反覆記號','Segno','𝄋','Navigation marker used by D.S. instructions.','navigation','segno','Later','Segno 記號','D.S. 指令跳回的目標記號。'],
+  ['Repeats & Navigation','coda 尾聲','Coda','𝄌','Navigation destination for a coda jump.','navigation','coda','Later','尾聲記號（Coda）','跳往尾聲的目標記號。'],
+  ['Repeats & Navigation','da capo dc 從頭反覆','Da Capo','D.C.','Return to the beginning.','navigation','sound dacapo','Later','從頭反覆（D.C.）','回到樂曲開頭（D.C. al Fine：至 Fine 結束）。'],
+  ['Repeats & Navigation','dal segno ds 從記號反覆','Dal Segno','D.S.','Return to the segno sign.','navigation','sound dalsegno','Later','從記號反覆（D.S.）','回到 Segno 記號處。'],
+  ['Repeats & Navigation','fine 終止','Fine','Fine','End the piece at this instruction.','navigation','sound fine','Later','終止（Fine）','反覆後在此結束樂曲。'],
 
   // Strings / violin
-  ['Strings / Violin','up bow','Up bow','V','Begin the stroke with the bow moving upward toward the frog.','string-technique','technical up-bow','P1'],
-  ['Strings / Violin','down bow','Down bow','Π','Begin the stroke with the bow moving downward toward the tip.','string-technique','technical down-bow','P1'],
-  ['Strings / Violin','pizzicato pizz','Pizzicato','pizz.','Pluck the string rather than bow it.','string-technique','words / pizzicato','P1'],
-  ['Strings / Violin','arco','Arco','arco','Resume playing with the bow after pizzicato.','string-technique','words / arco','P1'],
-  ['Strings / Violin','open string zero fingering','Open string','0','Play the string without stopping it with the left hand.','fingering','fingering 0','P1'],
-  ['Strings / Violin','first finger fingering','Fingering','1 2 3 4','Suggested left-hand finger number.','fingering','fingering','P1'],
-  ['Strings / Violin','harmonic diamond notehead','Harmonic','◇','Lightly touch a string to produce a harmonic overtone.','string-technique','harmonic / notehead','Later'],
-  ['Strings / Violin','sul g sul d sul a sul e','Sul string','sul G','Play the passage on a specified string.','string-technique','words','Later'],
-  ['Strings / Violin','glissando','Glissando','gliss.','Continuous slide between pitches.','string-technique','glissando','Later'],
+  ['Strings / Violin','up bow 上弓','Up bow','V','Begin the stroke with the bow moving upward toward the frog.','string-technique','technical up-bow','P1','上弓','弓向上（往弓根）拉奏。'],
+  ['Strings / Violin','down bow 下弓','Down bow','Π','Begin the stroke with the bow moving downward toward the tip.','string-technique','technical down-bow','P1','下弓','弓向下（往弓尖）拉奏。'],
+  ['Strings / Violin','pizzicato pizz 撥弦','Pizzicato','pizz.','Pluck the string rather than bow it.','string-technique','words / pizzicato','P1','撥弦','以手指撥弦代替弓奏。'],
+  ['Strings / Violin','arco 弓奏','Arco','arco','Resume playing with the bow after pizzicato.','string-technique','words / arco','P1','恢復弓奏','撥弦之後回到弓奏。'],
+  ['Strings / Violin','open string zero fingering 空弦','Open string','0','Play the string without stopping it with the left hand.','fingering','fingering 0','P1','空弦','左手不按弦直接奏該弦。'],
+  ['Strings / Violin','first finger fingering 指法','Fingering','1 2 3 4','Suggested left-hand finger number.','fingering','fingering','P1','指法','建議使用的左手手指編號。'],
+  ['Strings / Violin','harmonic diamond notehead 泛音','Harmonic','◇','Lightly touch a string to produce a harmonic overtone.','string-technique','harmonic / notehead','Later','泛音','輕觸弦上特定位置發出泛音。'],
+  ['Strings / Violin','sul g sul d sul a sul e 指定弦','Sul string','sul G','Play the passage on a specified string.','string-technique','words','Later','指定弦（sul G）','整段在指定的弦上演奏。'],
+  ['Strings / Violin','glissando 滑音','Glissando','gliss.','Continuous slide between pitches (up or down).','string-technique','glissando','Later','滑音','兩音之間連續滑奏（上滑音／下滑音）。'],
 
   // Piano / keyboard
-  ['Piano','pedal sustain','Sustain pedal','Ped.','Depress the damper pedal.','keyboard-technique','pedal start','Later'],
-  ['Piano','pedal release','Pedal release','✱','Release the damper pedal.','keyboard-technique','pedal stop','Later'],
-  ['Piano','una corda','Una corda','una corda','Use the soft pedal.','keyboard-technique','words','Later'],
-  ['Piano','tre corde','Tre corde','tre corde','Release the soft pedal / return to three strings.','keyboard-technique','words','Later'],
-  ['Piano','ottava 8va','8va','8va','Play one octave above the written pitch.','octave-shift','octave-shift up','Later'],
-  ['Piano','ottava bassa 8vb','8vb','8vb','Play one octave below the written pitch.','octave-shift','octave-shift down','Later']
+  ['Piano','pedal sustain 延音踏板','Sustain pedal','Ped.','Depress the damper pedal.','keyboard-technique','pedal start','Later','延音踏板','踩下右（制音）踏板。'],
+  ['Piano','pedal release 放開踏板','Pedal release','✱','Release the damper pedal.','keyboard-technique','pedal stop','Later','放開踏板','放開延音踏板。'],
+  ['Piano','una corda 弱音踏板','Una corda','una corda','Use the soft pedal.','keyboard-technique','words','Later','弱音踏板','踩下左（弱音）踏板。'],
+  ['Piano','tre corde 放開弱音踏板','Tre corde','tre corde','Release the soft pedal / return to three strings.','keyboard-technique','words','Later','放開弱音踏板','放開弱音踏板，恢復正常音色。'],
+  ['Piano','ottava 8va 高八度','8va','8va','Play one octave above the written pitch.','octave-shift','octave-shift up','Later','高八度記號','虛線範圍內移高八度演奏。'],
+  ['Piano','ottava bassa 8vb 低八度','8vb','8vb','Play one octave below the written pitch.','octave-shift','octave-shift down','Later','低八度記號','虛線範圍內移低八度演奏。']
 ];
+
+const categoryZh={'Structure':'結構','Clefs':'譜號','Notes & Rhythm':'音符與節奏','Rests':'休止符','Pitch & Key':'音高與調','Meter':'拍號','Articulation':'奏法記號','Dynamics':'力度記號','Tempo':'速度記號','Ornaments':'裝飾音','Repeats & Navigation':'反覆與導航','Strings / Violin':'弦樂／小提琴','Piano':'鋼琴'};
 
 const categoryOrder=[...new Set(symbols.map(s=>s[0]))];
 const catalog=document.getElementById('catalog'), search=document.getElementById('search'), filters=document.getElementById('filters'), empty=document.getElementById('empty');
 let active='All';
 function textGlyph(v){return /[A-Za-z0-9]/.test(v)&&v.length>2}
 function renderFilters(){['All',...categoryOrder].forEach(c=>{const b=document.createElement('button');b.className='filter'+(c==='All'?' active':'');b.textContent=c;b.dataset.category=c;b.onclick=()=>{active=c;document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x.dataset.category===c));render()};filters.appendChild(b)})}
-function render(){const q=search.value.trim().toLowerCase();catalog.innerHTML='';let shown=0;categoryOrder.forEach(cat=>{if(active!=='All'&&active!==cat)return;const items=symbols.filter(s=>s[0]===cat&&(!q||s.slice(1).join(' ').toLowerCase().includes(q)));if(!items.length)return;shown+=items.length;const block=document.createElement('section');block.className='category-block';const head=document.createElement('div');head.className='category-title';head.innerHTML=`<h3>${cat}</h3><span>${items.length} ${items.length===1?'entry':'entries'}</span>`;block.appendChild(head);const grid=document.createElement('div');grid.className='grid';items.forEach(s=>{const [category,keywords,name,glyph,meaning,omr,xml,priority]=s;const card=document.createElement('article');card.className='symbol-card';card.innerHTML=`<div class="symbol-box ${textGlyph(glyph)?'text':''}" aria-hidden="true">${glyph}</div><div class="symbol-body"><h4>${name}</h4><p>${meaning}</p><div class="meta"><span class="tag ${priority==='P0'?'p0':priority==='P1'?'p1':''}">${priority==='P0'?'V1 · P0':priority==='P1'?'P1':'Later'}</span><span class="tag">${omr}</span><span class="tag xml">${xml}</span></div></div>`;grid.appendChild(card)});block.appendChild(grid);catalog.appendChild(block)});empty.style.display=shown?'none':'block'}
+function render(){const q=search.value.trim().toLowerCase();catalog.innerHTML='';let shown=0;categoryOrder.forEach(cat=>{if(active!=='All'&&active!==cat)return;const items=symbols.filter(s=>s[0]===cat&&(!q||s.slice(1).join(' ').toLowerCase().includes(q)));if(!items.length)return;shown+=items.length;const block=document.createElement('section');block.className='category-block';const head=document.createElement('div');head.className='category-title';head.innerHTML=`<h3>${cat} <span class="zhcat">${categoryZh[cat]||''}</span></h3><span>${items.length} ${items.length===1?'entry':'entries'}</span>`;block.appendChild(head);const grid=document.createElement('div');grid.className='grid';items.forEach(s=>{const [category,keywords,name,glyph,meaning,omr,xml,priority,zhName,zhMeaning]=s;const card=document.createElement('article');card.className='symbol-card';card.innerHTML=`<div class="symbol-box ${textGlyph(glyph)?'text':''}" aria-hidden="true">${glyph}</div><div class="symbol-body"><h4>${name} <span class="zhname">${zhName}</span></h4><p>${meaning}</p><p class="zhtext">${zhMeaning}</p><div class="meta"><span class="tag ${priority==='P0'?'p0':priority==='P1'?'p1':''}">${priority==='P0'?'V1 · P0':priority==='P1'?'P1':'Later'}</span><span class="tag">${omr}</span><span class="tag xml">${xml}</span></div></div>`;grid.appendChild(card)});block.appendChild(grid);catalog.appendChild(block)});empty.style.display=shown?'none':'block'}
 search.addEventListener('input',render);renderFilters();render();
 document.getElementById('symbolCount').textContent=symbols.length;document.getElementById('categoryCount').textContent=categoryOrder.length;document.getElementById('p0Count').textContent=symbols.filter(s=>s[7]==='P0').length;
 </script>
