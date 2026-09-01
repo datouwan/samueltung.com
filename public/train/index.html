@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Training Monitor</title>
+<title>GPU Monitor</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23101614'/><polyline points='8,46 20,38 30,42 42,22 56,12' fill='none' stroke='%233fa576' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <style>
 body{margin:0;font:14px/1.5 system-ui,sans-serif;background:#101614;color:#e8efe9;padding:18px}
@@ -9,7 +9,6 @@ h1{font:500 1.3rem Georgia,serif;margin:0 0 2px}
 #meta{color:#8fa79a;font-size:.8rem;margin-bottom:14px}
 .gpu{display:inline-block;background:#1a2420;border:1px solid #2c3a33;border-radius:8px;
 padding:4px 12px;margin-left:10px;font-size:.8rem}
-.stale{color:#d3986f;font-weight:700}
 .run{background:#161f1b;border:1px solid #2c3a33;border-radius:12px;padding:12px 16px;margin-bottom:10px}
 .run.active{border-color:#3fa576;box-shadow:0 0 12px rgba(63,165,118,.25)}
 .run h2{margin:0;font-size:1rem;display:flex;align-items:center;gap:10px}
@@ -21,67 +20,211 @@ padding:4px 12px;margin-left:10px;font-size:.8rem}
 .stats b{color:#e8efe9}
 svg{margin-top:6px}
 .lbl{font-size:.66rem;color:#68806f;text-transform:uppercase;letter-spacing:.08em}
-td{font-size:.78rem}
+.gpubars{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font-size:.8rem;margin:8px 0}
+.gpubars .bar{margin:0}
+b.hot{color:#d3b46f} b.crit{color:#d36f6f}
+table.procs{width:100%;font-size:.78rem;border-collapse:collapse}
+table.procs td{padding:3px 8px 3px 0;vertical-align:top}
+table.procs tr{border-top:1px solid #26332d}
+.mono{font-family:ui-monospace,Consolas,monospace;word-break:break-all}
+.dim{color:#8fa79a;white-space:nowrap}
+a.tog{color:#6fd3a3;font-size:.72rem;cursor:pointer;margin-left:10px;font-weight:400}
+.stale{color:#d3986f;font-weight:700}
 </style></head><body>
-<h1>Training Monitor</h1>
+<h1>GPU Monitor</h1>
 <div id="meta">loading…</div>
-<div id="pipeline" class="run" style="border-style:dashed;display:none"></div>
+<div id="gpus"></div>
 <div id="procs" class="run" style="border-style:dashed"></div>
+<div id="task"></div>
+<div id="runpod"></div>
 <div id="runs"></div>
 <script>
 function spark(values, color, log){
-  if(!values||values.length<2)return "";
+  if(values.length<2)return "";
   const v=log?values.map(x=>Math.log10(Math.max(x,1e-5))):values;
   const min=Math.min(...v),max=Math.max(...v),W=260,H=40;
   const pts=v.map((y,i)=>`${(i/(v.length-1)*W).toFixed(1)},${(H-4-(y-min)/(max-min+1e-9)*(H-8)).toFixed(1)}`).join(" ");
   return `<svg width="${W}" height="${H}"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.6"/></svg>`;
 }
+// One template, two homes: served locally at "/" (live /api/state + /api/runpod),
+// and exported verbatim to samueltung.com/train/ (scripts/export_train_page.py),
+// where it reads the pushed snapshot from /api/train-status and shows only
+// OMR-related training (mirrored calligraphy runs and their RunPod tasks hidden).
+const REMOTE=location.pathname.startsWith("/train");
+const isOMR=n=>!/^indie-/.test(n||"");
 async function refresh(){
-  const wrapped=await (await fetch("/api/train-status")).json();
-  const meta=document.getElementById("meta");
-  if(!wrapped.state){meta.textContent="No status pushed yet — start the local monitor with --push.";return;}
-  const s=wrapped.state;
-  const age=(Date.now()-Date.parse(wrapped.pushed_at))/1000;
-  const ageTxt=age<90?`${age.toFixed(0)}s ago`:`<span class="stale">${(age/60).toFixed(0)} min ago — pusher may be down</span>`;
-  const g=s.gpu&&s.gpu.total_mb?` <span class="gpu">GPU ${s.gpu.used_mb}/${s.gpu.total_mb} MB · ${s.gpu.util}%</span>`:"";
-  meta.innerHTML=`pushed ${ageTxt}${g}`;
-  const pl=document.getElementById("pipeline");
-  if(s.pipeline){
-    pl.style.display="block";
-    const mark=st=>st==="done"?"✅":st.startsWith("running")?"▶️":st==="waiting"?"⏸":"⭕";
-    pl.innerHTML=`<h2>${s.pipeline.campaign} <span class="badge">pipeline</span></h2>`+
-      `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:.8rem">`+
+  let s, pushedAgo=null;
+  if(REMOTE){
+    const w=await (await fetch("/api/train-status")).json();
+    s=w.state||{}; s.gpu=s.gpu||{gpus:[]}; s.runs=s.runs||[]; s.procs=s.procs||[];
+    if(w.pushed_at) pushedAgo=Math.round((Date.now()-Date.parse(w.pushed_at))/1000);
+  } else {
+    s=await (await fetch("/api/state")).json();
+  }
+  document.getElementById("meta").innerHTML=REMOTE
+    ?`OMR training · snapshot pushed ${pushedAgo==null?"never":pushedAgo+" s ago"}${pushedAgo!=null&&pushedAgo>120?' <span class="stale">— stale: the local monitor is not pushing</span>':""}`
+    :`updated ${s.now}`;
+  const gs=document.getElementById("gpus");gs.innerHTML="";
+  // what is training on THIS gpu right now: anchored on the local trainer
+  // PROCESS (mirrored remote logs are also "active" runs and must never name
+  // this GPU); its --output run name picks the matching log / plan stage
+  const trainerProc=(s.procs||[]).find(p=>!p.noise&&(p.cmd||"").includes("omr_agnostic.train"));
+  const procName=trainerProc?((trainerProc.cmd.match(/--output \S*?\/([^\/\s"]+)/)||[])[1]||"trainer"):null;
+  const activeRun=procName?(s.runs||[]).find(r=>r.active&&r.name===procName):null;
+  const runStage=procName?((s.pipeline||{}).stages||[]).find(st=>st.type==="train"&&(st.status||"").startsWith("running")&&st.name.includes(procName)):null;
+  const stageEp=runStage?(runStage.status.match(/\(ep (\d+\/\d+)\)/)||[])[1]:null;
+  const trainName=procName?(activeRun?`${procName} · ep ${activeRun.epoch}/${activeRun.total}`
+    :stageEp?`${procName} · ep ${stageEp}`:procName+" (warming)"):null;
+  for(const g of (s.gpu.gpus||[])){
+    const mp=(g.used_mb/g.total_mb*100).toFixed(0);
+    const tcls=g.temp>=85?"crit":g.temp>=75?"hot":"";
+    const d=document.createElement("div");d.className="run"+(g.util>5?" active":"");
+    d.innerHTML=`<h2>GPU${g.index} · ${g.name} <span class="badge">${g.util>5?"BUSY":"idle"}</span>${g.index===0&&trainName?`<span class="badge" style="background:#1e5c41;color:#b5eacd">▶ ${trainName}</span>`:""}${g.index===0&&!trainName&&g.util>5?`<span class="badge" title="the GPU is busy but no trainer is running">not training</span>`:""}</h2>
+      <div class="gpubars">
+        <span class="dim">util</span><div class="bar"><div style="width:${g.util}%"></div></div><b>${g.util}%</b>
+        <span class="dim">VRAM</span><div class="bar"><div style="width:${mp}%"></div></div><b>${(g.used_mb/1024).toFixed(1)} / ${(g.total_mb/1024).toFixed(0)} GB</b>
+      </div>
+      <div class="stats">
+        ${g.temp!=null?`<span>temp <b class="${tcls}">${g.temp}°C</b></span>`:""}
+        ${g.power_w!=null?`<span>power <b>${g.power_w.toFixed(0)}${g.power_limit_w?" / "+g.power_limit_w.toFixed(0):""} W</b></span>`:""}
+        ${g.fan!=null?`<span>fan <b>${g.fan}%</b></span>`:""}
+      </div>
+      ${g.index===0&&s.gpu.util_series?`<div><span class="lbl">util % (10 min)</span> ${spark(s.gpu.util_series,"#6fd3a3",false)}
+        <span class="lbl">VRAM MB</span> ${spark(s.gpu.mem_series,"#d3b46f",false)}</div>`:""}`;
+    gs.appendChild(d);
+  }
+  if(!(s.gpu.gpus||[]).length) gs.innerHTML=`<div class="run"><h2>GPU <span class="badge">no nvidia-smi</span></h2></div>`;
+  // pipeline chips render inside the "training now" block (below)
+  const mark=st=>st==="done"?"✅":st.startsWith("running")?"▶️":st.startsWith("FAILED")?"❌":st.startsWith("stalled")?"⚠️":st==="waiting"?"⏸":"⭕";
+  const pipelineHtml=s.pipeline?`<div style="margin-top:10px"><span class="lbl">campaign</span>
+      <div style="font-size:.9rem;margin:2px 0 6px">${s.pipeline.campaign}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:.8rem">`+
       s.pipeline.stages.map(st=>`<span style="background:#1a2420;border:1px solid #2c3a33;
         border-radius:8px;padding:4px 10px">${mark(st.status)} ${st.name}
-        <span style="color:#8fa79a">${st.status.startsWith("running")?st.status.slice(8):""}${st.elapsed?` · ${st.elapsed}`:""}</span></span>`).join("")+"</div>";
-  } else { pl.style.display="none"; }
-  document.getElementById("procs").innerHTML=`<h2>GPU / python processes
-    <span class="badge">machine-wide</span></h2>`+
-    ((s.procs&&s.procs.length)?`<table style="width:100%;border-collapse:collapse">`+
-      s.procs.map(p=>`<tr style="border-top:1px solid #26332d">
-        <td style="padding:3px 8px 3px 0;color:#8fa79a;white-space:nowrap">${p.pid??""}</td>
-        <td style="padding:3px 8px">${p.on_gpu?"🟢":"⚪"}</td>
-        <td style="padding:3px 0;word-break:break-all">${p.cmd}${p.mem?` <b>(${p.mem})</b>`:""}</td>
-      </tr>`).join("")+`</table>`:"<span style='color:#68806f'>none</span>");
-  const root=document.getElementById("runs");root.innerHTML="";
-  for(const r of s.runs||[]){
-    const d=document.createElement("div");d.className="run"+(r.active?" active":"");
+        <span style="color:#8fa79a">${st.status.startsWith("running")?st.status.slice(8):(st.status.startsWith("FAILED")||st.status.startsWith("stalled"))?st.status:""}${st.elapsed?` · ${st.elapsed}`:""}</span></span>`).join("")+"</div></div>":"";
+  const all=window.showAll||false;
+  const shown=s.procs.filter(p=>all||!p.noise), hidden=s.procs.length-shown.length;
+  const esc=t=>(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+  // collapsed by default: one summary line; the table expands on demand
+  let open=false; try{open=localStorage.getItem("procsOpen")==="1";}catch(e){}
+  window.toggleProcs=()=>{try{localStorage.setItem("procsOpen",open?"0":"1");}catch(e){} refresh();};
+  const onGpu=shown.filter(p=>p.on_gpu);
+  const lead=onGpu.slice().sort((a,b)=>(b.util||0)-(a.util||0))[0];
+  const short=c=>{c=(c||"").replace(/^"?[^"]*python[^" ]*"?\s+/i,"");return c.length>90?c.slice(0,87)+"…":c;};
+  const summary=onGpu.length?`<span class="dim" style="white-space:normal">🟢 ${onGpu.length} on the GPU${lead?` · <span class="mono">${esc(short(lead.cmd))}</span>${lead.util!=null?` <b>${lead.util.toFixed(0)}%</b>`:""}`:""}</span>`
+    :"<span style='color:#68806f'>nothing on the GPU</span>";
+  document.getElementById("procs").innerHTML=`<h2>Processes on GPU
+    <span class="badge">machine-wide</span>
+    <a class="tog" onclick="window.toggleProcs()">${open?"▾ collapse":"▸ expand"}</a>
+    ${open&&(hidden||all)?`<a class="tog" onclick="window.showAll=!window.showAll;refresh()">${all?"hide GUI apps":`+${hidden} GUI apps holding contexts`}</a>`:""}</h2>`+
+    (!open?`<div style="margin-top:6px;font-size:.8rem">${summary}</div>`:
+    shown.length?`<table class="procs">
+      <tr style="border:0" class="dim"><td>pid</td><td></td><td>started</td><td>GPU%</td><td>VRAM</td><td>RAM</td><td>command</td></tr>`+
+      shown.map(p=>`<tr>
+        <td class="dim">${p.pid??""}</td>
+        <td>${p.on_gpu?"🟢":"⚪"}</td>
+        <td class="dim">${p.started||""}</td>
+        <td class="dim" title="${Object.entries(p.util_engines||{}).map(([k,v])=>k+" "+v+"%").join(", ")}">${p.util!=null?`<b>${p.util.toFixed(0)}%</b>`:""}</td>
+        <td class="dim">${p.mem||""}</td>
+        <td class="dim">${p.rss_mb?p.rss_mb+" MB":""}</td>
+        <td class="mono" title="${esc(p.cmd)}">${esc(p.cmd.length>160?p.cmd.slice(0,157)+"…":p.cmd)}</td>
+      </tr>`).join("")+`</table>`:"<span style='color:#68806f'>nothing on the GPU</span>");
+  // "training now": the active run(s) in full, with the campaign stages
+  // underneath; earlier runs follow as history
+  const runBody=r=>{
     const pct=(r.epoch/r.total*100).toFixed(0);
-    d.innerHTML=`<h2>${r.name} <span class="badge">${r.active?"TRAINING":"idle"}</span></h2>
-      <div class="bar"><div style="width:${pct}%"></div></div>
+    return `<div class="bar"><div style="width:${pct}%"></div></div>
       <div class="stats">
         <span>epoch <b>${r.epoch}/${r.total}</b></span>
         <span>pace <b>${r.pace_s}s</b></span>
-        ${r.active?`<span>elapsed <b>${r.elapsed||""}</b></span><span>ETA <b>~${r.eta_min} min</b></span>`:(r.elapsed?`<span>${r.finished?"took":"ran"} <b>${r.elapsed}</b></span>`:"")}
-        ${r.started?`<span class="dim">${r.started}${r.ended?" → "+r.ended:""}</span>`:""}
+        ${r.active?`<span>elapsed <b>${r.elapsed}</b></span><span>ETA <b>~${r.eta_min} min</b></span>`:`<span>${r.finished?"took":"ran"} <b>${r.elapsed}</b></span>`}
+        <span class="dim">${r.started}${r.ended?" → "+r.ended:""}</span>
         <span>val TER <b>${r.last.agnostic_ter}</b></span>
         <span>best <b>${r.best_ter}</b> @ep${r.best_epoch}</span>
         <span>exact <b>${(r.last.exact_rate*100).toFixed(1)}%</b></span>
+        <span>loss <b>${r.last.loss}</b></span>
       </div>
       <div><span class="lbl">val TER (log)</span> ${spark(r.ter_series,"#6fd3a3",true)}
       <span class="lbl">loss (log)</span> ${spark(r.loss_series,"#d3b46f",true)}</div>`;
-    root.appendChild(d);
+  };
+  // RunPod tasks mirror their training logs into runs/ — those runs belong
+  // to the RunPod section below, never to the local "training now" (where
+  // the campaign chips would wrongly attach to them) or "earlier runs"
+  let rp=null;
+  if(REMOTE){ rp=s.runpod||null; }
+  else try{rp=await (await fetch("/api/runpod")).json();}catch(e){}
+  const rpTasks=(rp&&rp.up?rp.tasks:[])||[];
+  const runNameOf=t=>t.log&&t.log.endsWith("-training.log")?t.log.split("/").pop().replace(/-training\.log$/,""):null;
+  const runpodNames=new Set(rpTasks.map(runNameOf).filter(Boolean));
+  const mine=r=>!runpodNames.has(r.name)&&(!REMOTE||isOMR(r.name));
+  const active=s.runs.filter(r=>r.active&&mine(r)), idle=s.runs.filter(r=>!r.active&&mine(r));
+  const task=document.getElementById("task");
+  if(active.length){
+    task.innerHTML=active.map(r=>`<div class="run active"><h2>${r.name}
+      <span class="badge">${r.remote?"TRAINING · "+r.remote:"TRAINING"}</span><span class="dim" style="font-weight:400;font-size:.78rem">${r.remote?"remote run mirrored here — not on this GPU":"training now"}</span></h2>
+      ${runBody(r)}${pipelineHtml}</div>`).join("");
+  } else {
+    // a run appears in s.runs only after its first epoch: until then the
+    // pipeline's running train stage / the trainer process is the evidence
+    const stage=(s.pipeline?.stages||[]).find(st=>st.type==="train"&&(st.status||"").startsWith("running"));
+    const trainer=(s.procs||[]).find(p=>p.cmd.includes("omr_agnostic.train"));
+    const warming=stage||trainer;
+    const label=stage?stage.name.replace(/^train /,""):(trainer?(trainer.cmd.match(/--output \S*\/([^\/\s]+)/)||[])[1]||"trainer":"");
+    task.innerHTML=`<div class="run${warming?" active":""}" style="${warming?"":"border-style:dashed"}"><h2>Training now
+      ${warming?`<span class="badge">TRAINING</span><span class="dim" style="font-weight:400;font-size:.78rem">${label} · epoch 1 in progress${stage&&stage.elapsed?" · "+stage.elapsed:""}${trainer?" · pid "+trainer.pid+(trainer.started?" since "+trainer.started:""):""}</span>`:`<span class="badge">nothing training</span>`}</h2>${pipelineHtml||"<span class='dim'>no campaign plan (runs/pipeline.json)</span>"}</div>`;
   }
+  const root=document.getElementById("runs");root.innerHTML="";
+  if(idle.length){
+    // collapsed by default, like the process table; remembered per browser
+    let runsOpen=false; try{runsOpen=localStorage.getItem("runsOpen")==="1";}catch(e){}
+    window.toggleRuns=()=>{try{localStorage.setItem("runsOpen",runsOpen?"0":"1");}catch(e){} refresh();};
+    const h=document.createElement("div");h.className="lbl";h.style.margin="14px 0 6px";
+    h.innerHTML=`earlier runs（${idle.length}）<a class="tog" onclick="toggleRuns()">${runsOpen?"collapse":"show"}</a>`;
+    root.appendChild(h);
+    if(runsOpen) for(const r of idle){
+      const d=document.createElement("div");d.className="run";
+      d.innerHTML=`<h2>${r.name} <span class="badge">idle</span></h2>${runBody(r)}`;
+      root.appendChild(d);
+    }
+  }
+  // RunPod（遠端）: fixed slot between "training now" and "earlier runs".
+  // A running task whose training log is mirrored locally gets the same full
+  // run card as a local run (progress bar, stats, sparklines) with a RUNPOD
+  // badge; a task without a mirrored log gets a one-line card. Links to :8780.
+  try{
+    const el=document.getElementById("runpod");
+    const head=`<div class="lbl" style="margin:14px 0 6px">RunPod（遠端）</div>`;
+    if(!rp||!rp.up){
+      el.innerHTML=head+`<div class="run"><span class="dim">RunPod 監看器未啟動（127.0.0.1:8780）</span></div>`;
+    }else{
+      const podOf=id=>(rp.pods||[]).find(p=>p.id===id)||{};
+      // the remote page shows only OMR-related cloud work
+      const omrTask=t=>/omr/i.test(`${t.name||""} ${t.log||""} ${podOf(t.pod).name||""}`);
+      const running=(rp.tasks||[]).filter(t=>t.status==="running"&&(!REMOTE||omrTask(t)));
+      const livePods=(rp.pods||[]).filter(p=>p.status==="RUNNING"&&(!REMOTE||/omr/i.test(p.name||"")));
+      const fmtEta=sec=>sec==null?"":new Date(Date.now()+sec*1000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+      const cost=t=>{if(t.cost_est!=null)return "$"+t.cost_est.toFixed(2);
+        if(t.pod_cost&&t.start)return "$"+((Date.now()-Date.parse(t.start))/3.6e6*t.pod_cost).toFixed(2);return "";};
+      const cards=running.map(t=>{const pod=podOf(t.pod);const pr=t.progress||{};
+        const gpu=(t.gpu||pod.gpu||"").replace("NVIDIA ","");
+        // line 1: RunPod（GPU）: task name — a trailing "(H100, …)" in the
+        // task name repeats the GPU and is dropped; line 2: status + info
+        const fam=gpu.split(" ")[0];
+        const name=(t.name||"").replace(/\s*[（(][^()（）]*[)）]\s*$/,m=>fam&&m.includes(fam)?"":m).trim();
+        const info=[pod.dc,pod.cost?`$${pod.cost}/hr`:"",cost(t)?`${cost(t)} so far`:"",pr.eta_s?`ETA ${fmtEta(pr.eta_s)}`:""].filter(Boolean).join(" · ");
+        const status=[pr.total?`ep ${pr.done}/${pr.total}`:"",pr.rate||"",pr.loss!=null?`loss ${pr.loss}`:""].filter(Boolean).join(" · ");
+        const line2=`<div style="margin-top:4px"><span class="badge">running</span> <span class="dim" style="font-size:.78rem">${status}${info&&status?" · ":""}${info}</span></div>`;
+        const run=(s.runs||[]).find(r=>r.name===runNameOf(t));
+        if(run) return `<div class="run active"><h2>RunPod（${gpu}）: ${name}</h2>${line2}${runBody({...run, total: pr.total||run.total})}</div>`;
+        return `<div class="run"><h2>RunPod（${gpu}）: ${name}</h2>${line2}</div>`;
+      }).join("");
+      const podsLine=livePods.map(p=>`${p.name}（${(p.gpu||"").replace("NVIDIA ","")} · ${p.dc} · $${p.cost}/hr${p.vram?" · "+p.vram:""}${p.gpu_util!=null?" · "+p.gpu_util+"%":""}）`).join("；");
+      const body=`${cards||`<div class="run"><span class="dim">目前沒有進行中的遠端任務</span></div>`}
+        ${podsLine?`<div class="dim" style="margin:2px 0 0 4px;font-size:.75rem">pods: ${podsLine}</div>`:""}`;
+      el.innerHTML=head+(REMOTE?`<div>${body}</div>`
+        :`<a href="http://127.0.0.1:8780/" target="_blank" style="text-decoration:none;color:inherit"><div style="cursor:pointer">${body}</div></a>`);
+    }
+  }catch(e){}
 }
-refresh();setInterval(refresh,15000);
+refresh();setInterval(refresh,10000);
 </script></body></html>
