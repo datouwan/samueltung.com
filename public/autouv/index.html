@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="autouv: learned seam placement for automatic UV unwrapping. Thesis, data plan, model plan, metrics, and roadmap.">
+  <meta name="theme-color" content="#1b2440">
+  <title>autouv — Learned UV Seams</title>
+  <style>
+    :root {
+      --ink: #1b2036; --muted: #5c6378; --paper: #f5f3ee; --card: #fffefb;
+      --line: #dcd8cf; --blue: #2f4c8a; --blue-dark: #1b2440; --sky: #cfdcf5;
+      --coral: #d8613f; --gold: #d0a13d; --green: #2f7d5c;
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; color: var(--ink);
+      background: radial-gradient(circle at 10% 0%, rgba(207,220,245,.55), transparent 30rem), var(--paper);
+      font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    a { color: inherit; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin-inline: auto; }
+    .eyebrow { margin: 0 0 12px; color: var(--blue); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    nav { position: sticky; z-index: 10; top: 0; background: rgba(245,243,238,.9); border-bottom: 1px solid rgba(27,32,54,.1); backdrop-filter: blur(14px); }
+    .nav-inner { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand span { color: var(--blue); }
+    .nav-links { display: flex; gap: 20px; font-size: .86rem; font-weight: 700; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; }
+    .nav-links a:hover { color: var(--blue); }
+    header { padding: 82px 0 56px; }
+    h1 { max-width: 880px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.8rem, 6.2vw, 5.4rem); font-weight: 500; line-height: .96; letter-spacing: -.05em; }
+    h1 em { color: var(--blue); font-style: normal; }
+    .lede { max-width: 720px; margin: 26px 0 0; color: var(--muted); font-size: clamp(1.02rem, 1.6vw, 1.22rem); }
+    section { padding: 62px 0; }
+    .section-head { display: flex; justify-content: space-between; gap: 32px; align-items: end; margin-bottom: 30px; flex-wrap: wrap; }
+    h2 { margin: 0; font: 500 clamp(1.8rem, 3.4vw, 3rem)/1.05 Georgia, serif; letter-spacing: -.03em; }
+    .section-head > p { max-width: 520px; margin: 0; color: var(--muted); }
+    .grid { display: grid; gap: 18px; }
+    .cols2 { grid-template-columns: 1fr 1fr; }
+    .cols3 { grid-template-columns: repeat(3, 1fr); }
+    .card { padding: 28px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 8px 28px rgba(27,32,54,.04); }
+    .card h3 { margin: 0 0 10px; font: 500 1.3rem/1.15 Georgia, serif; }
+    .card p, .card li { color: var(--muted); font-size: .93rem; }
+    .card ul, .card ol { margin: 8px 0 0; padding-left: 20px; }
+    .card li { padding: 3px 0; }
+    .card.accent { border-top: 5px solid var(--coral); }
+    .card.learn { border-top: 5px solid var(--blue); }
+    .card.solved { border-top: 5px solid var(--green); }
+    .tag { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: .7rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .tag.learn { background: var(--sky); color: var(--blue-dark); }
+    .tag.solved { background: #d3ebe0; color: #1d5a40; }
+    pre { overflow: auto; margin: 18px 0 0; padding: 18px; color: #dfe6f7; background: #141a30; border: 1px solid rgba(255,255,255,.1); border-radius: 14px; font: .8rem/1.65 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .dark { color: white; background: var(--blue-dark); }
+    .dark .eyebrow { color: var(--sky); }
+    .dark h2 { color: white; }
+    .dark .section-head > p, .dark p { color: #c6cfe4; }
+    .flow { display: grid; grid-template-columns: repeat(9, minmax(0,1fr)); gap: 8px; align-items: center; text-align: center; font-size: .78rem; margin-top: 10px; }
+    .flow .node { padding: 14px 6px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; }
+    .flow .node.learn { background: rgba(207,220,245,.16); border-color: rgba(207,220,245,.6); }
+    .flow .arrow { color: var(--sky); font-weight: 900; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .timeline { position: relative; margin-top: 10px; }
+    .timeline::before { content: ""; position: absolute; top: 14px; bottom: 14px; left: 13px; width: 2px; background: var(--line); }
+    .tl-item { position: relative; display: grid; grid-template-columns: 28px 120px 1fr; gap: 0 34px; align-items: start; padding: 30px 0; }
+    .tl-dot { position: relative; z-index: 1; width: 22px; height: 22px; margin: 2px 0 0 3px; border-radius: 50%; background: var(--paper); border: 2.5px solid var(--line); }
+    .tl-item.done .tl-dot { background: var(--green); border-color: var(--green); }
+    .tl-item.now .tl-dot { background: var(--coral); border-color: var(--coral); box-shadow: 0 0 0 9px rgba(216,97,63,.22); }
+    .tl-phase { margin-top: 3px; color: var(--blue-dark); font-size: .8rem; font-weight: 900; letter-spacing: .14em; }
+    .tl-item.now .tl-phase { color: #9a3c22; }
+    .tl-body h3 { margin: 0 0 8px; font-size: 1.08rem; font-weight: 800; letter-spacing: -.01em; }
+    .tl-body p { max-width: 860px; margin: 0; color: var(--muted); font-size: .95rem; }
+    .tl-body p strong { color: var(--blue-dark); font-weight: 800; }
+    footer { padding: 46px 0 60px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+    footer a { color: var(--blue); }
+    @media (max-width: 900px) {
+      .cols2, .cols3 { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .flow .arrow { transform: rotate(90deg); }
+    }
+    @media (max-width: 720px) {
+      .tl-item { grid-template-columns: 28px 1fr; gap: 0 18px; }
+      .tl-phase { grid-column: 2; }
+      .tl-body { grid-column: 2; margin-top: 6px; }
+      .table-scroll { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap nav-inner">
+      <a class="brand" href="/autouv/">auto<span>uv</span></a>
+      <div class="nav-links">
+        <a href="#thesis">Thesis</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#data">Data</a>
+        <a href="#model">Model</a>
+        <a href="#metrics">Metrics</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#risks">Risks</a>
+        <a href="https://github.com/datouwan/autouv">Repo →</a>
+      </div>
+    </div>
+  </nav>
+
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">Research project · started 2026-09-01</p>
+      <h1>Learn where to <em>cut</em>.<br>Let the solver <em>flatten</em>.</h1>
+      <p class="lede">autouv is an automatic UV unwrapper for 3D models. A neural network predicts the
+      seams an artist would place; classical parameterization and packing do the rest. Training labels
+      come for free from the hundreds of thousands of meshes that already ship with artist-made UVs.</p>
+    </div>
+  </header>
+
+  <section id="thesis">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Thesis</p>
+          <h2>Only one of the three steps needs learning.</h2>
+        </div>
+        <p>Unwrapping is cutting, flattening, and packing. Two of those are solved by deterministic
+        geometry. The third is a discrete, taste-driven decision, and that is exactly where
+        automatic tools fall short of an artist.</p>
+      </div>
+      <div class="grid cols3">
+        <article class="card learn"><span class="tag learn">Learned</span><h3>Seam placement</h3><p>Which edges to cut so charts are few, low-distortion, and follow the shape the way a human would. Combinatorial, and artists disagree with every heuristic in xatlas and Blender.</p></article>
+        <article class="card solved"><span class="tag solved">Solver</span><h3>Flattening</h3><p>Given a chart that is a topological disk, LSCM, ARAP, SLIM, and BFF flatten it with near-optimal distortion. No reason to learn coordinates.</p></article>
+        <article class="card solved"><span class="tag solved">Solver</span><h3>Packing</h3><p>Placing charts in the atlas is a bin-packing problem with good existing tools. xatlas packs charts once seams are decided.</p></article>
+      </div>
+      <div class="grid cols3" style="margin-top:18px">
+        <article class="card"><h3>Prior evidence</h3><p>SeamGPT (2025) generates seam polylines with an autoregressive transformer and beats xatlas in user studies. PartUV (2025) drives charts from learned part segmentation. Nuvo (2023) learned UV maps end to end and produced artist-unfriendly charts, which is why the split matters.</p></article>
+        <article class="card"><h3>Labels are free</h3><p>Merge UV-split vertices by position, then an edge is a seam when its two faces disagree about the UV coordinates of its endpoints. Chart ids follow as connected components across non-seam edges. No human labeling.</p></article>
+        <article class="card"><h3>Why now</h3><p>Objaverse exposes roughly 800k licensed Sketchfab objects as GLB with per-object licenses. Mesh networks and point transformers are mature. A 10 to 50M parameter seam model trains in a day on one GPU.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="pipeline" class="dark">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Pipeline</p>
+          <h2>Raw mesh in, unwrapped mesh out.</h2>
+        </div>
+        <p>Blue nodes are learned. Everything else is deterministic geometry that already exists.</p>
+      </div>
+      <div class="flow">
+        <div class="node">Mesh<br>(glTF / OBJ)</div>
+        <div class="arrow">→</div>
+        <div class="node">Repair +<br>decimate</div>
+        <div class="arrow">→</div>
+        <div class="node learn">Seam<br>classifier</div>
+        <div class="arrow">→</div>
+        <div class="node">Cut graph<br>cleanup</div>
+        <div class="arrow">→</div>
+        <div class="node">Flatten +<br>pack</div>
+      </div>
+      <p style="margin-top:22px">Cut graph cleanup turns noisy per-edge probabilities into a valid set of cuts: threshold, join nearby
+      segments, prune dangling stubs, add cuts until every chart is a topological disk under a distortion
+      budget. Seams are transferred back to the original high-poly mesh by nearest edge.</p>
+    </div>
+  </section>
+
+  <section id="data">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Data</p>
+          <h2>Harvest meshes that already have artist UVs.</h2>
+        </div>
+        <p>Nothing is labeled by hand. The work is sourcing, license filtering, quality filtering,
+        and extraction.</p>
+      </div>
+      <div class="card table-scroll">
+        <table>
+          <thead><tr><th>Source</th><th class="num">Size</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td>Objaverse 1.0</td><td class="num">~800k</td><td>Main pool. Sketchfab GLBs with per-object license. Expect 50k to 150k usable meshes after filtering.</td></tr>
+            <tr><td>Objaverse-XL</td><td class="num">~10M</td><td>Scale later. Noisier, mostly GitHub-sourced.</td></tr>
+            <tr><td>Amazon Berkeley Objects</td><td class="num">~8k</td><td>Professional UVs and PBR textures. Validation set.</td></tr>
+            <tr><td>3D-FUTURE</td><td class="num">~16k</td><td>Furniture with UVs. Registration required.</td></tr>
+            <tr><td>CC0 game packs (Kenney, Poly Haven, OpenGameArt)</td><td class="num">few k</td><td>Matches the low-poly game-asset style that matters most for GameLoop.</td></tr>
+            <tr><td>Thingi10K, ShapeNet, Google Scanned Objects</td><td class="num">skip</td><td>No UVs, or auto-generated ones that would teach the model to imitate xatlas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid cols3" style="margin-top:18px">
+        <article class="card"><h3>License filter</h3><p>Keep CC0, CC-BY, CC-BY-SA. Drop CC-BY-NC and CC-BY-ND for anything that ships commercially. License, author, and source URL are stored with every sample.</p></article>
+        <article class="card"><h3>Quality filter</h3><ul>
+          <li>500 to 100k faces, near-manifold</li>
+          <li>Seam ratio in a plausible band: rejects untouched meshes and per-face shreds</li>
+          <li>Area-weighted conformal distortion: median under 1.5, p90 under 3</li>
+          <li>Few flipped or degenerate UV triangles</li>
+          <li>UVs inside the unit square: rejects tiled textures</li>
+          <li>Chart overlap under 5%: rejects mirrored layouts in v1</li>
+        </ul></article>
+        <article class="card"><h3>Sample format</h3><p>One compressed npz per mesh: vertices, faces, UVs, geometric vertex ids, edge list, per-edge seam label, per-face chart id. A JSON sidecar holds metrics, reject reasons, and provenance.</p>
+        <pre>autouv extract model.glb --out data/samples
+autouv batch   raw_dir   --out data/samples
+autouv stats   data/samples
+python scripts/harvest_objaverse.py \
+  --out /workspace/samples --limit 20000</pre></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="model">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Model</p>
+          <h2>Three versions, each one earns the next.</h2>
+        </div>
+        <p>Start with the cheapest thing that can be verified against artist seams. Upgrade only
+        where measurements say the simpler version plateaus.</p>
+      </div>
+      <div class="grid cols3">
+        <article class="card learn"><span class="tag learn">v1</span><h3>Per-edge seam classifier</h3>
+          <ul>
+            <li>Inputs: positions, normals, curvature, dihedral angle, geodesic or heat-kernel features</li>
+            <li>Backbone: DiffusionNet, or a point transformer over sampled surface points projected to edges</li>
+            <li>Output: seam probability per edge</li>
+            <li>Loss: weighted BCE plus dice or focal; seams are 2 to 5% of edges</li>
+            <li>10 to 50M parameters, one to two days on a single A100 or 4090</li>
+          </ul></article>
+        <article class="card"><span class="tag learn">v2</span><h3>Self-supervised refinement</h3>
+          <p>Fine-tune from the v1 policy with a reward built from distortion, seam length, and chart count. No labels needed, so this gets past the inconsistency of artist data and lets the model exceed the average artist rather than imitate them.</p></article>
+        <article class="card"><span class="tag learn">v3</span><h3>Autoregressive seam generation</h3>
+          <p>If per-edge prediction plateaus on global coherence, move to a SeamGPT-style transformer that emits seam polylines token by token, conditioned on a shape encoder. More expensive, better long-range consistency.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="metrics">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Metrics</p>
+          <h2>Every unwrap is scored the same way, artist or machine.</h2>
+        </div>
+        <p>Baselines are xatlas and Blender Smart UV on the same meshes. Without the metric suite
+        there is no way to tell whether the model is winning.</p>
+      </div>
+      <div class="card table-scroll">
+        <table>
+          <thead><tr><th>Metric</th><th>What it measures</th></tr></thead>
+          <tbody>
+            <tr><td>Seam F1, boundary IoU</td><td>Agreement with artist seams, on held-out meshes only.</td></tr>
+            <tr><td>Conformal distortion</td><td>s1 / s2 of the per-face Jacobian, area-weighted median and p90. 1 is angle preserving.</td></tr>
+            <tr><td>Area distortion</td><td>s1 · s2 after removing global scale. 1 is area preserving.</td></tr>
+            <tr><td>L2 stretch</td><td>Sander stretch, sqrt((s1² + s2²) / 2), area-weighted mean.</td></tr>
+            <tr><td>Chart count, seam length ratio</td><td>Fewer charts and shorter seams mean fewer texture discontinuities.</td></tr>
+            <tr><td>Coverage, overlap, flipped</td><td>Atlas utilization, fraction of overlapping pixels, fraction of inverted triangles.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Roadmap</p>
+          <h2>Phases</h2>
+        </div>
+        <p>Status is updated here as phases close. The repo holds the detailed plan.</p>
+      </div>
+      <div class="timeline">
+        <div class="tl-item now">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">PHASE 0</div>
+          <div class="tl-body"><h3>Baseline and metrics</h3>
+            <p><strong>In progress.</strong> Mesh loader that preserves artist UVs, seam and chart extraction, distortion and atlas metrics, quality filters, xatlas baseline, unit tests. Repo created 2026-09-01.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">PHASE 1</div>
+          <div class="tl-body"><h3>Dataset</h3>
+            <p>Objaverse harvest on a RunPod CPU pod against a network volume. License and quality filters, compact npz samples. <strong>Target:</strong> 20k curated meshes plus Amazon Berkeley Objects for validation.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">PHASE 2</div>
+          <div class="tl-body"><h3>Seam classifier</h3>
+            <p>v1 model, training loop, evaluation against artist seams and xatlas on held-out meshes.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">PHASE 3</div>
+          <div class="tl-body"><h3>Cut graph cleanup, flatten, pack</h3>
+            <p>End-to-end unwrap from a raw mesh. Seam transfer back to the original resolution.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">PHASE 4</div>
+          <div class="tl-body"><h3>Self-supervised refinement</h3>
+            <p>Distortion, seam length, and chart count as reward. Compare against v1 and artists in a small user study.</p></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-phase">PHASE 5</div>
+          <div class="tl-body"><h3>Deployment</h3>
+            <p>RunPod serverless endpoint: glTF or OBJ in, mesh with UVs out. Blender and Godot importer hooks for GameLoop.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="risks">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Risks</p>
+          <h2>Known ways this goes wrong.</h2>
+        </div>
+      </div>
+      <div class="grid cols2">
+        <article class="card accent"><h3>Artist styles conflict</h3><p>Hard-surface and organic assets get unwrapped differently. Either condition on an asset category or accept a blended style.</p></article>
+        <article class="card accent"><h3>Mirrored UVs</h3><p>Character artists overlap symmetric halves on purpose. A naive extractor treats them as normal seams. Excluded in v1, possible separate label class later.</p></article>
+        <article class="card accent"><h3>Bad topology</h3><p>Non-manifold and quad meshes break most mesh networks. Triangulate and repair in preprocessing; reject what cannot be repaired.</p></article>
+        <article class="card accent"><h3>The model is not the product</h3><p>A seam classifier alone never unwraps anything. Budget as much time for cut graph cleanup and solver integration as for training.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      autouv · Samuel Tung · <a href="https://github.com/datouwan/autouv">github.com/datouwan/autouv</a> · <a href="/">samueltung.com</a>
+    </div>
+  </footer>
+</body>
+</html>
