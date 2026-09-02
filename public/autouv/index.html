@@ -92,6 +92,24 @@
     .tl-body h3 { margin: 0 0 8px; font-size: 1.08rem; font-weight: 800; letter-spacing: -.01em; }
     .tl-body p { max-width: 860px; margin: 0; color: var(--muted); font-size: .95rem; }
     .tl-body p strong { color: var(--blue-dark); font-weight: 800; }
+    .log { display: grid; gap: 0; }
+    .log-item { display: grid; grid-template-columns: 70px 1fr; gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .log-date { color: var(--blue); font-weight: 800; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; padding-top: 3px; }
+    .log-body { color: var(--muted); font-size: .95rem; }
+    .log-body b { color: var(--ink); }
+    .log-item.now .log-date { color: var(--coral); }
+    .card h3 .dim { color: var(--muted); font: 500 .8rem/1 Inter, ui-sans-serif, system-ui, sans-serif; }
+    .bars { display: grid; gap: 8px; margin-top: 6px; }
+    .bar { display: grid; grid-template-columns: 84px 1fr 44px; gap: 10px; align-items: center; font-size: .85rem; color: var(--muted); }
+    .bar i { display: block; height: 10px; background: #e8e5dd; border-radius: 4px; overflow: hidden; }
+    .bar i b { display: block; height: 100%; background: var(--blue); border-radius: 4px; }
+    .bar em { font-style: normal; text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+    .card.good { border-top: 5px solid var(--green); }
+    .cmp { margin: 18px 0 0; padding: 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+    .cmp img { width: 100%; height: auto; display: block; border-radius: 10px; }
+    .cmp figcaption { margin-top: 10px; color: var(--muted); font-size: .9rem; }
+    .cmp figcaption b { color: var(--ink); }
+    .cred { display: block; margin-top: 4px; font-size: .78rem; color: #8a90a3; }
     footer { padding: 46px 0 60px; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
     footer a { color: var(--blue); }
     @media (max-width: 900px) {
@@ -115,6 +133,8 @@
         <a href="#goal">Goal</a>
         <a href="#thesis">Thesis</a>
         <a href="#meshtailor">MeshTailor</a>
+        <a href="#progress">Progress</a>
+        <a href="#results">Results</a>
         <a href="#pipeline">Pipeline</a>
         <a href="#data">Data</a>
         <a href="#model">Model</a>
@@ -128,7 +148,7 @@
 
   <header>
     <div class="wrap">
-      <p class="eyebrow">Research project · started 2026-09-01 · plan revised 2026-09-01</p>
+      <p class="eyebrow">Research project · started 2026-09-01 · progress updated 2026-09-02</p>
       <h1>Learn where to <em>cut</em>.<br>Let the solver <em>flatten</em>.</h1>
       <p class="lede">autouv is an automatic UV unwrapper aimed at AI-generated 3D models. A neural network
       predicts the seams an artist would place; classical parameterization and packing do the rest. The
@@ -221,6 +241,106 @@
         </ul>
         <p style="margin-top:12px"><strong style="color:var(--ink)">Implication:</strong> the seam model is a known quantity. The open problem is applying it to dense, noisy generator output. That is where autouv focuses.</p></article>
       </div>
+    </div>
+  </section>
+
+  <section id="progress">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Progress log</p>
+          <h2>Two days in: data, baseline, first layouts.</h2>
+        </div>
+        <p>Everything below ran on one RTX 4090 pod plus a local machine. Numbers are on held-out meshes the model never saw.</p>
+      </div>
+      <div class="log">
+        <div class="log-item"><div class="log-date">Sep 1</div><div class="log-body"><b>Repo and metrics.</b> Loader that keeps artist UVs, seam and chart extraction, distortion and atlas metrics, quality filters, xatlas baseline, tests. Smoke test on Khronos sample assets found that symmetric models mirror islands on purpose; the metrics learned to tell a mirrored chart from a fold.</div></div>
+        <div class="log-item"><div class="log-date">Sep 1</div><div class="log-body"><b>First harvest and first model.</b> 3,000 Objaverse objects, 321 accepted, a 30-epoch baseline seam classifier on 290 meshes: test F1 0.45 against an 11% seam base rate. The pipeline works end to end.</div></div>
+        <div class="log-item"><div class="log-date">Sep 2</div><div class="log-body"><b>30k harvest, 9,531 accepted.</b> Overlap rejections dropped from 73% to zero once texture-space use was judged per material and stacked, mirrored and tiled islands stopped counting against a mesh: they do not change where the seams are. Remaining rejects are real: fragmentation, distortion, degenerate UVs, bad topology.</div></div>
+        <div class="log-item"><div class="log-date">Sep 2</div><div class="log-body"><b>Overnight baseline v1</b> on 8,489 meshes: test F1 0.605, average precision 0.647. Trained unattended; the pod stopped itself when done.</div></div>
+        <div class="log-item"><div class="log-date">Sep 2</div><div class="log-body"><b>Quality tiers and deduplication.</b> Samples scored by seam smoothness, dangling cuts, fragmentation, distortion, coverage and provenance tags into tiers A/B/C. A geometry fingerprint found 471 groups of identical re-uploads (one mesh 487 times, a teddy bear 33 times, a sphere 36 times) plus 836 trivial primitives; 1,384 duplicates and the primitives were removed. Accepted set: 8,589, of which 6,357 tier A.</div></div>
+        <div class="log-item"><div class="log-date">Sep 2</div><div class="log-body"><b>Local viewer</b> for browsing samples in 3D and UV, one tile per texture sheet, model predictions overlaid, good/ok/bad rating keys, and a model-layout panel.</div></div>
+        <div class="log-item"><div class="log-date">Sep 2</div><div class="log-body"><b>Baseline v2</b> on the clean tier A+B set with cached features: test F1 0.614, AP 0.661, epochs 2.4× faster. A consistent one-point lead over v1 on a harder validation set; the baseline architecture is near its ceiling.</div></div>
+        <div class="log-item now"><div class="log-date">Sep 2</div><div class="log-body"><b>Seams become layouts.</b> Threshold, prune stubs, cut the mesh by vertex wedges, repair topology until every chart is a disk, flatten with LSCM, pack. About one second per mesh. Evaluated on 434 held-out meshes against the artist's layout and xatlas. Results below.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Findings · 434 held-out meshes</p>
+          <h2>Fewer charts than the artist, at a cost we can see.</h2>
+        </div>
+        <p>Medians. "Artist, re-flattened" runs the artist's own seams through our flattening and packing, so the seam decision is compared like for like.</p>
+      </div>
+      <div class="card table-scroll">
+        <table>
+          <thead><tr><th>Method</th><th class="num">Charts</th><th class="num">Seam length</th><th class="num">Conformal p90</th><th class="num">L2 stretch</th><th class="num">Coverage</th><th class="num">Seam smoothness</th></tr></thead>
+          <tbody>
+            <tr><td>Artist, stored layout</td><td class="num">45.5</td><td class="num">0.079</td><td class="num">1.25</td><td class="num">1.09</td><td class="num">0.56</td><td class="num">0.87</td></tr>
+            <tr><td>Artist, re-flattened</td><td class="num">45.5</td><td class="num">0.078</td><td class="num">1.05</td><td class="num">1.03</td><td class="num">0.41</td><td class="num">0.87</td></tr>
+            <tr><td><b>Model, threshold 0.85</b></td><td class="num"><b>35.5</b></td><td class="num">0.078</td><td class="num">1.09</td><td class="num"><b>1.75</b></td><td class="num">0.28</td><td class="num">0.88</td></tr>
+            <tr><td>Model, threshold 0.70</td><td class="num">63.5</td><td class="num">0.101</td><td class="num">1.05</td><td class="num">1.15</td><td class="num">0.29</td><td class="num">0.92</td></tr>
+            <tr><td>xatlas</td><td class="num">157.5</td><td class="num">0.150</td><td class="num">1.08</td><td class="num">1.00</td><td class="num">0.64</td><td class="num">0.87</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid cols3" style="margin-top:18px">
+        <article class="card"><h3>Charts per mesh <span class="dim">· lower is better</span></h3>
+          <div class="bars">
+            <div class="bar"><span>Model 0.85</span><i><b style="width:23%"></b></i><em>35.5</em></div>
+            <div class="bar"><span>Artist</span><i><b style="width:29%"></b></i><em>45.5</em></div>
+            <div class="bar"><span>Model 0.70</span><i><b style="width:40%"></b></i><em>63.5</em></div>
+            <div class="bar"><span>xatlas</span><i><b style="width:100%"></b></i><em>157.5</em></div>
+          </div></article>
+        <article class="card"><h3>L2 stretch <span class="dim">· 1.0 is ideal</span></h3>
+          <div class="bars">
+            <div class="bar"><span>xatlas</span><i><b style="width:57%"></b></i><em>1.00</em></div>
+            <div class="bar"><span>Artist</span><i><b style="width:59%"></b></i><em>1.03</em></div>
+            <div class="bar"><span>Model 0.70</span><i><b style="width:66%"></b></i><em>1.15</em></div>
+            <div class="bar"><span>Model 0.85</span><i><b style="width:100%"></b></i><em>1.75</em></div>
+          </div></article>
+        <article class="card"><h3>Atlas coverage <span class="dim">· higher is better</span></h3>
+          <div class="bars">
+            <div class="bar"><span>xatlas</span><i><b style="width:100%"></b></i><em>0.64</em></div>
+            <div class="bar"><span>Artist</span><i><b style="width:64%"></b></i><em>0.41</em></div>
+            <div class="bar"><span>Model 0.70</span><i><b style="width:45%"></b></i><em>0.29</em></div>
+            <div class="bar"><span>Model 0.85</span><i><b style="width:44%"></b></i><em>0.28</em></div>
+          </div></article>
+      </div>
+      <div class="grid cols2" style="margin-top:18px">
+        <article class="card good"><h3>What works</h3><ul>
+          <li>At threshold 0.85 the model cuts 35 charts where artists cut 45 and xatlas 157, with the same seam length as the artists and seams just as smooth. The first hard evidence that learned seams beat the tools on the thing that matters.</li>
+          <li>Our own flattener beats the stored artist layouts on distortion (p90 1.05 vs 1.25), so the comparison is not flattering the model.</li>
+          <li>Cleaning the data (per-material overlap, tiers, deduplication) moved the seam classifier from 0.45 to 0.61 F1 on held-out meshes.</li>
+        </ul></article>
+        <article class="card accent"><h3>What does not, yet</h3><ul>
+          <li><b>Area blow-up.</b> L2 stretch 1.75 vs about 1.0. A few charts are near-closed surfaces cut by a single slit; LSCM is conformal only and lets area explode there. Threshold 0.70 is today's balanced point (63 charts, stretch 1.15). The fix is a distortion ceiling: keep adding cuts while a chart is over it.</li>
+          <li><b>Packing.</b> Coverage 0.28 vs xatlas 0.64 is our shelf packer, not the seams. Swapping in a real packer is cheap.</li>
+          <li><b>Cut placement.</b> The model cuts fewer, but not always where an artist would: on the bottle below it merges body and cap into one curved chart instead of one straight rectangular label. Fewer charts is necessary, not sufficient.</li>
+          <li><b>Tier A is too lenient.</b> Scans with hundreds of auto-generated islands still slip in; human ratings in the viewer will recalibrate the ranker.</li>
+        </ul></article>
+      </div>
+
+      <div class="section-head" style="margin-top:44px">
+        <div>
+          <p class="eyebrow">Image comparisons</p>
+          <h2>Five held-out meshes.</h2>
+        </div>
+        <p>Left: the mesh with the artist's seams in red and the model's (threshold 0.85) in cyan. Then the artist's seams through our flattening, the model at two thresholds, and xatlas. Islands colored per chart, seams red.</p>
+      </div>
+      <figure class="cmp"><img src="/autouv/img/compare-3-c85b0c07.png" alt="Gatorade bottle: artist 12 charts, model 8 and 4, xatlas 75" loading="lazy">
+        <figcaption><b>Bottle, 2,628 faces.</b> Artist 12 charts · model 8 at 0.70, 4 at 0.85 · xatlas 75. The model needs a third of the cuts, but the artist's straight label rectangle is the layout a painter wants; the model's merged body-and-cap chart is curved. <span class="cred">"Gatorade Textured" by ccliao, <a href="https://sketchfab.com/3d-models/c85b0c07a3b64cb1a8aebecab40da865">Sketchfab</a>, CC BY.</span></figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/compare-4-8539501e.png" alt="Knight helmet: artist 60 charts, model 28 and 21, xatlas 50" loading="lazy">
+        <figcaption><b>Knight helmet, 2,474 faces.</b> Artist 60 charts · model 28 / 21 · xatlas 50. The 3D view shows the model's cyan seams following the same rims and edges as the artist's red ones, with fewer of them. At 0.85 the two big bowls are the two halves of the helmet. <span class="cred">"Sallet Fantasy Knight Helmet" by Suvalien, <a href="https://sketchfab.com/3d-models/8539501ed2854016b11e5d7d008e828e">Sketchfab</a>, CC BY.</span></figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/compare-2-bf200222.png" alt="Garbage bag: artist 7 charts, model 5 and 2, xatlas 38" loading="lazy">
+        <figcaption><b>Garbage bag, 3,678 faces.</b> Artist 7 charts · model 5 / 2 · xatlas 38. Organic shape: the model finds the natural halves; stretch 1.56 shows the price of only two cuts. <span class="cred">"Garbage Bag" by Bailief, <a href="https://sketchfab.com/3d-models/bf200222d79d4411aade19ddf312f122">Sketchfab</a>, CC BY.</span></figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/compare-1-a11f6318.png" alt="Cake: artist 4 charts, model 1, xatlas 15" loading="lazy">
+        <figcaption><b>Cake, 6,684 faces.</b> Artist 4 charts · model 1 · xatlas 15. One chart with a single slit is technically valid and packs well, at stretch 1.42; the artist's four pieces would be easier to paint. <span class="cred">"Panque Con Merengue" by danquinter07, <a href="https://sketchfab.com/3d-models/a11f63180d6f460b928ecfe85506d7b9">Sketchfab</a>, CC BY.</span></figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/compare-5-043d35af.png" alt="Crime scene props: artist 67 charts, model 143 and 97 with severe stretch, xatlas 286" loading="lazy">
+        <figcaption><b>Failure case: a prop set, 15,422 faces.</b> Artist 67 charts · model 143 / 97 · xatlas 286. Many small parts in one mesh: the model over-cuts some and under-cuts others, and the under-cut ones blow up (stretch 62 at 0.85), which is exactly the case the distortion ceiling must catch. <span class="cred">"Crime Secene" by AlexanderWilliams, <a href="https://sketchfab.com/3d-models/043d35af29eb44f2ba3aa3f5482a4201">Sketchfab</a>, CC BY.</span></figcaption></figure>
     </div>
   </section>
 
@@ -370,23 +490,23 @@ python scripts/harvest_objaverse.py \
           <div class="tl-body"><h3>Baseline and metrics</h3>
             <p><strong>Done 2026-09-01.</strong> Mesh loader that preserves artist UVs, seam and chart extraction, distortion and atlas metrics, quality filters that tell folds from mirrored islands, xatlas baseline, tests. Smoke-tested on Khronos sample assets.</p></div>
         </div>
-        <div class="tl-item now">
+        <div class="tl-item done">
           <div class="tl-dot"></div>
           <div class="tl-phase">PHASE 1</div>
           <div class="tl-body"><h3>Dataset</h3>
-            <p><strong>Next.</strong> TexVerse and Objaverse harvest on a RunPod CPU pod with license and quality filters, fragmentation ranking, GarmentCodeData, Amazon Berkeley Objects as validation. Target: 20k curated meshes at 2k to 5k triangle proxy resolution.</p></div>
+            <p><strong>Done 2026-09-02, first cut.</strong> 30k Objaverse objects harvested, per-material metrics, quality tiers, deduplication: 8,589 accepted meshes, 6,357 tier A. Still to come: TexVerse, GarmentCodeData, Amazon Berkeley Objects as a gold validation set, and human ratings to recalibrate the tiers.</p></div>
         </div>
-        <div class="tl-item">
+        <div class="tl-item done">
           <div class="tl-dot"></div>
           <div class="tl-phase">PHASE 2</div>
           <div class="tl-body"><h3>Baseline seam classifier</h3>
-            <p>Training loop and evaluation against artist seams and xatlas on held-out meshes. Establishes the yardstick.</p></div>
+            <p><strong>Done 2026-09-02.</strong> 1.9M-parameter edge-graph network, test F1 0.614 and AP 0.661 at an 11% seam base rate. The yardstick exists; the architecture is near its ceiling.</p></div>
         </div>
-        <div class="tl-item">
+        <div class="tl-item now">
           <div class="tl-dot"></div>
           <div class="tl-phase">PHASE 3</div>
-          <div class="tl-body"><h3>Autoregressive seam model</h3>
-            <p>MeshTailor-class architecture trained on the phase 1 set with noise augmentation. Compared against the baseline and xatlas on chart count, jaggedness and distortion.</p></div>
+          <div class="tl-body"><h3>Seams to layouts, then the autoregressive model</h3>
+            <p><strong>In progress.</strong> The seam-to-UV pipeline (cut, repair topology, LSCM, pack) is built and evaluated: 35 charts vs the artist's 45 at the cost of area stretch on under-cut charts. Next: a distortion ceiling that keeps cutting until every chart is under it, a real packer, then the MeshTailor-class autoregressive seam model trained on the phase 1 set with noise augmentation.</p></div>
         </div>
         <div class="tl-item">
           <div class="tl-dot"></div>
