@@ -109,7 +109,7 @@ Update the status column here whenever a tool lands or changes.
 | T2 | `market-watch` | Competitor tracker: watch list (Moflin, Loona, Ropet, Lovot, Casio…) → price, availability, news deltas; append-only log so the market page's claims stay current. | planned |
 | T3 | `waitlist` | Demand signal: email-capture endpoint in `src/index.js` + KV, with a signup card on the dossier — the cheapest possible test of real interest before Phase 0. | planned |
 | T4 | `image-pipeline` | Formalize the Pillow conversion rules above into one script: OneDrive source folder in → correctly sized/filed `images/` out. | planned |
-| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. Also emits a per-stage shopping list (`--shopping-list`) with order vs build quantities, and carries `PREFLIGHT.md` (bus map, power budget, physical fit). STLs will live in `tools/proto-kit/cad/`. | **v0.3** 2026-09-04 — repo resynced; `--html`/`--sync` write the Proto page tables; `PREFLIGHT.md` exists (ESP32-S3 stack) |
+| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. Also emits a per-stage shopping list (`--shopping-list`) with order vs build quantities, and carries `PREFLIGHT.md` (bus map, power budget, physical fit). STLs will live in `tools/proto-kit/cad/`. | **v0.3** 2026-09-04 (v0.2 2026-08-05) — `--html`/`--sync` write the Proto page tables; `PREFLIGHT.md` is the ESP32-S3 pass, the Pi 5 pass archived beside it |
 
 Priority order is T1 → T3 → T2 (know the economics, measure demand, watch the
 competition); T4/T5 when their moment comes.
@@ -140,8 +140,8 @@ Append-only; date + one line each. Newest first.
   spares +$18–32, cart $323–641. **Cost, stated plainly:** no warmth at Stage A (the S3
   dissipates nothing; the gate is judged cold), the creature is only "smart" while the
   laptop is awake, and on-creature STT is not demonstrated — none of which the A/B gates
-  test. Two HQ decisions (ReSpeaker on Pi 5, cooler vs HAT) closed as moot. The yura repo's
-  proto-kit is resynced and ahead of the page again: `parts.json` v0.3 carries order vs
+  test. Two HQ decisions (ReSpeaker on Pi 5, cooler vs HAT) closed as moot. The yura repo's proto-kit (v0.2 was on origin all along — the clone was behind) is now
+  v0.3 and ahead of the page again: `parts.json` v0.3 carries order vs
   build quantities, spares, shop notes and vendors; `kit.js --sync` writes the Proto page's
   kit table + shopping list between `<!-- kit:* -->` markers (never hand-edit them);
   `PREFLIGHT.md` rewritten for the ESP32 stack (bus map, 12-GPIO pin budget — check the
@@ -155,10 +155,10 @@ Append-only; date + one line each. Newest first.
   caption flagged as pre-pass art; battery **5,000 → 4,000 mAh** on Components (14.8 Wh,
   ≈4 h continuous roaming) with the concept spec re-stated as **4–5 h per charge**; Lovot
   **~$3,000** on both pages (Concept had $5,000+ / 11×); Concept §09 path rewritten to the
-  home-build plan (the puppet was dropped 07-30 but the page still described it). Found
-  the yura repo's proto-kit is still **v0** (MG90S, WS2812B, no vendor field, no
-  `--shopping-list`, no PREFLIGHT.md): the v0.2 work logged here was never committed
-  there, so the "executable source" is behind the page — resync is the next T5 task.
+  home-build plan (the puppet was dropped 07-30 but the page still described it). Also
+  thought the yura repo's proto-kit was still v0 — **wrong**: the local clone was behind
+  origin, and v0.2 + PREFLIGHT.md were on GitHub all along (corrected the same day; pull
+  before judging that repo).
   Opened **Stage A brain**: ESP32-S3 body + laptop brain over Wi-Fi vs Pi 5 on the
   creature. Key observation: the whole Pi 5 cascade (cooler, 27 W supply, HAT/cooler
   clash, ReSpeaker driver risk, RP1 LED bug) exists for Whisper, which Stage A doesn't
