@@ -205,7 +205,7 @@
     <p class="gate"><b>Trigger:</b> passive warmth doesn't read as alive at the Stage A gate — or warmth needs to become expressive rather than constant. <b>Then the gate:</b> the belly holds a steady, skin-safe temperature under fur, with the thermal fuse never being the thing that saves it.</p>
     <p style="margin-top:.7rem;">Heater film, ADS1115, NTC, logic-level MOSFET and a 60 °C one-shot fuse. Worth keeping on the table rather than deleting: Moflin's specs list a temperature <i>sensor</i>, with no sign it produces heat — so warmth is one of the few channels where Yura wins outright rather than matching. Print order #1 reserves a flat cavity behind the belly plate, so this drops in without a reprint.</p>
 
-    <div class="stagehead"><h3 style="margin:0;">Stage B — comprehension</h3><span class="price">+$35–40 · the whole bet</span></div>
+    <div class="stagehead"><h3 style="margin:0;">Stage B — comprehension</h3><span class="price">+$38–46 · the whole bet</span></div>
     <p class="gate"><b>Gate:</b> a comprehension moment lands unprompted — it reacts to what was said, in body language only, and the observer notices without being told.</p>
     <p style="margin-top:.7rem;">Mic → on-device Whisper (whisper.cpp runs fine on the Pi 5, keeping the transcript-only privacy story true even in prototype) → batched, asynchronous Claude API call → <b>mood and behavior tokens only, never words</b>. This is the "sulks on your suitcase" demo — the thing nothing on the market does, and it needs zero locomotion to test. Budget ~$5–15/mo of API spend while iterating.</p>
 
@@ -222,7 +222,7 @@
       <a href="../images/blueprint/proto-a-exploded.jpg" target="_blank" rel="noopener">
         <img src="../images/blueprint/proto-a-exploded.jpg" width="1491" height="1055" loading="lazy" alt="Engineering blueprint of the Stage A home prototype: exploded view of the teardrop shell in two MJF PA12 halves with small dark eye domes, two aqua TPU frond stems on micro servos, Raspberry Pi 5 with mic HAT, servo driver with five servos, heater film with thermal fuse, speaker, capacitive touch ring, and USB-C power bank base; beside the stack a flattened zip-off fur pelt, plus a corner cross-section of a frond stem showing the fiber-optic core">
       </a>
-      <p class="figcap">Stage A exploded — Rev A0 · printed shell, hobby boards, zip pelt · tap to open full size</p>
+      <p class="figcap">Stage A exploded — Rev A0 · printed shell, hobby boards, zip pelt · drawn before the 2026-08-05 pass: the heater film shown is now Stage A+, and the power-bank base is now a mains supply · tap to open full size</p>
     </div>
     <div class="tbl"><table>
       <tr><th>Stage</th><th>Subsystem</th><th>Part</th><th class="num">Est.</th></tr>
@@ -340,8 +340,8 @@
     <p class="sec-label"><b>05</b> · Safety</p>
     <h2>Non-negotiables under fur</h2>
     <ul class="risks">
-      <li><b>The heater gets a thermal fuse in series.</b><span>A resistive film wrapped in synthetic fur is the one genuinely dangerous part of this build. 60 °C one-shot fuse, thermistor-limited PWM, and firmware that fails cold, in that order — the fuse is the layer that works when the software doesn't.</span></li>
-      <li><b>No loose lithium until Stage C.</b><span>Stage A/B run from a USB-C power bank: proper BMS for free, zero charging risk. Protected 18650s + a real 2S BMS only when the wheels demand it.</span></li>
+      <li><b>If the heater is ever built, it gets a thermal fuse in series.</b><span>A resistive film wrapped in synthetic fur is the one genuinely dangerous part of this build — which is why Stage A takes warmth from ducted Pi exhaust and the heater is deferred to Stage A+. If A+ happens: 60 °C one-shot fuse, thermistor-limited PWM, and firmware that fails cold, in that order — the fuse is the layer that works when the software doesn't.</span></li>
+      <li><b>No loose lithium until Stage C.</b><span>Stage A/B run from a mains USB-C PD supply — no battery in the build at all, zero charging risk. Protected 18650s + a real 2S BMS only when the wheels demand it.</span></li>
       <li><b>Strain-relief everything.</b><span>The pelt zips on and off; every harness gets a JST connector and a glued anchor point, or the second unzip rips a solder joint.</span></li>
     </ul>
     <p class="note"><b>Design rule carried over:</b> eyes stay small, dark, half-hidden domes even in the prototype — it will be judged by the same "mystery is the moat" rule as the product. And the fronds are the signature: spend the TPU iterations there.</p>
