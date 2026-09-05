@@ -25,8 +25,9 @@ page, and analysis added here should serve that goal. The current business thesi
   active warmth +$18–30 (deferred) → Stage B
   comprehension +$38–46 (+$5–15/mo API) → Stage C glide +$115–217; $424–750 all-in.
   Fronds are root-mounted 2-axis gimbals on **sub-micro** servos (tendon drive is the
-  likely production answer, deferred). Figures are post-pre-flight — see
-  `yura/tools/proto-kit/PREFLIGHT.md`.
+  likely production answer, deferred). Figures are post-pre-flight.
+  (`PREFLIGHT.md` is cited on HQ/Proto but was never committed to the yura repo —
+  reconstruct it from the 2026-08-05 entries when T5 is resynced.)
   Chassis via online print service (no printer at home): MJF PA12 rigid, TPU 95A
   compliant. Plan on the Proto page; parts in `yura` repo `tools/proto-kit/`.
 - **Key comps:** Moflin ($429, sells out — proof of demand), KEYi Loona ($450 — proof
@@ -44,7 +45,7 @@ Password-gated (site-wide Basic Auth in `src/index.js`; secret `SITE_PASSWORD`).
 | Prototype plan | `proto/index.html` | Home works-like build: stages A/B/C with gates, parts kit, print-service guidance, safety rules |
 | Components | `components/index.html` | Exploded stack, parts breakdown, buses/power, two-brain split, DFA rules |
 | **HQ** | `hq/index.html` | **The startup operating hub**: scoreboard, phase roadmap with gates, workstream status, open decisions, milestone log |
-| yurapp | `yurapp/index.html` | Drag-to-spin turntable viewer (24 WebP frames × 18 pelts, Cycles renders from the yura repo's `apps/yura-web` pipeline) — an app, not a nav tab |
+| yurapp | `yurapp/index.html` | Drag-to-spin turntable viewer (24 WebP frames × 19 pelts, Cycles renders from the yura repo's `apps/yura-web` pipeline) — an app, not a nav tab |
 
 All three share the same design tokens (indigo `#0B0E1A` ground, aqua `#6FE7D2` glow,
 Charter body, mono labels) and a pill tab nav — **adding a page means updating the nav
@@ -108,7 +109,7 @@ Update the status column here whenever a tool lands or changes.
 | T2 | `market-watch` | Competitor tracker: watch list (Moflin, Loona, Ropet, Lovot, Casio…) → price, availability, news deltas; append-only log so the market page's claims stay current. | planned |
 | T3 | `waitlist` | Demand signal: email-capture endpoint in `src/index.js` + KV, with a signup card on the dossier — the cheapest possible test of real interest before Phase 0. | planned |
 | T4 | `image-pipeline` | Formalize the Pillow conversion rules above into one script: OneDrive source folder in → correctly sized/filed `images/` out. | planned |
-| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. Also emits a per-stage shopping list (`--shopping-list`) with order vs build quantities, and carries `PREFLIGHT.md` (bus map, power budget, physical fit). STLs will live in `tools/proto-kit/cad/`. | **v0.2** 2026-08-05 |
+| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. Also emits a per-stage shopping list (`--shopping-list`) with order vs build quantities, and carries `PREFLIGHT.md` (bus map, power budget, physical fit). STLs will live in `tools/proto-kit/cad/`. | **v0.2 on the page** 2026-08-05 — **yura repo still at v0** (found 2026-09-04): resync pending |
 
 Priority order is T1 → T3 → T2 (know the economics, measure demand, watch the
 competition); T4/T5 when their moment comes.
@@ -126,6 +127,24 @@ until a tool actually measures it.
 
 Append-only; date + one line each. Newest first.
 
+- 2026-09-04 — **Review pass after seven weeks away; six cross-page drifts fixed; Stage A
+  brain decision opened.** Nothing ordered, $0 spent, CAD still the blocker. Fixes: HQ
+  Stage A price ($271–487 → $253–457) and the missing warmth-deferral log entry; Proto
+  Stage B header ($35–40 → $38–46), safety §05 (heater → A+, power bank → mains), Rev A0
+  caption flagged as pre-pass art; battery **5,000 → 4,000 mAh** on Components (14.8 Wh,
+  ≈4 h continuous roaming) with the concept spec re-stated as **4–5 h per charge**; Lovot
+  **~$3,000** on both pages (Concept had $5,000+ / 11×); Concept §09 path rewritten to the
+  home-build plan (the puppet was dropped 07-30 but the page still described it). Found
+  the yura repo's proto-kit is still **v0** (MG90S, WS2812B, no vendor field, no
+  `--shopping-list`, no PREFLIGHT.md): the v0.2 work logged here was never committed
+  there, so the "executable source" is behind the page — resync is the next T5 task.
+  Opened **Stage A brain**: ESP32-S3 body + laptop brain over Wi-Fi vs Pi 5 on the
+  creature. Key observation: the whole Pi 5 cascade (cooler, 27 W supply, HAT/cooler
+  clash, ReSpeaker driver risk, RP1 LED bug) exists for Whisper, which Stage A doesn't
+  run — and at Stage A load a Pi 5 idles near 3 W, so "warmth off the Pi" only exists at
+  Stage B. Proposal: `yura/tools/proto-kit/PROPOSAL-stage-a-esp32.md` (all-in would fall
+  $424–750 → ~$298–596). Bench test before deciding: Pi 5 surface temperature under a
+  fur scrap, idle vs full load.
 - 2026-08-05 — **Active warmth deferred to stage A+; Stage A warms itself off the Pi.**
   Samuel's call — the heater added the most complexity for its size. The reframe: the
   Pi 5 dissipates **10–12 W** under Whisper against the heater film's 8–20 W, so the
