@@ -21,15 +21,15 @@ page, and analysis added here should serve that goal. The current business thesi
 - **Structural read:** hardware keeps the lights on; the business lives in the
   subscription.
 - **Next physical step:** home works-like prototype (Phase 0 puppet dropped 2026-07-30 —
-  Samuel's Moflin is the live reference). Stage A "presence blob" $253–457 → Stage A+
-  active warmth +$18–30 (deferred) → Stage B
-  comprehension +$38–46 (+$5–15/mo API) → Stage C glide +$115–217; $424–750 all-in.
-  Fronds are root-mounted 2-axis gimbals on **sub-micro** servos (tendon drive is the
-  likely production answer, deferred). Figures are post-pre-flight.
-  (`PREFLIGHT.md` is cited on HQ/Proto but was never committed to the yura repo —
-  reconstruct it from the 2026-08-05 entries when T5 is resynced.)
-  Chassis via online print service (no printer at home): MJF PA12 rigid, TPU 95A
-  compliant. Plan on the Proto page; parts in `yura` repo `tools/proto-kit/`.
+  Samuel's Moflin is the live reference). **Re-planned 2026-09-04: ESP32-S3 body + laptop
+  brain; the Pi 5 left the home build.** Stage A "presence blob" $144–272 (foam body) →
+  Stage A′ shell print +$40–90 (after the gate) → Stage A+ active warmth +$12–20 (deferred)
+  → Stage B comprehension +$0–20 (+$5–15/mo API) → Stage C glide +$109–207; **$305–609
+  all-in**. Fronds are root-mounted 2-axis gimbals on **sub-micro** servos (tendon drive is
+  the likely production answer, deferred). Pre-flight for the ESP32 stack:
+  `yura/tools/proto-kit/PREFLIGHT.md`. Shell via online print service (no printer at home):
+  MJF PA12 rigid, TPU 95A compliant — ordered after the Stage A gate, not before. Plan on
+  the Proto page; `kit.js --sync` writes its tables from `yura` `tools/proto-kit/parts.json`.
 - **Key comps:** Moflin ($429, sells out — proof of demand), KEYi Loona ($450 — proof
   the BOM is feasible), Lovot (D2C playbook), and the graveyard (Aibo, Jibo, Vector,
   Cozmo — retention past month 3 is the real gate, not launch demand).
@@ -109,7 +109,7 @@ Update the status column here whenever a tool lands or changes.
 | T2 | `market-watch` | Competitor tracker: watch list (Moflin, Loona, Ropet, Lovot, Casio…) → price, availability, news deltas; append-only log so the market page's claims stay current. | planned |
 | T3 | `waitlist` | Demand signal: email-capture endpoint in `src/index.js` + KV, with a signup card on the dossier — the cheapest possible test of real interest before Phase 0. | planned |
 | T4 | `image-pipeline` | Formalize the Pillow conversion rules above into one script: OneDrive source folder in → correctly sized/filed `images/` out. | planned |
-| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. Also emits a per-stage shopping list (`--shopping-list`) with order vs build quantities, and carries `PREFLIGHT.md` (bus map, power budget, physical fit). STLs will live in `tools/proto-kit/cad/`. | **v0.2 on the page** 2026-08-05 — **yura repo still at v0** (found 2026-09-04): resync pending |
+| T5 | `proto-kit` | Home-prototype kit (was `phase0-kit`): `parts.json` + `kit.js` — stages A/B/C with gates, part price ranges, per-stage totals; regenerates the Proto page tables. Also emits a per-stage shopping list (`--shopping-list`) with order vs build quantities, and carries `PREFLIGHT.md` (bus map, power budget, physical fit). STLs will live in `tools/proto-kit/cad/`. | **v0.3** 2026-09-04 — repo resynced; `--html`/`--sync` write the Proto page tables; `PREFLIGHT.md` exists (ESP32-S3 stack) |
 
 Priority order is T1 → T3 → T2 (know the economics, measure demand, watch the
 competition); T4/T5 when their moment comes.
@@ -127,6 +127,27 @@ until a tool actually measures it.
 
 Append-only; date + one line each. Newest first.
 
+- 2026-09-04 — **Stage A re-planned onto an ESP32-S3 body with the laptop as brain; the Pi 5
+  leaves the home build; proto-kit v0.3.** Samuel accepted `PROPOSAL-stage-a-esp32.md`.
+  Rationale: every hard problem in the Pi 5 stack (cooler, 27 W supply, HAT/cooler clash,
+  ReSpeaker driver risk, RP1 LED bug, no ADC, single I²S) came from running Whisper on the
+  creature, which Stage A never does. The S3 runs reflexes + a mood state machine (alive on
+  its own); the laptop runs faster-whisper + the Claude call over Wi-Fi — the production
+  two-brain split, one level down. **Print order #1 becomes Stage A′, after the foam-body
+  gate**, so CAD stops blocking the electronics order. Tool totals: Stage A $253–457 →
+  **$144–272**, A′ +$40–90, A+ $18–30 → $12–20 (on-chip ADC, no ADS1115), B $38–46 →
+  $0–20 (camera on the body MCU), C $115–217 → $109–207; **all-in $424–750 → $305–609**;
+  spares +$18–32, cart $323–641. **Cost, stated plainly:** no warmth at Stage A (the S3
+  dissipates nothing; the gate is judged cold), the creature is only "smart" while the
+  laptop is awake, and on-creature STT is not demonstrated — none of which the A/B gates
+  test. Two HQ decisions (ReSpeaker on Pi 5, cooler vs HAT) closed as moot. The yura repo's
+  proto-kit is resynced and ahead of the page again: `parts.json` v0.3 carries order vs
+  build quantities, spares, shop notes and vendors; `kit.js --sync` writes the Proto page's
+  kit table + shopping list between `<!-- kit:* -->` markers (never hand-edit them);
+  `PREFLIGHT.md` rewritten for the ESP32 stack (bus map, 12-GPIO pin budget — check the
+  exact board's pinout before buying, ~3.5 W typical / 10–13 W peak on a 5 V/3 A brick,
+  gate protocol). Shopping-list localStorage key bumped to v5. Next action: order the
+  Stage A parts; write the gate protocol down before they arrive.
 - 2026-09-04 — **Review pass after seven weeks away; six cross-page drifts fixed; Stage A
   brain decision opened.** Nothing ordered, $0 spent, CAD still the blocker. Fixes: HQ
   Stage A price ($271–487 → $253–457) and the missing warmth-deferral log entry; Proto

@@ -180,13 +180,13 @@
   <header>
     <p class="kicker">Yura · prototype plan · July 2026</p>
     <h1>Build it at home first</h1>
-    <p class="dek">The Phase 0 puppet is dropped — there's a Moflin in the house setting the alive-ness bar already. Instead: a <strong>works-like prototype for ~$425–750 all-in</strong>, chassis ordered from an online print service, everything else off-the-shelf dev boards. Three stages, each with a kill-or-continue gate.</p>
+    <p class="dek">The Phase 0 puppet is dropped — there's a Moflin in the house setting the alive-ness bar already. Instead: a <strong>works-like prototype for ~$305–609 all-in</strong>, an ESP32-S3 body with the laptop as its brain, a foam body first and a print-service shell once the blob has earned it. Three stages, each with a kill-or-continue gate.</p>
   </header>
 
   <section>
     <p class="sec-label"><b>01</b> · Why this path</p>
     <h2>What a home build proves — and what it can't</h2>
-    <p>A printed chassis with hobby boards can test almost everything the business case rests on: the frond language, glow-as-emotion, warmth + purr + breathing as presence, and the whole <b>"comprehends but never speaks"</b> loop. What it cannot prove is manufacturability or COGS — that's Phase 3's problem, gated behind this one.</p>
+    <p>A foam body, an ESP32 and a laptop can test almost everything the business case rests on: the frond language, glow-as-emotion, purr + breathing as presence, and the whole <b>"comprehends but never speaks"</b> loop. What it cannot prove is manufacturability or COGS — that's Phase 3's problem, gated behind this one.</p>
     <p>One discipline carried over from the old Phase 0: the founder liking it doesn't count. Every stage gate below is judged with <b>someone who isn't Samuel</b> in the room, with the Moflin available for direct comparison. If Yura can't beat a $429 stationary fur ball at feeling alive, that's a kill signal worth $400, not $4 M.</p>
   </section>
 
@@ -194,64 +194,75 @@
     <p class="sec-label"><b>02</b> · Stages</p>
     <h2>Three builds, three gates</h2>
 
-    <div class="stagehead"><h3 style="margin:0;">Stage A — the presence blob</h3><span class="price">$253–457 · no wheels</span></div>
-    <p class="gate"><b>Gate:</b> side-by-side with the Moflin, fronds + glow + warmth + purr read as a living creature — to someone who isn't Samuel.</p>
-    <p style="margin-top:.7rem;">Printed shell under hand-sewn fur; fronds, glow, warmth, purr, breathing, touch, driven by a Raspberry Pi 5. Mood states react to touch and sound direction. This alone is a Moflin-class object <i>plus</i> the frond channel — comparable on day one.</p>
-    <p style="margin-top:.7rem;"><b>Warmth comes from the Pi, not a heater.</b> The Pi 5 dissipates 10–12 W under Whisper — the same order as the heater film it was going to sit beside — so the cooler's exhaust is ducted to a belly plate instead of being fought. That deletes the build's only genuinely dangerous subsystem, along with the ADC, the MOSFET and the thermal fuse. The trade: Pi heat tracks CPU load, not mood, so Stage A tests warmth as a baseline rather than as an expressive channel.</p>
+    <div class="stagehead"><h3 style="margin:0;">Stage A — the presence blob</h3><span class="price">$144–272 · foam body, no wheels</span></div>
+    <p class="gate"><b>Gate:</b> side-by-side with the Moflin, fronds + glow + purr + breathing read as a living creature — to someone who isn't Samuel.</p>
+    <p style="margin-top:.7rem;">A foam ball or gutted plush under hand-sewn fur; fronds, glow, purr, breathing and touch driven by an <b>ESP32-S3</b> in the body, with mood states reacting to touch and sound direction. This alone is a Moflin-class object <i>plus</i> the frond channel — comparable on day one, and it starts the day the parts arrive: no CAD, no print order in front of it.</p>
+    <p style="margin-top:.7rem;"><b>Body on an ESP32-S3, brain on the laptop.</b> The S3 runs reflexes and a small mood state machine, so the creature is alive on its own; the laptop, over Wi-Fi, runs Whisper and the Claude call and sends back mood tokens. Every hard problem in the earlier Pi 5 stack — the active cooler, the 27 W supply, the HAT-versus-cooler clash, the ReSpeaker driver risk, the RP1 LED bug, the missing ADC, the single I²S bus — traced back to running Whisper on the creature, which Stage A never does. Same two-brain architecture as production, one level down. The trade: no warmth at Stage A (the S3 dissipates nothing), so the gate is judged cold and warmth becomes an explicit A+ decision.</p>
 
     <p style="margin-top:.7rem;">Fronds are <b>root-mounted 2-axis gimbals on sub-micro servos</b> — two per frond, because one servo cannot drive two axes. Sub-micro over MG90S is a fit decision: roughly a quarter the volume and mass at the highest point of a 680 g creature, and quieter, which the gate cares about. Tendon-driving the fronds from the body cavity is very likely the production answer — it fixes head volume, centre of gravity and noise together — but root-mount is far easier to debug on a first build, and Stage A tests aliveness, not manufacturability.</p>
 
-    <div class="stagehead"><h3 style="margin:0;">Stage A+ — active warmth</h3><span class="price">+$18–30 · deferred, built only on demand</span></div>
-    <p class="gate"><b>Trigger:</b> passive warmth doesn't read as alive at the Stage A gate — or warmth needs to become expressive rather than constant. <b>Then the gate:</b> the belly holds a steady, skin-safe temperature under fur, with the thermal fuse never being the thing that saves it.</p>
-    <p style="margin-top:.7rem;">Heater film, ADS1115, NTC, logic-level MOSFET and a 60 °C one-shot fuse. Worth keeping on the table rather than deleting: Moflin's specs list a temperature <i>sensor</i>, with no sign it produces heat — so warmth is one of the few channels where Yura wins outright rather than matching. Print order #1 reserves a flat cavity behind the belly plate, so this drops in without a reprint.</p>
+    <div class="stagehead"><h3 style="margin:0;">Stage A′ — the shell print</h3><span class="price">+$40–90 · after the Stage A gate</span></div>
+    <p class="gate"><b>Trigger, not a gate:</b> the foam blob has passed and the servos have shown where they want to sit. Then model the shell and order it.</p>
+    <p style="margin-top:.7rem;">Print order #1 — shell set in MJF PA12, frond stems and gimbals in TPU 95A — moves to <i>after</i> the gate. CAD was the standing blocker for seven weeks and the gate never needed it: the question is whether fronds, glow and purr read as alive, and foam answers that. The print then encodes what the blob taught, including the flat belly cavity that keeps A+ a drop-in.</p>
 
-    <div class="stagehead"><h3 style="margin:0;">Stage B — comprehension</h3><span class="price">+$38–46 · the whole bet</span></div>
+    <div class="stagehead"><h3 style="margin:0;">Stage A+ — active warmth</h3><span class="price">+$12–20 · deferred, built only on demand</span></div>
+    <p class="gate"><b>Trigger:</b> a cold creature doesn't read as alive at the Stage A gate — or warmth needs to become expressive rather than constant. <b>Then the gate:</b> the belly holds a steady, skin-safe temperature under fur, with the thermal fuse never being the thing that saves it.</p>
+    <p style="margin-top:.7rem;">Heater film, NTC, logic-level MOSFET and a 60 °C one-shot fuse — the ESP32-S3's own ADC reads the NTC, so the ADS1115 is gone. Worth keeping on the table rather than deleting: Moflin's specs list a temperature <i>sensor</i>, with no sign it produces heat — so warmth is one of the few channels where Yura wins outright rather than matching. Print order #1 (Stage A′) reserves a flat cavity behind the belly plate, so this drops in without a reprint.</p>
+
+    <div class="stagehead"><h3 style="margin:0;">Stage B — comprehension</h3><span class="price">+$0–20 · the whole bet</span></div>
     <p class="gate"><b>Gate:</b> a comprehension moment lands unprompted — it reacts to what was said, in body language only, and the observer notices without being told.</p>
-    <p style="margin-top:.7rem;">Mic → on-device Whisper (whisper.cpp runs fine on the Pi 5, keeping the transcript-only privacy story true even in prototype) → batched, asynchronous Claude API call → <b>mood and behavior tokens only, never words</b>. This is the "sulks on your suitcase" demo — the thing nothing on the market does, and it needs zero locomotion to test. Budget ~$5–15/mo of API spend while iterating.</p>
+    <p style="margin-top:.7rem;">Mics on the body → audio over Wi-Fi to the laptop → Whisper there (faster-whisper; raw audio never leaves the LAN, so the transcript-only privacy story holds in spirit) → batched, asynchronous Claude API call → <b>mood and behavior tokens only, never words</b>. This is the "sulks on your suitcase" demo — the thing nothing on the market does, and it needs zero locomotion and, now, zero new hardware to test: the camera is already on the body MCU. Budget ~$5–15/mo of API spend while iterating.</p>
 
-    <div class="stagehead"><h3 style="margin:0;">Stage C — glide</h3><span class="price">+$115–217 · hardest, least differentiating</span></div>
+    <div class="stagehead"><h3 style="margin:0;">Stage C — glide</h3><span class="price">+$109–207 · hardest, least differentiating</span></div>
     <p class="gate"><b>Gate:</b> moves under the fur skirt without breaking the spell; finds its dock unaided.</p>
-    <p style="margin-top:.7rem;">Omniwheel base with an ESP32 handling reflexes and motor safety over a serial link — the production two-brain split in miniature. ToF + camera for basic navigation; dock-seeking last. Fine to defer: do A and B first, because comprehension-through-body-language is the bet the whole business case rests on.</p>
+    <p style="margin-top:.7rem;">Omniwheel base; motor safety runs on the body MCU already in the creature, with the laptop as the slow brain — the production two-brain split in miniature. ToF + camera for basic navigation; dock-seeking last. Fine to defer: do A and B first, because comprehension-through-body-language is the bet the whole business case rests on.</p>
   </section>
 
   <section>
     <p class="sec-label"><b>03</b> · Parts</p>
     <h2>The kit</h2>
-    <p>Generated by the <b>proto-kit</b> tool (T5, yura repo — <code style="font-family:var(--mono);font-size:.85em;">node tools/proto-kit/kit.js</code>); edit <code style="font-family:var(--mono);font-size:.85em;">parts.json</code> there, not this table. Prices are 2026 hobby retail.</p>
+    <p>Generated by the <b>proto-kit</b> tool (T5, yura repo — <code style="font-family:var(--mono);font-size:.85em;">node tools/proto-kit/kit.js</code>); edit <code style="font-family:var(--mono);font-size:.85em;">parts.json</code> there and run <code style="font-family:var(--mono);font-size:.85em;">kit.js --sync</code> — this table and the shopping list below are written by the tool, not by hand. Prices are 2026 hobby retail.</p>
     <div class="fig">
       <a href="../images/blueprint/proto-a-exploded.jpg" target="_blank" rel="noopener">
         <img src="../images/blueprint/proto-a-exploded.jpg" width="1491" height="1055" loading="lazy" alt="Engineering blueprint of the Stage A home prototype: exploded view of the teardrop shell in two MJF PA12 halves with small dark eye domes, two aqua TPU frond stems on micro servos, Raspberry Pi 5 with mic HAT, servo driver with five servos, heater film with thermal fuse, speaker, capacitive touch ring, and USB-C power bank base; beside the stack a flattened zip-off fur pelt, plus a corner cross-section of a frond stem showing the fiber-optic core">
       </a>
-      <p class="figcap">Stage A exploded — Rev A0 · printed shell, hobby boards, zip pelt · drawn before the 2026-08-05 pass: the heater film shown is now Stage A+, and the power-bank base is now a mains supply · tap to open full size</p>
+      <p class="figcap">Stage A exploded — Rev A0 · drawn in July, before two re-plans: the Pi 5 stack shown is now an ESP32-S3 body MCU with the laptop as brain, the heater film is Stage A+, the power-bank base is a mains supply, and the printed shell is Stage A′ — the geometry still stands · tap to open full size</p>
     </div>
     <div class="tbl"><table>
       <tr><th>Stage</th><th>Subsystem</th><th>Part</th><th class="num">Est.</th></tr>
-      <tr><td>A</td><td>Main brain</td><td>Raspberry Pi 5 8 GB + PSU + SD <span class="dim">— cognition, vision, on-device STT; 27 W 5 V/5 A PSU class</span></td><td class="num">$80–100</td></tr>
-      <tr><td>A</td><td>Main brain</td><td>Pi 5 active cooler <span class="dim">— Whisper pegs all four cores; exhaust ducted to the belly plate is also the warmth channel</span></td><td class="num">$5–10</td></tr>
-      <tr><td>A</td><td>Ears</td><td>ReSpeaker 2-Mics Pi HAT</td><td class="num">$15–25</td></tr>
-      <tr><td>A</td><td>Ears</td><td>Stacking GPIO header <span class="dim">— the HAT occupies the 40-pin header</span></td><td class="num">$3–6</td></tr>
-      <tr><td>A</td><td>Fronds</td><td>PCA9685 driver + 4× sub-micro servo <span class="dim">— 2 fronds × 2 axes, root-mounted gimbals</span></td><td class="num">$30–57</td></tr>
-      <tr><td>A</td><td>Breathing</td><td>1× MG90S <span class="dim">— breathing cam; stays MG90S, it sits deep in the body</span></td><td class="num">$3–4</td></tr>
-      <tr><td>A</td><td>Glow</td><td>APA102/SK9822 strip + 3 mm side-glow fiber <span class="dim">— SPI, not bit-banged timing; one addressable segment per frond</span></td><td class="num">$18–30</td></tr>
-      <tr><td>A</td><td>Touch</td><td>MPR121 + conductive fabric zones <span class="dim">— under the pelt</span></td><td class="num">$14–25</td></tr>
-      <tr><td>A</td><td>Purr</td><td>Vibration motor + driver + 40 mm speaker <span class="dim">— purr sound only, never speech; the mic HAT already carries the codec</span></td><td class="num">$10–20</td></tr>
-      <tr><td>A</td><td>Power</td><td>5 V/5 A supply — mains USB-C PD <span class="dim">— Stage A doesn't move, so it needn't run on a bank</span></td><td class="num">$0–30</td></tr>
-      <tr><td>A</td><td>Pelt</td><td>Faux fur + zipper, hand-sewn <span class="dim">— the first zip-off pelt test</span></td><td class="num">$20–35</td></tr>
-      <tr><td>A</td><td>Body</td><td>Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A) + frond gimbals</td><td class="num">$40–90</td></tr>
-      <tr><td>A</td><td>Build</td><td>Wiring, JST kit, standoffs, magnets</td><td class="num">$15–25</td></tr>
-      <tr class="hl"><td class="us">A</td><td class="us" colspan="2">Stage A total — a livable creature, no wheels</td><td class="num us">$253–457</td></tr>
-      <tr><td>A+</td><td>Warmth</td><td>Heater film + ADS1115 + NTC + logic-level MOSFET + 60 °C thermal fuse <span class="dim">— deferred; only if passive warmth doesn't land</span></td><td class="num">$18–30</td></tr>
-      <tr class="hl"><td class="us">A+</td><td class="us" colspan="2">Stage A+ total — active warmth</td><td class="num us">$18–30</td></tr>
-      <tr><td>B</td><td>Eyes</td><td>Pi Camera Module 3 Wide <span class="dim">— the camera eye of the mono-split pair</span></td><td class="num">$35–40</td></tr>
-      <tr><td>B</td><td>Eyes</td><td>Pi 5 camera cable (22-pin) <span class="dim">— the module ships with the wrong one for a Pi 5</span></td><td class="num">$3–6</td></tr>
-      <tr class="hl"><td class="us">B</td><td class="us" colspan="2">Stage B total — comprehension (plus ~$5–15/mo API)</td><td class="num us">$38–46</td></tr>
-      <tr><td>C</td><td>Instinct MCU</td><td>ESP32 devkit <span class="dim">— reflexes + motor safety, the two-brain split in miniature</span></td><td class="num">$6–10</td></tr>
-      <tr><td>C</td><td>Drive</td><td>3× N20 encoder motors + 2× DRV8833 + 3× 48 mm omniwheels</td><td class="num">$31–57</td></tr>
-      <tr><td>C</td><td>Eyes</td><td>VL53L5CX ToF breakout <span class="dim">— the depth eye</span></td><td class="num">$20–30</td></tr>
-      <tr><td>C</td><td>Power</td><td>2× 18650 + 2S BMS + buck <span class="dim">— untethered at last</span></td><td class="num">$18–30</td></tr>
+      <!-- kit:table -->
+      <tr><td>A</td><td>Body MCU</td><td>ESP32-S3 devkit with OV2640 camera (Freenove ESP32-S3 CAM / XIAO ESP32S3 Sense class) <span class="dim">— reflexes + mood state machine on the creature; camera on board, so Stage B adds no hardware</span></td><td class="num">$15–25</td></tr>
+      <tr><td>A</td><td>Ears</td><td>2× INMP441 I²S MEMS mic <span class="dim">— coarse sound direction; audio streams to the laptop over Wi-Fi</span></td><td class="num">$4–8</td></tr>
+      <tr><td>A</td><td>Purr</td><td>MAX98357 I²S amp <span class="dim">— back in — the S3 has a second I²S port</span></td><td class="num">$5–8</td></tr>
+      <tr><td>A</td><td>Purr</td><td>40 mm speaker <span class="dim">— purr sound only, never speech</span></td><td class="num">$4–8</td></tr>
+      <tr><td>A</td><td>Purr</td><td>ERM/LRA vibration motor + driver</td><td class="num">$6–12</td></tr>
+      <tr><td>A</td><td>Fronds</td><td>PCA9685 16-ch servo driver</td><td class="num">$6–9</td></tr>
+      <tr><td>A</td><td>Fronds</td><td>4× sub-micro servo (4–5 g class) <span class="dim">— 2 fronds × 2 axes, root-mounted gimbals</span></td><td class="num">$24–48</td></tr>
+      <tr><td>A</td><td>Breathing</td><td>MG90S micro servo <span class="dim">— breathing cam; stays MG90S, it sits deep in the body</span></td><td class="num">$3–4</td></tr>
+      <tr><td>A</td><td>Glow</td><td>APA102 / SK9822 strip, 1 m / 60 LED <span class="dim">— SPI; one addressable segment per frond</span></td><td class="num">$10–16</td></tr>
+      <tr><td>A</td><td>Glow</td><td>3 mm side-glow fiber optic, 2 m <span class="dim">— inside the frond stems</span></td><td class="num">$8–14</td></tr>
+      <tr><td>A</td><td>Touch</td><td>MPR121 capacitive breakout</td><td class="num">$6–10</td></tr>
+      <tr><td>A</td><td>Touch</td><td>Conductive fabric + thread zones <span class="dim">— under the pelt</span></td><td class="num">$8–15</td></tr>
+      <tr><td>A</td><td>Power</td><td>5 V / 3 A USB supply <span class="dim">— mains; peak draw is now the servos, ~6–8 W</span></td><td class="num">$0–10</td></tr>
+      <tr><td>A</td><td>Body</td><td>Foam ball or gutted plush + servo mounts <span class="dim">— stands in for the printed shell at the gate</span></td><td class="num">$10–25</td></tr>
+      <tr><td>A</td><td>Pelt</td><td>Faux fur + zipper + notions, hand-sewn <span class="dim">— the first zip-off pelt test</span></td><td class="num">$20–35</td></tr>
+      <tr><td>A</td><td>Build</td><td>Wiring, JST kit, standoffs, magnets, heat-shrink</td><td class="num">$15–25</td></tr>
+      <tr class="hl"><td class="us">A</td><td class="us" colspan="2">Stage A total — a livable creature, foam body, no wheels</td><td class="num us">$144–272</td></tr>
+      <tr><td>A′</td><td>Body</td><td>Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A) + gimbals <span class="dim">— after the Stage A gate — the foam blob tells you where the servos want to sit</span></td><td class="num">$40–90</td></tr>
+      <tr class="hl"><td class="us">A′</td><td class="us" colspan="2">Stage A′ total — shell print, after the Stage A gate</td><td class="num us">$40–90</td></tr>
+      <tr><td>A+</td><td>Warmth</td><td>Heater film + NTC + logic-level MOSFET + 60 °C thermal fuse <span class="dim">— deferred; the ESP32's own ADC reads the NTC — no ADS1115</span></td><td class="num">$12–20</td></tr>
+      <tr class="hl"><td class="us">A+</td><td class="us" colspan="2">Stage A+ total — active warmth</td><td class="num us">$12–20</td></tr>
+      <tr><td>B</td><td>Eyes</td><td>USB webcam on the laptop (fallback) <span class="dim">— $0 if the body MCU's OV2640 stills are good enough for face recognition</span></td><td class="num">$0–20</td></tr>
+      <tr class="hl"><td class="us">B</td><td class="us" colspan="2">Stage B total — comprehension — software, plus ~$5–15/mo API</td><td class="num us">$0–20</td></tr>
+      <tr><td>C</td><td>Drive</td><td>3× N20 gear motor w/ encoder</td><td class="num">$15–24</td></tr>
+      <tr><td>C</td><td>Drive</td><td>2× DRV8833 dual driver</td><td class="num">$4–8</td></tr>
+      <tr><td>C</td><td>Drive</td><td>3× 48 mm omniwheel</td><td class="num">$12–25</td></tr>
+      <tr><td>C</td><td>Eyes</td><td>VL53L5CX ToF breakout <span class="dim">— the depth eye of the mono-split pair</span></td><td class="num">$20–30</td></tr>
+      <tr><td>C</td><td>Power</td><td>2× 18650 + holder + 2S BMS + buck <span class="dim">— untethered at last; motor safety stays on the body MCU</span></td><td class="num">$18–30</td></tr>
       <tr><td>C</td><td>Body</td><td>Print order #2 — drive base + dock funnel</td><td class="num">$40–90</td></tr>
-      <tr class="hl"><td class="us">C</td><td class="us" colspan="2">Stage C total — it glides</td><td class="num us">$115–217</td></tr>
-      <tr class="hl"><td class="us">Σ</td><td class="us" colspan="2"><b>All-in, one-time</b></td><td class="num us"><b>$424–750</b></td></tr>
+      <tr class="hl"><td class="us">C</td><td class="us" colspan="2">Stage C total — it glides</td><td class="num us">$109–207</td></tr>
+      <tr class="hl"><td class="us">Σ</td><td class="us" colspan="2"><b>All-in, one-time</b></td><td class="num us"><b>$305–609</b></td></tr>
+      <!-- /kit:table -->
     </table></div>
 
     <button type="button" class="list-toggle" id="shopToggle" aria-expanded="false" aria-controls="shopList">Open as shopping list</button>
@@ -259,61 +270,65 @@
     <div class="shop" id="shopList">
       <p class="note">Same parts, checkable — for actually ordering. <b>Quantities here are order quantities, not build quantities:</b> where the two differ, the extra units are spares and the reason is spelled out on the line. The kit table above prices the build; the cart total below adds the spares on top. Checks are saved in this browser only (nothing sent anywhere). Generated from <code style="font-family:var(--mono);font-size:.85em;">parts.json</code>: run <code style="font-family:var(--mono);font-size:.85em;">node tools/proto-kit/kit.js --shopping-list</code> in the yura repo for a plain-text or <code style="font-family:var(--mono);font-size:.85em;">--json</code> version.</p>
 
+      <!-- kit:shop -->
       <div class="shop-stage">
         <h4>Stage A — Presence blob</h4>
         <ul class="shop-list">
-          <li class="shop-item"><input type="checkbox" id="shop-main-brain"><label for="shop-main-brain"><span class="part-name">Raspberry Pi 5 8 GB + PSU + SD</span> <span class="price">$80–100</span><span class="meta">Main brain — cognition, vision, on-device Whisper STT. PSU must be the 27 W 5 V/5 A class, not a generic 5 V/3 A brick · Raspberry Pi reseller / Adafruit</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-cooler"><label for="shop-cooler"><span class="part-name">Pi 5 active cooler</span> <span class="price">$5–10</span><span class="meta">Main brain — Whisper pegs all four cores and the Pi 5 throttles without it. Duct its exhaust to the belly plate: 10–12 W of waste heat becomes the warmth channel instead of a problem to fight · Raspberry Pi reseller / Adafruit</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-mics"><label for="shop-mics"><span class="part-name">ReSpeaker 2-Mics Pi HAT</span> <span class="price">$15–25</span><span class="meta">Ears — sound direction + wake. Verify the driver builds on your Pi 5 kernel before committing; this board has been the flakiest part of the stack · Seeed Studio / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-gpio-riser"><label for="shop-gpio-riser"><span class="part-name">Stacking GPIO header / breakout</span> <span class="price">$3–6</span><span class="meta">Ears — the HAT occupies the 40-pin header, and I²C, the LED data line, the heater MOSFET and the purr driver all still need pins. Buy the tall one: it also has to clear the active cooler · Adafruit / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-servo-driver"><label for="shop-servo-driver"><span class="part-name">PCA9685 16-ch servo driver</span> <span class="price">$6–9</span><span class="meta">Fronds — off-SoC servo timing. Feed V+ from its own 5 V rail, never the Pi's 5 V pin: servo inrush browns out the SoC · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-body-mcu"><label for="shop-body-mcu"><span class="part-name">ESP32-S3 devkit with OV2640 camera (Freenove ESP32-S3 CAM / XIAO ESP32S3 Sense class)</span> <span class="price">$15–25</span><span class="meta">Body MCU — get the 8 MB PSRAM variant, the camera and audio buffers need it. Two I²S ports, so mic and speaker no longer fight over one bus. The laptop is the brain, over Wi-Fi · Amazon / Seeed</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-mics"><label for="shop-mics"><span class="part-name">2× INMP441 I²S MEMS mic</span> <span class="price">$4–8</span><span class="meta">Ears — two for coarse left/right; stream 16 kHz mono to the laptop (ESPHome i2s_audio or a short UDP sender), where faster-whisper runs · Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-amp"><label for="shop-amp"><span class="part-name">MAX98357 I²S amp</span> <span class="price">$5–8</span><span class="meta">Purr — dropped in August because the Pi's single I²S bus was taken by the mic HAT; the ESP32-S3 has two, so it returns · Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-speaker"><label for="shop-speaker"><span class="part-name">40 mm speaker</span> <span class="price">$4–8</span><span class="meta">Purr — sound layer only, Yura never speaks · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-purr"><label for="shop-purr"><span class="part-name">ERM/LRA vibration motor + driver</span> <span class="price">$6–12</span><span class="meta">Purr — needs its own driver; a bare motor can't hang off a GPIO pin · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-servo-driver"><label for="shop-servo-driver"><span class="part-name">PCA9685 16-ch servo driver</span> <span class="price">$6–9</span><span class="meta">Fronds — I²C 0x40. Feed V+ from the 5 V supply directly, never through the devkit's regulator: servo inrush resets the MCU · Adafruit / Amazon</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-frond-servos"><label for="shop-frond-servos"><span class="part-name">6× sub-micro servo (4–5 g class)</span> <span class="price">$24–48 <span class="spare">+$12–24 spares</span></span><span class="meta">Fronds — build uses 4 (2 fronds × 2 axes; one servo can't drive two axes); order 6 for spares. Sub-micro over MG90S is a fit call: ~¼ the volume and mass, and quieter · Amazon / hobby RC supplier</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-breath-servo"><label for="shop-breath-servo"><span class="part-name">3× MG90S micro servo</span> <span class="price">$3–4 <span class="spare">+$6–8 spares</span></span><span class="meta">Breathing — build uses 1; stays MG90S because it sits deep in the body where volume is free. Order 3: highest duty cycle in the build, it runs whenever Yura is awake · Amazon / Adafruit</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-glow-leds"><label for="shop-glow-leds"><span class="part-name">APA102 / SK9822 strip, 1 m / 60 LED</span> <span class="price">$10–16</span><span class="meta">Glow — SPI clock+data, not bit-banged timing, which sidesteps the Pi 5 RP1 breakage that stops the usual WS2812B libraries. Give each frond its own addressable segment · Adafruit / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-breath-servo"><label for="shop-breath-servo"><span class="part-name">3× MG90S micro servo</span> <span class="price">$3–4 <span class="spare">+$6–8 spares</span></span><span class="meta">Breathing — build uses 1; order 3: highest duty cycle in the build, it runs whenever Yura is awake · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-glow-leds"><label for="shop-glow-leds"><span class="part-name">APA102 / SK9822 strip, 1 m / 60 LED</span> <span class="price">$10–16</span><span class="meta">Glow — SPI clock + data. The ESP32 drives WS2812B fine too (RMT), but APA102 is already chosen and has no timing to get wrong · Adafruit / Amazon</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-glow-fiber"><label for="shop-glow-fiber"><span class="part-name">3 mm side-glow fiber optic, 2 m</span> <span class="price">$8–14</span><span class="meta">Glow — inside the frond stems; leave a service loop at the root so the gimbal can move without stressing the fiber · Amazon / craft &amp; lighting supplier</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-touch-ic"><label for="shop-touch-ic"><span class="part-name">MPR121 capacitive breakout</span> <span class="price">$6–10</span><span class="meta">Touch — I²C 0x5A, no clash with the PCA9685 at 0x40 · Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-touch-fabric"><label for="shop-touch-fabric"><span class="part-name">Conductive fabric + thread zones</span> <span class="price">$8–15</span><span class="meta">Touch — under the pelt · Adafruit / fabric store</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-purr"><label for="shop-purr"><span class="part-name">ERM/LRA vibration motor + driver</span> <span class="price">$6–12</span><span class="meta">Purr — needs its own driver; a bare motor can't hang off a GPIO pin · Adafruit / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-audio"><label for="shop-audio"><span class="part-name">40 mm speaker</span> <span class="price">$4–8</span><span class="meta">Purr — sound layer only, Yura never speaks. The MAX98357 was dropped: the mic HAT already carries a codec and speaker out, and both want the Pi's single I²S bus. Verify your HAT revision has the speaker connector · Adafruit / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-power-a"><label for="shop-power-a"><span class="part-name">5 V/5 A supply — mains USB-C PD</span> <span class="price">$0–30</span><span class="meta">Power — $0 if a suitable one is in the drawer. Stage A doesn't move, so mains is simpler and unlimited; most PD banks only give 5 V/3 A and many auto-shut-off at the low draw an idle pet presents · Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-power-a"><label for="shop-power-a"><span class="part-name">5 V / 3 A USB supply</span> <span class="price">$0–10</span><span class="meta">Power — $0 if one is in the drawer. Stage A doesn't move, so mains; the Pi's 27 W brick is no longer needed · drawer / Amazon</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-body-foam"><label for="shop-body-foam"><span class="part-name">Foam ball or gutted plush + servo mounts</span> <span class="price">$10–25</span><span class="meta">Body — a 150–160 mm foam ball or a gutted plush, hot glue, 3 mm ply or popsicle-stick servo mounts. The shell is printed after the blob passes the gate (Stage A′) · craft store</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-pelt"><label for="shop-pelt"><span class="part-name">Faux fur + zipper + notions, hand-sewn</span> <span class="price">$20–35</span><span class="meta">Pelt — the first zip-off pelt test · fabric store / Amazon</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-print-a"><label for="shop-print-a"><span class="part-name">Print order #1 — shell (MJF PA12) + frond stems (TPU 95A) + gimbals</span> <span class="price">$40–90</span><span class="meta">Body — batch variants into one order, shipping dominates. Hold this one: there is no CAD yet, and the stack layout has to be resolved first · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-misc"><label for="shop-misc"><span class="part-name">Wiring, JST kit, standoffs, magnets, heat-shrink</span> <span class="price">$15–25</span><span class="meta">Build · Amazon</span></label></li>
         </ul>
       </div>
-
       <div class="shop-stage">
-        <h4>Stage A+ — Active warmth <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted);font-weight:400;">· don't order unless passive warmth fails</span></h4>
+        <h4>Stage A′ — Shell print <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted);font-weight:400;">· order only after Stage A passes</span></h4>
         <ul class="shop-list">
-          <li class="shop-item"><input type="checkbox" id="shop-warmth"><label for="shop-warmth"><span class="part-name">Heater film + ADS1115 + NTC + logic-level MOSFET + 60 °C thermal fuse</span> <span class="price">$18–30</span><span class="meta">Warmth — deferred: Stage A takes warmth from ducted Pi exhaust instead. If built, the thermal fuse in series is non-negotiable under fur, the Pi has no ADC so the NTC needs the ADS1115, and the MOSFET must be logic-level to switch off 3.3 V GPIO · Amazon / Digi-Key</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-print-a"><label for="shop-print-a"><span class="part-name">Print order #1 — shell set (MJF PA12) + frond stems (TPU 95A) + gimbals</span> <span class="price">$40–90</span><span class="meta">Body — batch variants into one order, shipping dominates. Only after the Stage A gate; CAD is the task between A and A′. Reserve the flat belly cavity for A+ · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
         </ul>
       </div>
-
+      <div class="shop-stage">
+        <h4>Stage A+ — Active warmth <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted);font-weight:400;">· don't order unless a cold creature fails the gate</span></h4>
+        <ul class="shop-list">
+          <li class="shop-item"><input type="checkbox" id="shop-warmth"><label for="shop-warmth"><span class="part-name">Heater film + NTC + logic-level MOSFET + 60 °C thermal fuse</span> <span class="price">$12–20</span><span class="meta">Warmth — deferred: only if the Stage A gate says a cold creature doesn't read as alive. Thermal fuse in series is non-negotiable under fur; the MOSFET must be logic-level for 3.3 V GPIO; the S3's ADC reads the NTC · Amazon / Digi-Key</span></label></li>
+        </ul>
+      </div>
       <div class="shop-stage">
         <h4>Stage B — Comprehension</h4>
         <ul class="shop-list">
-          <li class="shop-item"><input type="checkbox" id="shop-eye-cam"><label for="shop-eye-cam"><span class="part-name">Pi Camera Module 3 Wide</span> <span class="price">$35–40</span><span class="meta">Eyes — the camera eye of the mono-split pair · Raspberry Pi reseller / Adafruit</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-cam-cable"><label for="shop-cam-cable"><span class="part-name">Pi 5 camera cable (22-pin to 15-pin)</span> <span class="price">$3–6</span><span class="meta">Eyes — the Pi 5 uses a narrower connector than the module ships for; without this the camera simply will not plug in · Raspberry Pi reseller / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-webcam"><label for="shop-webcam"><span class="part-name">USB webcam on the laptop (fallback)</span> <span class="price">$0–20</span><span class="meta">Eyes — only if the on-board OV2640 stills aren't good enough for face recognition on the laptop; a $15 720p webcam is · drawer / Amazon</span></label></li>
         </ul>
       </div>
-
       <div class="shop-stage">
         <h4>Stage C — Glide</h4>
         <ul class="shop-list">
-          <li class="shop-item"><input type="checkbox" id="shop-reflex-mcu"><label for="shop-reflex-mcu"><span class="part-name">ESP32 devkit</span> <span class="price">$6–10</span><span class="meta">Instinct MCU — reflexes + motor safety, mirrors the two-brain split · Amazon / Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-drive"><label for="shop-drive"><span class="part-name">3× N20 gear motor w/ encoder</span> <span class="price">$15–24</span><span class="meta">Drive · Pololu / Amazon</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-motor-driver"><label for="shop-motor-driver"><span class="part-name">2× DRV8833 dual driver</span> <span class="price">$4–8</span><span class="meta">Drive · Adafruit / Pololu</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-wheels"><label for="shop-wheels"><span class="part-name">3× 48 mm omniwheel</span> <span class="price">$12–25</span><span class="meta">Drive · Amazon / robotics supplier</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-tof"><label for="shop-tof"><span class="part-name">VL53L5CX ToF breakout</span> <span class="price">$20–30</span><span class="meta">Eyes — the depth eye of the mono-split pair · Adafruit / SparkFun</span></label></li>
-          <li class="shop-item"><input type="checkbox" id="shop-power-c"><label for="shop-power-c"><span class="part-name">2× 18650 + holder + 2S BMS + buck</span> <span class="price">$18–30</span><span class="meta">Power — untethered at last · Amazon / Adafruit</span></label></li>
+          <li class="shop-item"><input type="checkbox" id="shop-power-c"><label for="shop-power-c"><span class="part-name">2× 18650 + holder + 2S BMS + buck</span> <span class="price">$18–30</span><span class="meta">Power — untethered at last. Protected cells and a real 2S BMS; motor enable stays owned by the body MCU · Amazon / Adafruit</span></label></li>
           <li class="shop-item"><input type="checkbox" id="shop-print-c"><label for="shop-print-c"><span class="part-name">Print order #2 — drive base + dock funnel</span> <span class="price">$40–90</span><span class="meta">Body · JLC3DP / PCBWay / Craftcloud / Xometry</span></label></li>
         </ul>
       </div>
+      <!-- /kit:shop -->
 
       <div class="shop-total">
-        <span>Build cost <span class="num">$424–750</span></span>
+        <!-- kit:totals -->
+        <span>Build cost <span class="num">$305–609</span></span>
         <span>Spares <span class="num">+$18–32</span></span>
-        <span class="cart">Cart total <b class="num">$442–782</b></span>
+        <span class="cart">Cart total <b class="num">$323–641</b></span>
+        <!-- /kit:totals -->
       </div>
 
       <p class="shop-progress" id="shopProgress"></p>
@@ -332,7 +347,7 @@
       <li class="up"><b>MJF PA12 nylon — every rigid part.</b><span>Shell halves, frond bases, servo mounts, dock funnel. No supports, tough, slightly flexible, matte surface that disappears under fur. Keep walls ≥ 1.2 mm; design snap-fits rather than tiny screws.</span></li>
       <li class="up"><b>TPU 95A — everything compliant.</b><span>Frond stems (they must go limp when grabbed — the market page's Lovot-patent caution, solved in material), wheel-skirt flaps, bumper ring.</span></li>
       <li><b>Shipping dominates the cost.</b><span>A print run is $40–90 mostly because of freight — so batch: order two frond-stem stiffness variants and a spare shell in the same box, not three separate orders.</span></li>
-      <li><b>There is no CAD yet.</b><span>Stage A's real first task is modeling the shell (Fusion 360 personal-use or Onshape free tier both fine; STLs live in the yura repo under <code style="font-family:var(--mono);font-size:.85em;">tools/proto-kit/cad/</code>). Model around the exploded stack on the <a href="/ailab/pet/components/">Components page</a>.</span></li>
+      <li class="up"><b>Print after the gate, not before it.</b><span>Stage A runs on a foam body; the shell is Stage A′, ordered once the blob has passed and the servos have shown where they want to sit. CAD then (Fusion 360 personal-use or Onshape free tier both fine; STLs live in the yura repo under <code style="font-family:var(--mono);font-size:.85em;">tools/proto-kit/cad/</code>), modeled around the exploded stack on the <a href="/ailab/pet/components/">Components page</a> and what the foam taught.</span></li>
     </ul>
   </section>
 
@@ -340,22 +355,23 @@
     <p class="sec-label"><b>05</b> · Safety</p>
     <h2>Non-negotiables under fur</h2>
     <ul class="risks">
-      <li><b>If the heater is ever built, it gets a thermal fuse in series.</b><span>A resistive film wrapped in synthetic fur is the one genuinely dangerous part of this build — which is why Stage A takes warmth from ducted Pi exhaust and the heater is deferred to Stage A+. If A+ happens: 60 °C one-shot fuse, thermistor-limited PWM, and firmware that fails cold, in that order — the fuse is the layer that works when the software doesn't.</span></li>
-      <li><b>No loose lithium until Stage C.</b><span>Stage A/B run from a mains USB-C PD supply — no battery in the build at all, zero charging risk. Protected 18650s + a real 2S BMS only when the wheels demand it.</span></li>
+      <li><b>If the heater is ever built, it gets a thermal fuse in series.</b><span>A resistive film wrapped in synthetic fur is the one genuinely dangerous part of this build — which is why the heater is deferred to Stage A+ and Stage A is judged cold. If A+ happens: 60 °C one-shot fuse, thermistor-limited PWM, and firmware that fails cold, in that order — the fuse is the layer that works when the software doesn't.</span></li>
+      <li><b>No loose lithium until Stage C.</b><span>Stage A/B run from a mains 5 V USB supply — no battery in the build at all, zero charging risk. Protected 18650s + a real 2S BMS only when the wheels demand it.</span></li>
       <li><b>Strain-relief everything.</b><span>The pelt zips on and off; every harness gets a JST connector and a glued anchor point, or the second unzip rips a solder joint.</span></li>
     </ul>
     <p class="note"><b>Design rule carried over:</b> eyes stay small, dark, half-hidden domes even in the prototype — it will be judged by the same "mystery is the moat" rule as the product. And the fronds are the signature: spend the TPU iterations there.</p>
   </section>
 
-  <p class="foot">YURA · prototype plan v0.1 · July 2026 · <a href="/ailab/pet/">back to concept →</a></p>
+  <p class="foot">YURA · prototype plan v0.2 · September 2026 · <a href="/ailab/pet/">back to concept →</a></p>
 </div>
 
 <script>
 (function(){
-  // v4: warmth moved to the deferred A+ stage. Bumping the key clears
+  // v5: Pi 5 stack replaced by an ESP32-S3 body (2026-09-04); part keys
+  // changed. Bumping the key clears
   // stale checks rather than silently re-attaching them to parts that
   // have changed stage or meaning.
-  var STORE_KEY = 'yura-proto-shopping-list-v4';
+  var STORE_KEY = 'yura-proto-shopping-list-v5';
   var toggle = document.getElementById('shopToggle');
   var list = document.getElementById('shopList');
   var items = Array.prototype.slice.call(list.querySelectorAll('.shop-item'));
