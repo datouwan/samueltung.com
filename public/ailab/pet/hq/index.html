@@ -149,7 +149,7 @@
   </nav>
 
   <header>
-    <p class="kicker">Yura · HQ · updated 2026-09-04</p>
+    <p class="kicker">Yura · HQ · updated 2026-09-06</p>
     <h1>The road to a real product</h1>
     <p class="dek">This is the operating hub for Yura as a startup, not a portfolio piece. One page that always answers three questions: <strong>where are we, what's the next gate, and what's blocking it.</strong> Refreshed by the <code style="font-family:var(--mono);font-size:.85em;">/yura-report</code> tool from the project's memory and repo activity.</p>
   </header>
@@ -220,6 +220,7 @@
     <h2>Open decisions</h2>
     <div class="tbl"><table>
       <tr><th>Decision</th><th>Options on the table</th><th>Needed by</th></tr>
+      <tr class="hl"><td class="us">Phase 2 compute</td><td>System-on-Module carrier board — Radxa CM5 / Pi CM5 / QCS6490 SoM plus a pre-certified Wi-Fi module, carrier designed here in KiCad, ~$3–8k over two spins including bench gear — vs a custom SoC mainboard by a contract EE ($30–80k). A SoM runs $60–120/unit against the $40–58 compute budget: fine for the alphas and a first run, but it eats $20–60 of gross per unit at volume, which is the only thing that would justify the custom board. The read: electronics are self-fundable through Phase 2; molds, tooling and certification ($15–40k EMC/safety) are what would need outside money, and they come after the alphas prove retention</td><td>Phase 2 board spin — after the Stage A/B gates</td></tr>
       <tr><td>Product name</td><td>"Yura" is a working name — keep, or run a naming + trademark screen before anything public</td><td>before waitlist (T3) goes live</td></tr>
       <tr><td>Stage A shell CAD</td><td>Who models it and in what (Fusion 360 personal vs Onshape free). The shell is now Stage A′, printed <i>after</i> the foam blob passes its gate, so this is no longer the blocker on the electronics order — STLs to live in yura repo <code style="font-family:var(--mono);font-size:.85em;">tools/proto-kit/cad/</code></td><td>after the Stage A gate (A′)</td></tr>
       <tr><td>Frond actuator for production</td><td>Stage A commits to root-mounted sub-micro gimbals because they are far easier to debug on a first build; tendon drive from the body cavity fixes head volume, centre of gravity and servo noise together and is the likely production answer — decide from what Stage A teaches</td><td>Phase 2</td></tr>
@@ -230,6 +231,9 @@
     <p class="sec-label"><b>05</b> · Log</p>
     <h2>Milestone log</h2>
     <ul class="log">
+      <li><time>2026-09-06</time><span><b>Pin budget resolved.</b> Body MCU named: Freenove ESP32-S3-WROOM CAM, N8R8. Running one I²S peripheral full-duplex (mics and amp share the clocks at 16 kHz) drops the need from 12 GPIO to 10 against 11 clean free pins — the octal PSRAM owns 35–37, ADC2 is dead under Wi-Fi so the A+ thermistor sits on GPIO 1, strapping pins untouched. Full pin map in the yura repo's <code style="font-family:var(--mono);font-size:.85em;">PREFLIGHT.md</code>; three [VERIFY] items remain for the board in hand.</span></li>
+      <li><time>2026-09-06</time><span><b>Own-board path costed for self-funding.</b> Asked: can we design our own board without a design house or a raise? Yes, through Phase 2 — a carrier PCB for the devkit after the Stage A gate ($100–200), a System-on-Module carrier board for the alphas ($3–8k, two spins), formal EMC and safety at Phase 3 ($15–40k). A custom SoC mainboard is a $30–80k contract-engineer job, needed only if SoM unit cost squeezes the margin. Logged as the <b>Phase 2 compute</b> decision above.</span></li>
+      <li><time>2026-09-06</time><span><b>Apps committed to the yura repo.</b> <code style="font-family:var(--mono);font-size:.85em;">apps/</code> — the three.js pelt lab, the Blender scene with its renders, and the turntable pipeline behind yurapp (~32 MB) — had sat untracked since July.</span></li>
       <li><time>2026-09-04</time><span><b>Stage A re-planned: ESP32-S3 body, laptop brain; the Pi 5 leaves the home build; proto-kit v0.3.</b> Samuel accepted the proposal. Every hard problem in the Pi 5 stack — cooler, 27 W supply, HAT/cooler clash, ReSpeaker driver risk, RP1 LED bug, no ADC, single I²S — traced back to running Whisper on the creature, which Stage A never does; Whisper and the Claude call move to the laptop and the S3 runs reflexes plus a mood state machine. Print order #1 becomes <b>Stage A′</b>, after the foam-body gate, so CAD stops blocking the order. Totals from the tool: Stage A $253–457 → <b>$144–272</b>, A′ +$40–90, A+ $18–30 → $12–20, B $38–46 → $0–20, C $115–217 → $109–207; <b>all-in $424–750 → $305–609</b>. Two open decisions (ReSpeaker on Pi 5, cooler vs HAT) close as moot. The yura repo's proto-kit is v0.3 (v0.2 was already on origin): <code style="font-family:var(--mono);font-size:.85em;">kit.js --sync</code> now generates the Proto page tables, and <code style="font-family:var(--mono);font-size:.85em;">PREFLIGHT.md</code> exists for the ESP32 stack. Next action: order the Stage A parts and write down the gate protocol.</span></li>
       <li><time>2026-09-04</time><span><b>Review pass after seven weeks away — nothing ordered, $0 spent, CAD still the blocker.</b> Dossier re-audited against the live site: six cross-page drifts fixed (HQ Stage A price, Proto Stage B price and stale safety text, battery 5,000 → 4,000 mAh with the roaming claim re-stated as 4–5 h, Lovot price ~$3,000 on both pages, Concept §09 path rewritten to the home-build plan). A false alarm along the way: the local yura clone looked stuck at v0, but v0.2 and PREFLIGHT.md were on GitHub all along — the clone was behind; corrected the same day. Opened the Stage A brain decision (ESP32 + laptop vs Pi 5) with a written proposal — accepted the same day (entry above).</span></li>
       <li><time>2026-08-05</time><span><b>Active warmth deferred to Stage A+.</b> The Pi 5 dissipates 10–12 W under Whisper, the same order as the heater film, so the cooler’s exhaust ducts to a belly plate instead. Removes the build’s only dangerous subsystem plus the ADS1115, MOSFET, NTC and fuse; peak power ~50 W → ~28 W. Stage A $271–487 → <b>$253–457</b>, all-in unchanged at $424–750. Cost: Pi heat tracks CPU load, not mood, so Stage A tests warmth as baseline, not expression.</span></li>
@@ -252,7 +256,7 @@
     </ul>
   </section>
 
-  <p class="foot">YURA · HQ · refreshed 2026-09-04 by /yura-report · <a href="/ailab/pet/">concept →</a></p>
+  <p class="foot">YURA · HQ · refreshed 2026-09-06 by /yura-report · <a href="/ailab/pet/">concept →</a></p>
 </div>
 
 </body>

@@ -127,6 +127,22 @@ until a tool actually measures it.
 
 Append-only; date + one line each. Newest first.
 
+- 2026-09-06 — **Pin budget resolved; own-board path costed; apps committed.** (1) Body
+  MCU named: **Freenove ESP32-S3-WROOM CAM, N8R8**. One I²S peripheral run full-duplex
+  (mics + amp share BCLK/WS at 16 kHz) drops the need from 12 GPIO to **10 against 11
+  clean free pins** — octal PSRAM owns 35–37, ADC2 is dead under Wi-Fi so the A+ NTC sits
+  on GPIO 1 (ADC1), strapping pins 0/3/45/46 untouched; XIAO S3 Sense ruled out (too few
+  pins for two mics). Pin map in `yura/tools/proto-kit/PREFLIGHT.md`, three [VERIFY]
+  items left for the board in hand. (2) Samuel asked whether we can design our own board
+  without a design house or a raise. **Yes through Phase 2:** carrier PCB for the devkit
+  after the Stage A gate ($100–200) → System-on-Module carrier for the alphas (Radxa/Pi
+  CM5 or QCS6490 SoM + certified Wi-Fi module, KiCad here, ~$3–8k over two spins incl.
+  bench gear) → formal EMC/safety at Phase 3 ($15–40k). A custom SoC mainboard is a
+  $30–80k contract-EE job, justified only when the SoM's $60–120/unit squeezes the $40–58
+  compute budget at volume. What needs outside money is molds, tooling and certification,
+  after the alphas prove retention. Tracked on HQ as the **Phase 2 compute** decision.
+  (3) The yura repo's `apps/` (yura-3d, yura-blender, yura-web; ~32 MB) committed after
+  sitting untracked since July.
 - 2026-09-04 — **Stage A re-planned onto an ESP32-S3 body with the laptop as brain; the Pi 5
   leaves the home build; proto-kit v0.3.** Samuel accepted `PROPOSAL-stage-a-esp32.md`.
   Rationale: every hard problem in the Pi 5 stack (cooler, 27 W supply, HAT/cooler clash,
