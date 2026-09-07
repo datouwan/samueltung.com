@@ -270,6 +270,7 @@
         <div class="log-item now"><div class="log-date">Sep 3</div><div class="log-body"><b>275 human ratings recalibrate the ranker.</b> The author rated 275 queued meshes in the viewer as an artist would: 159 good, 104 bad, 12 ok. The automatic tiers were directional but weak (tier A 69% good, tier B 25%). What actually separates good from bad in the ratings: charts per thousand faces (median 5 vs 15), seam length, seam smoothness, texture coverage, and the number of texture sheets: a model split across six or more sheets is almost always rated bad. The fragmentation filter was right (80% of its rejects are bad) but the distortion filter was too strict (40% of its rejects are good), so it was relaxed. A logistic scorer fitted on the ratings replaces the hand-tuned weights: cross-validated accuracy 0.72 against a 0.60 majority baseline. Re-ranked: tier A is now 82% good, B 59%, C 22%; the accepted set grows to 15,612, with 5,402 in the stricter tier A. The benchmark itself is only 55 to 80% good per category, so a rated-good subset will become the tighter target.</div></div>
         <div class="log-item"><div class="log-date">Sep 4</div><div class="log-body"><b>Purity versus volume, settled.</b> Two overnight runs on the local 4090 against the same 203 benchmark meshes (the 240 minus 28 rated bad and 9 duplicates). v4, trained only on the stricter new tier A+B (20% fewer meshes), lost to v3: win rate 0.44 against 0.49, with animals and vehicles falling. v5, trained on every accepted mesh with the ratings weighting the sampler, matches v3 at 0.50 with the fewest charts so far (25 against the artist's 30.5 at equal stretch), and lifts clothing from 0.44 to 0.59. Three different data mixes now land at the same 0.5, so the 1.9M-parameter edge classifier is at its ceiling; the next gain has to come from the model or the unwrap pipeline, not the data. Also learned: a 400k-edge batch on the larger set grew to 21.5 GB of VRAM and spilled into shared memory, turning 90-second epochs into 2.5-hour ones until the batch was halved.</div></div>
         <div class="log-item now"><div class="log-date">Sep 4</div><div class="log-body"><b>Pipeline day: 0.50 to 0.82 without retraining.</b> Of v5's 100 benchmark losses, 86 were "too many charts" (median 1.8× the artist) and 35 involved failed flattening. Three changes: (1) a merge pass that folds each small chart into the neighbour it shares the longest seam with, accepted only if the merged chart is still a disk, flattens under a stretch budget, and neither flips nor folds onto itself; (2) two bug fixes found by tracing stretch stage by stage: xatlas in pack-only mode was silently rescaling and re-welding vertices inside charts (5 to 10% of faces deformed on most meshes), so an in-house bitmap packer replaced it, and charts with sliver triangles blew up the solver and now fall back to a projection; (3) each mesh picks its own threshold, the fewest charts under stretch 1.3. On the 203-mesh benchmark: 15 charts against the artist's 31 at stretch 1.04, win rate 0.82, zero stretch losses left. Table below.</div></div>
+        <div class="log-item now"><div class="log-date">Sep 6</div><div class="log-body"><b>Generated meshes: the pelt problem, and a fix.</b> An export command (<code>autouv unwrap in.glb out.glb</code>) made it possible to run real Meshy and Hunyuan3D outputs. Every creature came out as one island: the per-edge model finds almost no confident seams on smooth, dense, uniformly triangulated surfaces. Retraining with 5,000 dense, smoothed copies of artist meshes (model v6) lifted the artist benchmark from 0.82 to 0.84 and did nothing for generated meshes. A spectral segmentation that uses the seam probabilities as cut costs did: on 24 Meshy assets, pelts went from 22 to 0, the largest island from 100% to 36% of the surface, stretch from 1.18 to 1.10. New section below. Also new: a layout-rating queue in the viewer, so the model's own layouts get judged, not only the artists'.</div></div>
       </div>
     </div>
   </section>
@@ -410,6 +411,43 @@
         <figcaption><b>Organic · coffee cup, 11,668 faces.</b> Artist 33 charts · model 11 / 7 · xatlas 30. <span class="cred">"Coffee Cup" by noodlepirate, <a href="https://sketchfab.com/3d-models/fb19ffdaa20143209ad2aa35ddfbaed1">Sketchfab</a>, CC BY.</span></figcaption></figure>
       <figure class="cmp"><img src="/autouv/img/bench/compare-6-77b76102.png" alt="Flying saucer: artist 78 charts, model 45 and 24, xatlas 137" loading="lazy">
         <figcaption><b>Vehicle · flying saucer, 2,364 faces.</b> Artist 78 charts · model 45 / 24 · xatlas 137, stretch about 1.02. The one category where the model is usually behind the artist; this is one of its better cases. <span class="cred">"Slappy Saucer!" by borgur, <a href="https://sketchfab.com/3d-models/77b761022e6740a6947323796f83ffca">Sketchfab</a>, CC BY.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section id="generated">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">The real target · AI-generated meshes</p>
+          <h2>From one pelt to parts, without retraining.</h2>
+        </div>
+        <p>Meshy and Hunyuan3D outputs are dense, smooth, uniformly triangulated, and have no UVs. The per-edge model, trained on low-poly artist meshes, marks 0.1 to 2 percent of their edges as confident seams (1 to 7 percent on artist meshes) and every creature came out as a single island. Retraining with 5,000 dense, smoothed copies of artist meshes (seams transferred exactly) helped on artist meshes and barely on these. What worked was a global step: a spectral segmentation of the mesh whose cut costs come from the seam probabilities. The model's weak evidence at limb junctions is enough for the eigenvectors to close the loops it could not close on its own.</p>
+      </div>
+      <div class="card table-scroll">
+        <table>
+          <thead><tr><th>24 Meshy assets, medians</th><th class="num">Per-edge pipeline</th><th class="num">Hybrid (spectral fallback)</th></tr></thead>
+          <tbody>
+            <tr><td>Single-island "pelts" (largest island over 90%)</td><td class="num">22 of 24</td><td class="num"><b>0 of 24</b></td></tr>
+            <tr><td>Charts</td><td class="num">1</td><td class="num">6</td></tr>
+            <tr><td>Largest island, share of surface</td><td class="num">1.00</td><td class="num"><b>0.36</b></td></tr>
+            <tr><td>Stretch (L2)</td><td class="num">1.18</td><td class="num"><b>1.10</b></td></tr>
+            <tr><td>Coverage</td><td class="num">0.58</td><td class="num">0.64</td></tr>
+            <tr><td colspan="3" style="color:var(--muted);font-size:.82rem">Hybrid: the per-edge pipeline first; when its best layout is a pelt, spectral parts (k = 8, boundaries relaxed by majority vote, pieces under 15% of the surface merged back, relief ceiling 2.0) replace it if they are no longer a pelt and stay under stretch 1.5. 22 of 24 assets took the parts path. Assets: <a href="https://huggingface.co/datasets/tfnn/MESHY.AI_363_PLY_Creatures_Labelled">Meshy creatures</a> (CC0) and <a href="https://huggingface.co/datasets/tfnn/MESHY.AI_800_GLB_3D-Assets_Categorised_and_Labelled">800 Meshy GLB assets</a> (MIT).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <figure class="cmp"><img src="/autouv/img/gen/alien1-pelt.png" alt="Meshy alien: one island" loading="lazy">
+        <figcaption><b>Before: a Meshy alien, 40k faces, per-edge pipeline.</b> One island, stretch 1.29. Limbs squashed inside a blob; lowering the threshold only added specks at the fingertips.</figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/gen/alien1-parts.png" alt="Meshy alien: head, torso, arms, legs as islands" loading="lazy">
+        <figcaption><b>After: the same alien through spectral parts.</b> Head, torso, two arms, two legs, seven islands.</figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/gen/dog_schnauzer.png" alt="Meshy dog: five islands" loading="lazy">
+        <figcaption><b>Dog, hybrid with v6.</b> Head, body, legs, tail; stretch 1.23, the worst of the 24.</figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/gen/bunny_hq_pink.png" alt="Meshy bunny: four islands" loading="lazy">
+        <figcaption><b>Bunny.</b> Four islands, largest 32% of the surface, stretch 1.11. Before the parts-path fixes the merge pass folded this back into two charts and the pelt was kept.</figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/gen/jacket1.png" alt="Meshy jacket: nine islands" loading="lazy">
+        <figcaption><b>Jacket.</b> Nine islands at stretch 1.06. The cut lines are straight-ish after smoothing but not yet where a tailor would put them; snapping part boundaries to the cheapest seam path is the next step.</figcaption></figure>
+      <figure class="cmp"><img src="/autouv/img/gen/elf4.png" alt="Meshy elf: six islands" loading="lazy">
+        <figcaption><b>Elf.</b> Six islands, stretch 1.09.</figcaption></figure>
     </div>
   </section>
 
