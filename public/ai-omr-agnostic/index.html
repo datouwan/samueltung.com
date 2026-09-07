@@ -225,7 +225,7 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Living roadmap · updated 2026-08-28 · G6 passed: p3k-s3 is the checkpoint of record</p>
+          <p class="eyebrow">Living roadmap · updated 2026-09-06 · G7 passed: p4h-s1 is the checkpoint of record on a sealed one-shot package</p>
           <h2>Milestones with gates, not vibes.</h2>
         </div>
         <p>Every milestone exits through a predeclared gate. Filled dots are sealed results;
@@ -360,10 +360,10 @@
             on the <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
           </div>
         </div>
-        <div class="tl-item now">
+        <div class="tl-item done">
           <span class="tl-dot"></span><span class="tl-phase">P4.1</span>
           <div class="tl-body">
-            <h3>Chord symbols — recognized, not ignored (in training)</h3>
+            <h3>Chord symbols — recognized, not ignored (campaigns closed)</h3>
             <p>The songbook pages in the live probe carry chord symbols the reader had no word
             for. Decision: recognize them. Score IR gained a chord symbol per event (root,
             accidental, 14 kinds, slash bass), 30 append-only tokens, MusicXML
@@ -378,9 +378,34 @@
             songbook photo — half of the printed symbols exactly, four in five roots — and beats
             the record on the grand-staff gate, but it also invents symbols from the titles, tempo
             words and lyrics the taller canvas now shows it, so it is not the checkpoint of record.
-            Next campaign: words are not chords. The read, photo next to render, is on the
-            <a href="/ai-omr-agnostic/progress/">progress page</a>; a sealed lead-sheet package
-            closes the claim.</p>
+            Nine more campaigns followed (p4c–p4k: words-are-not-chords clutter, book symbol
+            typography, slurs as targets on a deeper canvas, a songbook-layout corpus, dense
+            harmony, a clutter ablation, clutter as a dose). Two invisible-target bugs were found
+            and fixed on the way — distractor slur ink drawn over slur targets, slurs under low
+            notes clipped off the canvas — and the trade-off was mapped: text clutter in training
+            is what makes the reader drop real symbols (no clutter: 13 of 24 on the songbook page,
+            but symbols invented from titles); the dose moved both numbers the right way without
+            clearing the whole bar. Decision (2026-09-06): stop here, carry 5–11 of 24 as the
+            state, and move to the read side. The reads are on the
+            <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
+          </div>
+        </div>
+        <div class="tl-item now">
+          <span class="tl-dot"></span><span class="tl-phase">P4.6</span>
+          <div class="tl-body">
+            <h3>Record sealed on G7; songbook systems assembled on the read side</h3>
+            <p>p4h-s1 — the seed trained on the songbook-layout corpus with slurs and the deep
+            canvas — became the checkpoint of record on a re-read of the consumed G6 photos. That
+            is not the project's standard, so a seventh package was built, the checkpoint pinned by
+            SHA-256, twenty pages photographed and evaluated exactly once:
+            <strong>G7 — structure 60/60, staff TER 0.0013, 116/120 staves exact, 60/60 assembled
+            with zero repairs</strong>. Best sealed result the project has produced; all four
+            misses are one dropped tie across a barline on a bass staff. The read side now
+            assembles a treble vocal line found above a braced pair into one three-staff songbook
+            system — chord symbols on the vocal line, repairs flagged per measure — and prints it;
+            the same rule covers a violin part over piano. H1, a sealed package of forty such
+            systems with book-style symbols and lyrics, is printed and awaits the camera:
+            notation gated, symbols reported as the baseline to beat.</p>
           </div>
         </div>
         <div class="tl-item">
