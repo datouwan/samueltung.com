@@ -110,7 +110,7 @@
 
   <header>
     <div class="wrap">
-      <p class="eyebrow">Progress on real pages · living page · latest read 2026-09-07</p>
+      <p class="eyebrow">Progress on real pages · living page · latest read 2026-09-12</p>
       <h1>The photo on the left. What the recognizer <em>read</em> on the right.</h1>
       <p class="lede">The sealed benchmarks (B1, C1, G1–G5) measure printed synthetic pages under controlled
       claims. This page is the other half: ordinary iPhone photos of real sheet music, run through the
@@ -123,6 +123,43 @@
   </header>
 
   <nav class="tabs" id="tabs" aria-label="probe dates"></nav>
+
+  <section class="probe reread" id="probe-2026-09-12-live2" data-date="2026-09-12" data-kind="reread">
+    <div class="wrap">
+      <p class="eyebrow">Re-read · 2026-09-12 · live2 — photos captured 2026-09-09</p>
+      <h2>live2 re-read: tuplets landed, continuation systems on grand staves (p6b-s1 vs p6a-s2 vs the record)</h2>
+      <p class="meta">The live2 pages (captured 2026-09-09) read again with <span class="pill cand">p6b-s1 — candidate</span> and <span class="pill cand">p6a-s2 — candidate</span> and <span class="pill record">p4h-s1 — checkpoint of record</span>. Same photos, new checkpoint: compare with the 2026-09-09 tab.</p>
+      <div class="tablewrap"><table>
+        <tr><th>page</th><th>staves found</th><th>p6b-s1</th><th>p6a-s2</th><th>p4h-s1</th><th>what limits it</th></tr>
+        <tr><td class="pg" data-label="page">Piano page (grand staff)</td><td class="num" data-label="staves found">10</td><td class="num" data-label="p6b-s1"><span class="c">9 of 10 parsed</span><span class="c dim">4 grand</span><span class="c dim">21/24 flagged</span></td><td class="num" data-label="p6a-s2"><span class="c">9 of 10 parsed</span><span class="c dim">4 grand</span><span class="c dim">18/24 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">5 of 10 parsed</span><span class="c dim">4 grand</span><span class="c dim">12/24 flagged</span></td><td class="note" data-label="what limits it">Piano, measure 37 on: the print carries no time signature and no tuplet numbers — six beamed notes per group, fingerings the only digits. p6a-s2 invented a different meter on each of the ten systems; p6b-s1 (grand crops trained 35% meterless) invents one. Pitches of the first system match the transcription note for note; what is wrong is the rhythm reading (sextuplets in 3/4), which no single photo can decide. Ground truth: p6b-s1 2 of 24 measures, 2 silent errors; p6a-s2 4 of 24, 5 silent.</td></tr>
+        <tr><td class="pg" data-label="page">Violin page (single staff)</td><td class="num" data-label="staves found">11</td><td class="num" data-label="p6b-s1"><span class="c">11 of 11 parsed</span><span class="c dim">9/71 flagged</span></td><td class="num" data-label="p6a-s2"><span class="c">11 of 11 parsed</span><span class="c dim">6/71 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">10 of 11 parsed</span><span class="c dim">6/72 flagged</span></td><td class="note" data-label="what limits it">Violin: printed 3/4 on the first system and at the section change only; both p6a-s2 and p6b-s1 print it exactly there and stay silent elsewhere. Ground truth: p6a-s2 61 of 71 measures (9 silent errors), p6b-s1 58 of 71 (10 silent) — the p6a seeds span 58–65 of 95 on these two pages, so the difference is inside seed noise; the lost measures are single-token slips (an unpaired tuplet start, a spurious flat, a tie).</td></tr>
+      </table></div>
+      <div class="page">
+        <h3>Piano page (grand staff)</h3>
+        <p class="cap">photo captured 2026-09-09</p>
+        <div class="cmp">
+          <div class="lbl">p6b-s1 · candidate <span>9 of 10 parsed · 4 grand assembled · 21/24 measures flagged · 2026-09-11 02:44</span></div>
+          <img src="img/live2-2026-09-12/live2-page-01-p6b-s1.jpg" alt="Piano page (grand staff): photo and OMR render, p6b-s1" loading="lazy">
+          <div class="lbl">p6a-s2 · candidate <span>9 of 10 parsed · 4 grand assembled · 18/24 measures flagged · 2026-09-10 07:38</span></div>
+          <img src="img/live2-2026-09-12/live2-page-01-p6a-s2.jpg" alt="Piano page (grand staff): photo and OMR render, p6a-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>5 of 10 parsed · 4 grand assembled · 12/24 measures flagged · 2026-09-09 10:49</span></div>
+          <img src="img/live2-2026-09-12/live2-page-01-p4h-s1.jpg" alt="Piano page (grand staff): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Violin page (single staff)</h3>
+        <p class="cap">photo captured 2026-09-09</p>
+        <div class="cmp">
+          <div class="lbl">p6b-s1 · candidate <span>11 of 11 parsed · 9/71 measures flagged · 2026-09-11 02:44</span></div>
+          <img src="img/live2-2026-09-12/live2-page-02-p6b-s1.jpg" alt="Violin page (single staff): photo and OMR render, p6b-s1" loading="lazy">
+          <div class="lbl">p6a-s2 · candidate <span>11 of 11 parsed · 6/71 measures flagged · 2026-09-10 07:39</span></div>
+          <img src="img/live2-2026-09-12/live2-page-02-p6a-s2.jpg" alt="Violin page (single staff): photo and OMR render, p6a-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>10 of 11 parsed · 6/72 measures flagged · 2026-09-09 10:50</span></div>
+          <img src="img/live2-2026-09-12/live2-page-02-p4h-s1.jpg" alt="Violin page (single staff): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section class="probe reread" id="probe-2026-09-07-live1" data-date="2026-09-07" data-kind="reread">
     <div class="wrap">

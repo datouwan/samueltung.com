@@ -416,7 +416,7 @@
             that gap is engraving realism — the book's faces and spacing — not photos.</p>
           </div>
         </div>
-        <div class="tl-item now">
+        <div class="tl-item">
           <span class="tl-dot"></span><span class="tl-phase">P5.1</span>
           <div class="tl-body">
             <h3>Dynamics and tempo text — read, printed, measured</h3>
@@ -436,14 +436,40 @@
             checkpoint of record. Reads on the <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
           </div>
         </div>
+        <div class="tl-item now">
+          <span class="tl-dot"></span><span class="tl-phase">P6</span>
+          <div class="tl-body">
+            <h3>Tuplets, the sf family, and what a mid-piece piano page really prints</h3>
+            <p>Triplets and sextuplets became targets (sounding versus printed durations, MusicXML
+            time-modification, beaming by printed shape), the sf/sfp/fp/fz dynamics and the
+            articulation marks as ignore-ink. Three seeds (two on Nebius for $13, one local):
+            <strong>in distribution the tuplet work is finished — 440 of 440 groups read, none
+            invented.</strong> The photographed piano page that motivated it did not move, and the
+            photo says why: from measure 37 on it prints <em>no tuplet numbers and no time
+            signature</em> — six beamed notes per group, fingerings the only digits. The
+            transcriber knew the sextuplets from earlier pages; no single photo can. The same
+            page exposed a training gap: every grand-staff crop we had ever rendered printed a
+            meter, so on a meterless grand page each seed invented its own (0 to 10 of 10
+            systems). Continuation systems now run at 35% on the grand crops, and a fine-tune
+            from the worst seed (p6b, $2.52) invents 0–1 — while the metronome digits jumped
+            from 177 to 259 of 357 lines exact, the sign that 40 epochs had not converged. The
+            violin page reads 58–61 of 71 measures across seeds, the piano page 2–4 of 24; two
+            pages cannot rank seeds, and the record stays p4h-s1. Reads on the
+            <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
+          </div>
+        </div>
         <div class="tl-item">
           <span class="tl-dot"></span><span class="tl-phase">NEXT</span>
           <div class="tl-body">
-            <h3>Notation scope on real books</h3>
-            <p>The live probes say where the wall is after chord symbols: several voices on one
-            staff (songbook and romantic piano writing), tuplets and grace notes. Representation
-            and generator work — Score IR v3 — measured the same way: unsealed live pages first,
-            a sealed package to close.</p>
+            <h3>A longer campaign with the rest of the vocabulary; context across pages</h3>
+            <p>Decided 2026-09-12: the next full training runs longer than 40 epochs with
+            continuation systems on, and adds 8va spans, hairpins and grace notes as targets
+            (the live2 piano page misses its 8va at measures 43–48). Separately, the product
+            answer — teachers photograph page by page and assemble a piece — means the meter,
+            the established tuplet grouping and open 8va spans can be carried across the pages
+            of one piece at assembly time; that is read-side work, and the only way the unmarked
+            sextuplets get decided. More ground-truth pages (live3) so that seeds can be ranked;
+            several voices on one staff remains the wall after that.</p>
           </div>
         </div>
         <div class="tl-item">
