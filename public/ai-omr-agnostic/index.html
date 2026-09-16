@@ -436,7 +436,7 @@
             checkpoint of record. Reads on the <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
           </div>
         </div>
-        <div class="tl-item now">
+        <div class="tl-item">
           <span class="tl-dot"></span><span class="tl-phase">P6</span>
           <div class="tl-body">
             <h3>Tuplets, the sf family, and what a mid-piece piano page really prints</h3>
@@ -458,18 +458,40 @@
             <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
           </div>
         </div>
+        <div class="tl-item now">
+          <span class="tl-dot"></span><span class="tl-phase">P7</span>
+          <div class="tl-body">
+            <h3>Hairpins and grace notes as targets; the longer campaign</h3>
+            <p>Crescendo and diminuendo wedges and grace notes joined the vocabulary (559 → 649
+            tokens, append-only), with a dense 8va slice for exposure, and the first campaign
+            trained 60 epochs instead of 40 — two seeds on the local 4090, no cloud. The extra
+            epochs paid: validation kept improving to epoch 55–58, the metronome digits reached
+            315–319 of 357 lines exact (259 before). <strong>p7a-s2 is the working checkpoint:</strong>
+            the sealed G7 package passes with 114 of 120 staves exact and all 60 systems clean,
+            C1 reads 118 of 120, tuplets 460 of 460, grace notes 0.998 with none invented, and
+            the live2 violin page reads 62 of 71 measures with nothing flagged — the best read of
+            that page so far. The record stays p4h-s1 (116 on G7). Hairpins are the residue: in
+            distribution 0.97–0.99, but on the photographed page the model sees the wedge open
+            and never its tip — our renders end a hairpin at a note's onset, books end it in the
+            air after the last note — so the next round moves the tip in the render and exposes
+            it again. The evaluation also found two read-side faults that had been costing whole
+            systems on real pages (a final double bar read as two barlines; a second unmatched
+            slur end on a continuation line), both fixed. Reads on the
+            <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
+          </div>
+        </div>
         <div class="tl-item">
           <span class="tl-dot"></span><span class="tl-phase">NEXT</span>
           <div class="tl-body">
-            <h3>A longer campaign with the rest of the vocabulary; context across pages</h3>
-            <p>Decided 2026-09-12: the next full training runs longer than 40 epochs with
-            continuation systems on, and adds 8va spans, hairpins and grace notes as targets
-            (the live2 piano page misses its 8va at measures 43–48). Separately, the product
-            answer — teachers photograph page by page and assemble a piece — means the meter,
-            the established tuplet grouping and open 8va spans can be carried across the pages
-            of one piece at assembly time; that is read-side work, and the only way the unmarked
-            sextuplets get decided. More ground-truth pages (live3) so that seeds can be ranked;
-            several voices on one staff remains the wall after that.</p>
+            <h3>Hairpin tips the way books print them; context across pages</h3>
+            <p>Decided 2026-09-16: the wedge tip moves past the last covered note in the render
+            (books end it in the air, our engraving ended it on the next note's column) and a
+            fine-tune from p7a-s2 exposes it again. Then the product answer — teachers
+            photograph page by page and assemble a piece — means the meter, the established
+            tuplet grouping and open 8va spans can be carried across the pages of one piece at
+            assembly time; that is read-side work, and the only way the unmarked sextuplets of
+            the live2 piano page get decided. More ground-truth pages (live3) so that seeds can
+            be ranked; several voices on one staff remains the wall after that.</p>
           </div>
         </div>
         <div class="tl-item">
