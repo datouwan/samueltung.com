@@ -476,17 +476,22 @@
             air after the last note — so the next round moves the tip in the render and exposes
             it again. The evaluation also found two read-side faults that had been costing whole
             systems on real pages (a final double bar read as two barlines; a second unmatched
-            slur end on a continuation line), both fixed. Reads on the
-            <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
+            slur end on a continuation line), both fixed. <strong>Done the same day:</strong> the
+            render now ends 70% of hairpins in the air after the last covered note, and a
+            fine-tune of p7a-s2 (p7b-s1, 15 epochs, 5 h local) learned it — dense-probe recall
+            0.85 → 0.97, two of the violin page's five hairpins read as complete pairs where
+            before none were, every sealed number unchanged. p7b-s1 is the working checkpoint.
+            Reads on the <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
           </div>
         </div>
         <div class="tl-item">
           <span class="tl-dot"></span><span class="tl-phase">NEXT</span>
           <div class="tl-body">
-            <h3>Hairpin tips the way books print them; context across pages</h3>
-            <p>Decided 2026-09-16: the wedge tip moves past the last covered note in the render
-            (books end it in the air, our engraving ended it on the next note's column) and a
-            fine-tune from p7a-s2 exposes it again. Then the product answer — teachers
+            <h3>Reading what the print leaves out: bar-length reasoning, context across pages</h3>
+            <p>Decided 2026-09-16: the live2 piano page prints neither a meter nor tuplet numbers,
+            and a musician decides its sextuplets from the bar length — six beamed notes per beat
+            that would overflow any meter by exactly half. That reasoning moves into the read
+            side next (measure-fill inference over a whole page), no model change needed. Then the product answer — teachers
             photograph page by page and assemble a piece — means the meter, the established
             tuplet grouping and open 8va spans can be carried across the pages of one piece at
             assembly time; that is read-side work, and the only way the unmarked sextuplets of
