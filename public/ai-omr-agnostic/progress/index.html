@@ -127,6 +127,147 @@
   <section class="probe reread" id="probe-2026-09-19-live3" data-date="2026-09-19" data-kind="reread">
     <div class="wrap">
       <p class="eyebrow">Re-read · 2026-09-19 · live3 — photos captured 2026-09-18</p>
+      <h2>live3 with a second ground truth (372 measures): p8c-s1 (working checkpoint) 293 · p8b-s2 285 · record 178</h2>
+      <p class="meta">The live3 pages (captured 2026-09-18) read again with <span class="pill cand">p8c-s1 — candidate</span> and <span class="pill cand">p8b-s2 — candidate</span> and <span class="pill record">p4h-s1 — checkpoint of record</span>. Same photos, new checkpoint: compare with the 2026-09-18 tab.</p>
+      <div class="tablewrap"><table>
+        <tr><th>page</th><th>staves found</th><th>p8c-s1</th><th>p8b-s2</th><th>p4h-s1</th><th>what limits it</th></tr>
+        <tr><td class="pg" data-label="page">Piano — Tchaikovsky, Album for the Young Op.39 No.5 &quot;March of the Wooden Soldiers&quot; p.22, mm.1-21 (first page, 2/4, both hands in treble; photo upside down)</td><td class="num" data-label="staves found">8</td><td class="num" data-label="p8c-s1"><span class="c">8 of 8 parsed</span><span class="c dim">4 grand</span><span class="c dim">3/43 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">8 of 8 parsed</span><span class="c dim">4 grand</span><span class="c dim">3/44 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">8 of 8 parsed</span><span class="c dim">4 grand</span><span class="c dim">2/43 flagged</span></td><td class="note" data-label="what limits it">Tchaikovsky march (piano, both hands in treble, shot upside down — turned automatically): ground truth 41/42 measures (record p4h-s1 39)</td></tr>
+        <tr><td class="pg" data-label="page">Piano — Mozart, Rondeau (Allegro, 6/8, D major) p.139, first page: grace notes, clef changes, an ossia staff, pencil marks</td><td class="num" data-label="staves found">12</td><td class="num" data-label="p8c-s1"><span class="c">12 of 12 parsed</span><span class="c dim">6 grand</span><span class="c dim">17/66 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">12 of 12 parsed</span><span class="c dim">6 grand</span><span class="c dim">23/66 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">11 of 12 parsed</span><span class="c dim">6 grand</span><span class="c dim">53/63 flagged</span></td><td class="note" data-label="what limits it">Mozart Rondeau first page: ground truth 42/66 (p8b-s2 40, record 3). Every checkpoint used to read this book&#x27;s filled quarter noteheads as half notes — photographed ink is patchy gray inside the head; fixed by training on mottled ink plus a second read through an ink curve. Left: grace-note groups, clef changes, six two-voice bars</td></tr>
+        <tr><td class="pg" data-label="page">Piano — Mozart, Rondeau p.141 (mid-piece, no meter printed; trills, cresc.)</td><td class="num" data-label="staves found">12</td><td class="num" data-label="p8c-s1"><span class="c">12 of 12 parsed</span><span class="c dim">6 grand</span><span class="c dim">2/54 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">12 of 12 parsed</span><span class="c dim">6 grand</span><span class="c dim">12/55 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">12 of 12 parsed</span><span class="c dim">6 grand</span><span class="c dim">41/50 flagged</span></td><td class="note" data-label="what limits it">Mozart Rondeau p.141 (no meter printed): ground truth 52/54 (record 2) — the same notehead fix; this page has no two-voice bar at all</td></tr>
+        <tr><td class="pg" data-label="page">Piano — Mozart, Rondeau p.142 (mid-piece; grace notes, ossia staff; no 8va / hairpins on it)</td><td class="num" data-label="staves found">12</td><td class="num" data-label="p8c-s1"><span class="c">11 of 12 parsed</span><span class="c dim">6 grand</span><span class="c dim">15/60 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">11 of 12 parsed</span><span class="c dim">6 grand</span><span class="c dim">20/60 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">11 of 12 parsed</span><span class="c dim">5 grand</span><span class="c dim">49/59 flagged</span></td><td class="note" data-label="what limits it">Mozart Rondeau p.142: 10-11 of 12 staves parse; no ground truth for this page</td></tr>
+        <tr><td class="pg" data-label="page">Piano — &quot;Idyll&quot; (Book Two No.7, Allegretto 3/4, A major): two voices per hand, hairpins, printed sextuplets, heavy pencil marks (baseline: expected to fail)</td><td class="num" data-label="staves found">10</td><td class="num" data-label="p8c-s1"><span class="c">10 of 10 parsed</span><span class="c dim">5 grand</span><span class="c dim">25/51 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">10 of 10 parsed</span><span class="c dim">5 grand</span><span class="c dim">27/52 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">10 of 10 parsed</span><span class="c dim">5 grand</span><span class="c dim">29/51 flagged</span></td><td class="note" data-label="what limits it">Idyll — two voices per hand in 15 of its 26 bars: ground truth 26/52; the one-voice token language cannot write those bars yet (next model item)</td></tr>
+        <tr><td class="pg" data-label="page">Violin — Handel, Sonata in A major HWV 361 p.16: Larghetto mm.1-22 + Allegro mm.1-18 (first page; trills, grace notes, hairpins, fingerings)</td><td class="num" data-label="staves found">10</td><td class="num" data-label="p8c-s1"><span class="c">10 of 10 parsed</span><span class="c dim">6/40 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">10 of 10 parsed</span><span class="c dim">4/40 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">10 of 10 parsed</span><span class="c dim">4/40 flagged</span></td><td class="note" data-label="what limits it">Handel Larghetto + Allegro (violin): ground truth 39/40 (p7a-s2 30, record 28) — the Larghetto&#x27;s 32nd-note figures are read since P8</td></tr>
+        <tr><td class="pg" data-label="page">Violin — Handel HWV 361 p.17: Allegro mm.19-52 (mid-piece; double stops / two voices in mm.33-48)</td><td class="num" data-label="staves found">10</td><td class="num" data-label="p8c-s1"><span class="c">10 of 10 parsed</span><span class="c dim">4/34 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">10 of 10 parsed</span><span class="c dim">5/34 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">10 of 10 parsed</span><span class="c dim">6/34 flagged</span></td><td class="note" data-label="what limits it">Handel Allegro mm.19-52: ground truth 23/34 — ten bars are two-voice double stops</td></tr>
+        <tr><td class="pg" data-label="page">Violin — Handel HWV 361 p.19: mm.16-37 (mid-piece; repeat barlines, dynamics, one hairpin, staccato)</td><td class="num" data-label="staves found">7</td><td class="num" data-label="p8c-s1"><span class="c">7 of 7 parsed</span><span class="c dim">2/21 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">7 of 7 parsed</span><span class="c dim">4/22 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">7 of 7 parsed</span><span class="c dim">0/21 flagged</span></td><td class="note" data-label="what limits it">Handel p.19 (no meter printed, 12/8 inferred from the bar lengths): ground truth 17/21; the misses are double-stemmed two-voice bars</td></tr>
+        <tr><td class="pg" data-label="page">Violin + piano score — Seitz, Concerto No.2 in G Op.13, 3rd mvt p.8, mm.1-20 (first page; 6/8, tremolo in the left hand, accents, fermatas)</td><td class="num" data-label="staves found">12</td><td class="num" data-label="p8c-s1"><span class="c">12 of 12 parsed</span><span class="c dim">4 grand</span><span class="c dim">19/63 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">12 of 12 parsed</span><span class="c dim">4 grand</span><span class="c dim">17/63 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">11 of 12 parsed</span><span class="c dim">4 grand</span><span class="c dim">25/62 flagged</span></td><td class="note" data-label="what limits it">Seitz concerto, violin + piano: ground truth 53/63 (record 42); left: tremolo bars, a fermata bar, dense double stops</td></tr>
+        <tr><td class="pg" data-label="page">Violin + piano score — Seitz Op.13, 3rd mvt p.9, mm.21-39 (mid-piece; page held up at an angle, background clutter)</td><td class="num" data-label="staves found">12</td><td class="num" data-label="p8c-s1"><span class="c">12 of 12 parsed</span><span class="c dim">4 grand</span><span class="c dim">5/57 flagged</span></td><td class="num" data-label="p8b-s2"><span class="c">12 of 12 parsed</span><span class="c dim">4 grand</span><span class="c dim">4/57 flagged</span></td><td class="num" data-label="p4h-s1"><span class="c">9 of 12 parsed</span><span class="c dim">4 grand</span><span class="c dim">12/57 flagged</span></td><td class="note" data-label="what limits it">Seitz p.9, held up at an angle with clutter behind it: 12/12 staves parsed, 4 systems assembled</td></tr>
+      </table></div>
+      <div class="page">
+        <h3>Piano — Tchaikovsky, Album for the Young Op.39 No.5 &quot;March of the Wooden Soldiers&quot; p.22, mm.1-21 (first page, 2/4, both hands in treble; photo upside down)</h3>
+        <p class="cap">photo captured 2026-09-18</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>8 of 8 parsed · 4 grand assembled · 3/43 measures flagged · 2026-09-19 15:08</span></div>
+          <img src="img/live3-2026-09-19/live3-page-01-p8c-s1.jpg" alt="Piano — Tchaikovsky, Album for the Young Op.39 No.5 &quot;March of the Wooden Soldiers&quot; p.22, mm.1-21 (first page, 2/4, both hands in treble; photo upside down): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>8 of 8 parsed · 4 grand assembled · 3/44 measures flagged · 2026-09-19 09:27</span></div>
+          <img src="img/live3-2026-09-19/live3-page-01-p8b-s2.jpg" alt="Piano — Tchaikovsky, Album for the Young Op.39 No.5 &quot;March of the Wooden Soldiers&quot; p.22, mm.1-21 (first page, 2/4, both hands in treble; photo upside down): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>8 of 8 parsed · 4 grand assembled · 2/43 measures flagged · 2026-09-19 09:27</span></div>
+          <img src="img/live3-2026-09-19/live3-page-01-p4h-s1.jpg" alt="Piano — Tchaikovsky, Album for the Young Op.39 No.5 &quot;March of the Wooden Soldiers&quot; p.22, mm.1-21 (first page, 2/4, both hands in treble; photo upside down): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Piano — Mozart, Rondeau (Allegro, 6/8, D major) p.139, first page: grace notes, clef changes, an ossia staff, pencil marks</h3>
+        <p class="cap">photo captured 2026-09-18</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>12 of 12 parsed · 6 grand assembled · 17/66 measures flagged · 2026-09-19 15:08</span></div>
+          <img src="img/live3-2026-09-19/live3-page-02-p8c-s1.jpg" alt="Piano — Mozart, Rondeau (Allegro, 6/8, D major) p.139, first page: grace notes, clef changes, an ossia staff, pencil marks: photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>12 of 12 parsed · 6 grand assembled · 23/66 measures flagged · 2026-09-19 09:28</span></div>
+          <img src="img/live3-2026-09-19/live3-page-02-p8b-s2.jpg" alt="Piano — Mozart, Rondeau (Allegro, 6/8, D major) p.139, first page: grace notes, clef changes, an ossia staff, pencil marks: photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>11 of 12 parsed · 6 grand assembled · 53/63 measures flagged · 2026-09-19 09:28</span></div>
+          <img src="img/live3-2026-09-19/live3-page-02-p4h-s1.jpg" alt="Piano — Mozart, Rondeau (Allegro, 6/8, D major) p.139, first page: grace notes, clef changes, an ossia staff, pencil marks: photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Piano — Mozart, Rondeau p.141 (mid-piece, no meter printed; trills, cresc.)</h3>
+        <p class="cap">photo captured 2026-09-18</p><p>This page looked like the multi-voice wall and was not: it has no two-voice bar, and still only 21 of its 54 measures were right. A table of duration confusions showed every checkpoint reading quarters as half notes with full confidence. The noteheads are plainly filled — but in a phone photo of this book the ink inside a head is patchy gray, and that read as hollow. Binarizing the image fixed every one. Two fixes are now in: the reader looks at each staff twice (as photographed, and through an ink curve) and keeps the read whose bars add up; and the training images got mottled ink, so the plain read is right by itself on all but 11 of 105 staves. 21 -&gt; 52 of 54.</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>12 of 12 parsed · 6 grand assembled · 2/54 measures flagged · 2026-09-19 15:08</span></div>
+          <img src="img/live3-2026-09-19/live3-page-03-p8c-s1.jpg" alt="Piano — Mozart, Rondeau p.141 (mid-piece, no meter printed; trills, cresc.): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>12 of 12 parsed · 6 grand assembled · 12/55 measures flagged · 2026-09-19 09:28</span></div>
+          <img src="img/live3-2026-09-19/live3-page-03-p8b-s2.jpg" alt="Piano — Mozart, Rondeau p.141 (mid-piece, no meter printed; trills, cresc.): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>12 of 12 parsed · 6 grand assembled · 41/50 measures flagged · 2026-09-19 09:28</span></div>
+          <img src="img/live3-2026-09-19/live3-page-03-p4h-s1.jpg" alt="Piano — Mozart, Rondeau p.141 (mid-piece, no meter printed; trills, cresc.): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Piano — Mozart, Rondeau p.142 (mid-piece; grace notes, ossia staff; no 8va / hairpins on it)</h3>
+        <p class="cap">photo captured 2026-09-18</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>11 of 12 parsed · 6 grand assembled · 15/60 measures flagged · 2026-09-19 15:08</span></div>
+          <img src="img/live3-2026-09-19/live3-page-04-p8c-s1.jpg" alt="Piano — Mozart, Rondeau p.142 (mid-piece; grace notes, ossia staff; no 8va / hairpins on it): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>11 of 12 parsed · 6 grand assembled · 20/60 measures flagged · 2026-09-19 09:28</span></div>
+          <img src="img/live3-2026-09-19/live3-page-04-p8b-s2.jpg" alt="Piano — Mozart, Rondeau p.142 (mid-piece; grace notes, ossia staff; no 8va / hairpins on it): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>11 of 12 parsed · 5 grand assembled · 49/59 measures flagged · 2026-09-19 09:28</span></div>
+          <img src="img/live3-2026-09-19/live3-page-04-p4h-s1.jpg" alt="Piano — Mozart, Rondeau p.142 (mid-piece; grace notes, ossia staff; no 8va / hairpins on it): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Piano — &quot;Idyll&quot; (Book Two No.7, Allegretto 3/4, A major): two voices per hand, hairpins, printed sextuplets, heavy pencil marks (baseline: expected to fail)</h3>
+        <p class="cap">photo captured 2026-09-18</p><p>What is left is the real wall: two voices on one staff, stems up and down with different rhythms. 31 of the truth&#x27;s measures are like that, and they cannot be right until the token language can say it. That work has started: a two-voice bar is written left to right, with one new token joining the notes that start together.</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>10 of 10 parsed · 5 grand assembled · 25/51 measures flagged · 2026-09-19 15:08</span></div>
+          <img src="img/live3-2026-09-19/live3-page-05-p8c-s1.jpg" alt="Piano — &quot;Idyll&quot; (Book Two No.7, Allegretto 3/4, A major): two voices per hand, hairpins, printed sextuplets, heavy pencil marks (baseline: expected to fail): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>10 of 10 parsed · 5 grand assembled · 27/52 measures flagged · 2026-09-19 09:28</span></div>
+          <img src="img/live3-2026-09-19/live3-page-05-p8b-s2.jpg" alt="Piano — &quot;Idyll&quot; (Book Two No.7, Allegretto 3/4, A major): two voices per hand, hairpins, printed sextuplets, heavy pencil marks (baseline: expected to fail): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>10 of 10 parsed · 5 grand assembled · 29/51 measures flagged · 2026-09-19 09:29</span></div>
+          <img src="img/live3-2026-09-19/live3-page-05-p4h-s1.jpg" alt="Piano — &quot;Idyll&quot; (Book Two No.7, Allegretto 3/4, A major): two voices per hand, hairpins, printed sextuplets, heavy pencil marks (baseline: expected to fail): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Violin — Handel, Sonata in A major HWV 361 p.16: Larghetto mm.1-22 + Allegro mm.1-18 (first page; trills, grace notes, hairpins, fingerings)</h3>
+        <p class="cap">photo captured 2026-09-18</p><p>This page is why 32nd notes became a target. The Larghetto&#x27;s dotted-sixteenth + 32nd figures were outside the vocabulary and every checkpoint lost the same nine measures silently. With P8 (vocabulary 693, a 3% dose, tremolo slashes and thick photographed beams taught as ink) the page reads 39 of 40 measures.</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>10 of 10 parsed · 6/40 measures flagged · 2026-09-19 15:08</span></div>
+          <img src="img/live3-2026-09-19/live3-page-06-p8c-s1.jpg" alt="Violin — Handel, Sonata in A major HWV 361 p.16: Larghetto mm.1-22 + Allegro mm.1-18 (first page; trills, grace notes, hairpins, fingerings): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>10 of 10 parsed · 4/40 measures flagged · 2026-09-19 09:29</span></div>
+          <img src="img/live3-2026-09-19/live3-page-06-p8b-s2.jpg" alt="Violin — Handel, Sonata in A major HWV 361 p.16: Larghetto mm.1-22 + Allegro mm.1-18 (first page; trills, grace notes, hairpins, fingerings): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>10 of 10 parsed · 4/40 measures flagged · 2026-09-19 09:29</span></div>
+          <img src="img/live3-2026-09-19/live3-page-06-p4h-s1.jpg" alt="Violin — Handel, Sonata in A major HWV 361 p.16: Larghetto mm.1-22 + Allegro mm.1-18 (first page; trills, grace notes, hairpins, fingerings): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Violin — Handel HWV 361 p.17: Allegro mm.19-52 (mid-piece; double stops / two voices in mm.33-48)</h3>
+        <p class="cap">photo captured 2026-09-18</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>10 of 10 parsed · 4/34 measures flagged · 2026-09-19 15:09</span></div>
+          <img src="img/live3-2026-09-19/live3-page-07-p8c-s1.jpg" alt="Violin — Handel HWV 361 p.17: Allegro mm.19-52 (mid-piece; double stops / two voices in mm.33-48): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>10 of 10 parsed · 5/34 measures flagged · 2026-09-19 09:29</span></div>
+          <img src="img/live3-2026-09-19/live3-page-07-p8b-s2.jpg" alt="Violin — Handel HWV 361 p.17: Allegro mm.19-52 (mid-piece; double stops / two voices in mm.33-48): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>10 of 10 parsed · 6/34 measures flagged · 2026-09-19 09:29</span></div>
+          <img src="img/live3-2026-09-19/live3-page-07-p4h-s1.jpg" alt="Violin — Handel HWV 361 p.17: Allegro mm.19-52 (mid-piece; double stops / two voices in mm.33-48): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Violin — Handel HWV 361 p.19: mm.16-37 (mid-piece; repeat barlines, dynamics, one hairpin, staccato)</h3>
+        <p class="cap">photo captured 2026-09-18</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>7 of 7 parsed · 2/21 measures flagged · 2026-09-19 15:09</span></div>
+          <img src="img/live3-2026-09-19/live3-page-08-p8c-s1.jpg" alt="Violin — Handel HWV 361 p.19: mm.16-37 (mid-piece; repeat barlines, dynamics, one hairpin, staccato): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>7 of 7 parsed · 4/22 measures flagged · 2026-09-19 09:29</span></div>
+          <img src="img/live3-2026-09-19/live3-page-08-p8b-s2.jpg" alt="Violin — Handel HWV 361 p.19: mm.16-37 (mid-piece; repeat barlines, dynamics, one hairpin, staccato): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>7 of 7 parsed · 0/21 measures flagged · 2026-09-19 09:29</span></div>
+          <img src="img/live3-2026-09-19/live3-page-08-p4h-s1.jpg" alt="Violin — Handel HWV 361 p.19: mm.16-37 (mid-piece; repeat barlines, dynamics, one hairpin, staccato): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Violin + piano score — Seitz, Concerto No.2 in G Op.13, 3rd mvt p.8, mm.1-20 (first page; 6/8, tremolo in the left hand, accents, fermatas)</h3>
+        <p class="cap">photo captured 2026-09-18</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>12 of 12 parsed · 4 grand assembled · 19/63 measures flagged · 2026-09-19 15:09</span></div>
+          <img src="img/live3-2026-09-19/live3-page-09-p8c-s1.jpg" alt="Violin + piano score — Seitz, Concerto No.2 in G Op.13, 3rd mvt p.8, mm.1-20 (first page; 6/8, tremolo in the left hand, accents, fermatas): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>12 of 12 parsed · 4 grand assembled · 17/63 measures flagged · 2026-09-19 09:29</span></div>
+          <img src="img/live3-2026-09-19/live3-page-09-p8b-s2.jpg" alt="Violin + piano score — Seitz, Concerto No.2 in G Op.13, 3rd mvt p.8, mm.1-20 (first page; 6/8, tremolo in the left hand, accents, fermatas): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>11 of 12 parsed · 4 grand assembled · 25/62 measures flagged · 2026-09-19 09:30</span></div>
+          <img src="img/live3-2026-09-19/live3-page-09-p4h-s1.jpg" alt="Violin + piano score — Seitz, Concerto No.2 in G Op.13, 3rd mvt p.8, mm.1-20 (first page; 6/8, tremolo in the left hand, accents, fermatas): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+      <div class="page">
+        <h3>Violin + piano score — Seitz Op.13, 3rd mvt p.9, mm.21-39 (mid-piece; page held up at an angle, background clutter)</h3>
+        <p class="cap">photo captured 2026-09-18</p>
+        <div class="cmp">
+          <div class="lbl">p8c-s1 · candidate <span>12 of 12 parsed · 4 grand assembled · 5/57 measures flagged · 2026-09-19 15:09</span></div>
+          <img src="img/live3-2026-09-19/live3-page-10-p8c-s1.jpg" alt="Violin + piano score — Seitz Op.13, 3rd mvt p.9, mm.21-39 (mid-piece; page held up at an angle, background clutter): photo and OMR render, p8c-s1" loading="lazy">
+          <div class="lbl">p8b-s2 · candidate <span>12 of 12 parsed · 4 grand assembled · 4/57 measures flagged · 2026-09-19 09:30</span></div>
+          <img src="img/live3-2026-09-19/live3-page-10-p8b-s2.jpg" alt="Violin + piano score — Seitz Op.13, 3rd mvt p.9, mm.21-39 (mid-piece; page held up at an angle, background clutter): photo and OMR render, p8b-s2" loading="lazy">
+          <div class="lbl">p4h-s1 · record <span>9 of 12 parsed · 4 grand assembled · 12/57 measures flagged · 2026-09-19 09:30</span></div>
+          <img src="img/live3-2026-09-19/live3-page-10-p4h-s1.jpg" alt="Violin + piano score — Seitz Op.13, 3rd mvt p.9, mm.21-39 (mid-piece; page held up at an angle, background clutter): photo and OMR render, p4h-s1" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="probe reread" id="probe-2026-09-19-live3" data-date="2026-09-19" data-kind="reread">
+    <div class="wrap">
+      <p class="eyebrow">Re-read · 2026-09-19 · live3 — photos captured 2026-09-18</p>
       <h2>live3: piano, violin, violin + piano — p8b-s2 (working checkpoint) vs p7a-s2 vs the record; ground truth 149 / 166 measures (90%)</h2>
       <p class="meta">The live3 pages (captured 2026-09-18) read again with <span class="pill cand">p8b-s2 — candidate</span> and <span class="pill cand">p7a-s2 — candidate</span> and <span class="pill record">p4h-s1 — checkpoint of record</span>. Same photos, new checkpoint: compare with the 2026-09-18 tab.</p>
       <div class="tablewrap"><table>

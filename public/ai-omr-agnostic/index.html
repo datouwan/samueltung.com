@@ -500,7 +500,7 @@
             an accidental one step off its notehead used to discard a whole staff; now it is repaired
             and flagged. Ground truth: live3 137 → <strong>149 of 166 measures (90%)</strong>, silent
             errors 15 → 9; live2 72 of 95; sealed G7 still passes (115 of 120 staves exact).
-            <strong>p8b-s2 is the working checkpoint</strong>; the checkpoint of record stays p4h-s1.
+            <strong>p8b-s2 became the working checkpoint</strong>; the checkpoint of record stays p4h-s1. <strong>Update 09-19:</strong> a second ground truth (372 measures in all) showed that the Mozart pages were failing on something else entirely — filled noteheads that photograph patchy gray were read as half notes. The reader now looks at every staff twice (as shot, and through an ink curve) and keeps the read whose bars add up, and a fine-tune on mottled ink (p8c-s1, local, free) made the plain read right by itself: live3 293 of 372 (record 178), live2 73 of 95, and sealed G7 at 116 of 120 staves / 60 clean pages — the record's own numbers. <strong>p8c-s1 is the working checkpoint.</strong>
             Cloud note: this training is bound by CPU-side photo augmentation, so an RTX PRO 6000
             and an H100 run it at the same speed — the cheaper card wins. Reads on the
             <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
