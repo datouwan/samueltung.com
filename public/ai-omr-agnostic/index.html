@@ -485,18 +485,36 @@
           </div>
         </div>
         <div class="tl-item">
+          <span class="tl-dot"></span><span class="tl-phase">P8</span>
+          <div class="tl-body">
+            <h3>live3 ground truth, 32nd notes, and the read-side repairs that were worth more than a retrain</h3>
+            <p>2026-09-16 to 09-19. Bar-length reasoning landed on the read side (unmarked sextuplets
+            and a missing meter are decided from how the bars fill). Ten new phone pages of the three
+            target layouts — piano, violin, violin + piano — got an eye-checked ground truth of 166
+            measures. It named the next gaps: a Handel Larghetto lost nine measures to 32nd notes,
+            silently. 32nd notes became a target (vocabulary 693); the first fine-tune learned them
+            (0.995) but moved the model's beam-count habit on real photos — eighths read as
+            sixteenths, tremolo half notes as 32nds. Two answers, both kept: a second fine-tune with
+            a 3% dose, tremolo slashes and thick photographed beams taught as ink (p8b), and — after
+            counting <em>why</em> staves failed — read-side repairs: a chord read with two durations or
+            an accidental one step off its notehead used to discard a whole staff; now it is repaired
+            and flagged. Ground truth: live3 137 → <strong>149 of 166 measures (90%)</strong>, silent
+            errors 15 → 9; live2 72 of 95; sealed G7 still passes (115 of 120 staves exact).
+            <strong>p8b-s2 is the working checkpoint</strong>; the checkpoint of record stays p4h-s1.
+            Cloud note: this training is bound by CPU-side photo augmentation, so an RTX PRO 6000
+            and an H100 run it at the same speed — the cheaper card wins. Reads on the
+            <a href="/ai-omr-agnostic/progress/">progress page</a>.</p>
+          </div>
+        </div>
+        <div class="tl-item">
           <span class="tl-dot"></span><span class="tl-phase">NEXT</span>
           <div class="tl-body">
-            <h3>Reading what the print leaves out: bar-length reasoning, context across pages</h3>
-            <p>Decided 2026-09-16: the live2 piano page prints neither a meter nor tuplet numbers,
-            and a musician decides its sextuplets from the bar length — six beamed notes per beat
-            that would overflow any meter by exactly half. That reasoning moves into the read
-            side next (measure-fill inference over a whole page), no model change needed. Then the product answer — teachers
-            photograph page by page and assemble a piece — means the meter, the established
-            tuplet grouping and open 8va spans can be carried across the pages of one piece at
-            assembly time; that is read-side work, and the only way the unmarked sextuplets of
-            the live2 piano page get decided. More ground-truth pages (live3) so that seeds can
-            be ranked; several voices on one staff remains the wall after that.</p>
+            <h3>Several voices on one staff</h3>
+            <p>Decided 2026-09-19. The Mozart and "Idyll" pages of live3 parse almost completely
+            and still cannot be right: two voices on one staff — stems up and down with different
+            rhythms — have no place in a one-voice token language. That is the next model item.
+            Alongside it: carrying meter, tuplet grouping and open 8va spans across the pages of
+            one piece at assembly time, and ties under thick photographed ink.</p>
           </div>
         </div>
         <div class="tl-item">
