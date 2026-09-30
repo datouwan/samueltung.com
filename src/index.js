@@ -13,9 +13,14 @@
 
 import { handleWorldCupApi } from "./worldcup/api.js";
 import { handleTrainMonApi } from "./trainmon/api.js";
+import { handleAiOmrStatusApi, STATUS_API } from "./aiomrstatus/api.js";
 
 // Paths that stay public (no password): project pages and public APIs.
 function isPublicPath(pathname) {
+  // The AI-OMR status page and its data stay behind the site password (spend, editor usage).
+  if (pathname === "/ai-omr/status" || pathname.startsWith("/ai-omr/status/") || pathname === STATUS_API) {
+    return false;
+  }
   return pathname === "/ai-omr"
     || pathname.startsWith("/ai-omr/")
     || pathname === "/ai-omr-agnostic"
@@ -166,6 +171,11 @@ export default {
       return Response.redirect(to.toString(), 301);
     }
 
+    // The status pusher authenticates with its bearer token, not the site password.
+    if (url.pathname === STATUS_API && request.method === "POST") {
+      return handleAiOmrStatusApi(request, env);
+    }
+
     // Gate everything except the public project pages and APIs.
     if (!isPublicPath(url.pathname)) {
       const denied = checkAuth(request, env);
@@ -174,6 +184,9 @@ export default {
 
     const trainApi = await handleTrainMonApi(request, env);
     if (trainApi) return trainApi;
+
+    const statusApi = await handleAiOmrStatusApi(request, env);
+    if (statusApi) return statusApi;
 
     const api = await handleWorldCupApi(request, env, ctx);
     if (api) return api;

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-OMR 開發狀態</title>
+<link rel="icon" href="/ai-omr/favicon.png">
+<style>
+:root{--bg:#faf8f3;--card:#fffdf8;--ink:#15221f;--muted:#5d6a66;--line:#d9d4c8;--accent:#1e6b55;--accent-soft:#bfe7d5;
+  --warn:#8f402d;--warn-soft:#f3d9d1;--run:#2b5a9e;--run-soft:#d6e4f7;--bar:#e8e3d7}
+@media (prefers-color-scheme: dark){:root{--bg:#121716;--card:#1a2120;--ink:#e8ece9;--muted:#9aa7a2;--line:#2e3835;
+  --accent:#7fd1b2;--accent-soft:#1f3b33;--warn:#f0a58f;--warn-soft:#3b2520;--run:#9cc0f0;--run-soft:#1f2c3f;--bar:#2a3331}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC",sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+header h1{font:600 1.7rem/1.2 Georgia,"Noto Serif TC",serif;margin:0 0 6px}
+.meta{color:var(--muted);font-size:.85rem}
+.meta .stale{color:var(--warn);font-weight:700}
+.headline{margin:18px 0 8px;padding:16px 18px;border-radius:14px;background:var(--accent-soft);font-size:1.05rem;font-weight:600}
+.phase{color:var(--muted);font-size:.85rem;margin-bottom:22px}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;margin:16px 0}
+section h2{margin:0 0 4px;font-size:1.1rem}
+section .sub{color:var(--muted);font-size:.82rem;margin:0 0 12px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:.78rem}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.75rem;font-weight:700}
+.pill.run{background:var(--run-soft);color:var(--run)}.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.bar{height:8px;border-radius:99px;background:var(--bar);overflow:hidden;margin-top:4px;min-width:120px}
+.bar i{display:block;height:100%;background:var(--accent)}
+ul{margin:0;padding-left:20px}li{margin:3px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:720px){.grid2{grid-template-columns:1fr}}
+.chips span{display:inline-block;margin:3px 4px 3px 0;padding:3px 9px;border-radius:8px;border:1px solid var(--line);font-size:.8rem}
+.chips.gap span{border-style:dashed;color:var(--muted)}
+.timeline div{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.timeline div:last-child{border-bottom:0}.timeline b{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+.decision{padding:10px 12px;border-left:4px solid var(--warn);background:var(--warn-soft);border-radius:8px;margin:8px 0}
+.empty{color:var(--muted)}
+a{color:var(--accent)}
+.foot{color:var(--muted);font-size:.78rem;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>AI-OMR 開發狀態</h1>
+  <div class="meta" id="meta">載入中…</div>
+</header>
+<div class="headline" id="headline"></div>
+<div class="phase" id="phase"></div>
+
+<section id="decisions-sec"><h2>等你決定的事</h2><div id="decisions"></div></section>
+
+<section>
+  <h2>讀譜準確度</h2>
+  <p class="sub" id="working"></p>
+  <div class="scroll"><table id="scores"></table></div>
+  <p class="sub" style="margin-top:10px">「讀對」＝小節裡每個音的高低和長短都對。「沒被標記的錯」＝讀錯了但程式沒提醒老師，這個數字要壓到 0。
+  「印刷準確度」＝讀對的小節裡，連音符的橫槓（符槓）、弧線（圓滑線、連結線）也都和原譜一樣的比例。
+  G7、C1 是固定不變的考卷，用來確認新版本沒有退步；「影像劣化」是把照片故意弄模糊、變暗後的總得分。</p>
+</section>
+
+<section>
+  <h2>現在在跑什麼</h2>
+  <div id="running"></div>
+</section>
+
+<div class="grid2">
+  <section>
+    <h2>修正編輯器</h2>
+    <p class="sub" id="editor-url"></p>
+    <div><b style="font-size:.85rem">能做的</b><div class="chips" id="features"></div></div>
+    <div style="margin-top:8px"><b style="font-size:.85rem">還不能改的</b><div class="chips gap" id="gaps"></div></div>
+  </section>
+  <section>
+    <h2>你的修譜紀錄</h2>
+    <p class="sub">從編輯器的修改紀錄自動統計（只讀，不會動到紀錄）。</p>
+    <div class="scroll"><table id="effort"></table></div>
+  </section>
+</div>
+
+<div class="grid2">
+  <section><h2>已知弱點</h2><ul id="weak"></ul></section>
+  <section><h2>接下來</h2><ul id="next"></ul></section>
+</div>
+
+<section><h2>雲端花費（本月）</h2><div id="spend"></div></section>
+
+<section><h2>最近的進展</h2><div class="timeline" id="milestones"></div></section>
+
+<p class="foot" id="foot"></p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct=(a,b)=>b?Math.round(100*a/b)+"%":"–";
+function ago(iso){ if(!iso) return "從未"; const s=(Date.now()-Date.parse(iso))/1000;
+  if(s<90) return Math.round(s)+" 秒前"; if(s<5400) return Math.round(s/60)+" 分鐘前"; if(s<129600) return Math.round(s/3600)+" 小時前"; return Math.round(s/86400)+" 天前"; }
+function when(iso){ if(!iso) return ""; const d=new Date(iso); return d.toLocaleString("zh-TW",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}); }
+const PROBE_NAMES={live3:"live3（10 頁）",live4:"live4（12 頁新譜）",live2:"live2（2 頁）"};
+
+function render(w){
+  const s=w.state; if(!s){ $("meta").textContent="還沒有資料推上來。"; return; }
+  const c=s.curated||{};
+  const age=(Date.now()-Date.parse(w.pushed_at))/1000;
+  $("meta").innerHTML=`資料更新：${esc(when(w.pushed_at))}（${ago(w.pushed_at)}）`+(age>1800?` · <span class="stale">超過 30 分鐘沒更新——作者的電腦可能關機或睡眠中</span>`:"")+
+    (c.updated?` · 文字說明更新於 ${esc(c.updated)}`:"");
+  $("headline").textContent=c.headline||"";
+  $("phase").textContent=c.phase?("目前階段："+c.phase):"";
+
+  const dec=c.decisions||[];
+  $("decisions").innerHTML=dec.length?dec.map(d=>`<div class="decision">${esc(d)}</div>`).join(""):`<p class="empty">目前沒有。</p>`;
+  $("decisions-sec").style.display=dec.length?"":"none";
+
+  const wk=c.working||{};
+  $("working").innerHTML=`現用讀法：<b>${esc(wk.label||wk.read||"")}</b>（${esc(wk.since||"")} 起）· 記錄檢查點：${esc(wk.record||"")}`;
+  const probes=Object.keys(PROBE_NAMES);
+  let h=`<tr><th>版本</th>${probes.map(p=>`<th>${PROBE_NAMES[p]}<br>讀對 · 沒被標記的錯 · 印刷準確度</th>`).join("")}<th>G7</th><th>C1</th><th>影像劣化</th></tr>`;
+  for(const r of s.scores||[]){
+    h+=`<tr><td>${esc(r.label)}</td>`;
+    for(const p of probes){ const v=(r.probes||{})[p];
+      h+= v?`<td class="num"><b>${v.correct}/${v.measures}</b> ${pct(v.correct,v.measures)} · ${v.silent} · ${v.fidelity?pct(v.fidelity.all[0],v.fidelity.all[1]):"–"}</td>`:`<td class="empty">–</td>`; }
+    h+=`<td class="num">${r.g7?`${r.g7.exact}/${r.g7.of}`:"–"}</td><td class="num">${r.c1?`${r.c1.exact}/${r.c1.of}`:"–"}</td><td class="num">${r.capture??"–"}</td></tr>`;
+  }
+  $("scores").innerHTML=h;
+
+  const run=s.running||{}; let rh="";
+  const tr=(run.training||[]);
+  if(tr.length){ rh+=`<table><tr><th>訓練</th><th>進度</th><th>每輪</th><th>預計完成</th></tr>`+tr.map(t=>{
+      const p=t.of?Math.min(100,Math.round(100*t.epoch/t.of)):0;
+      return `<tr><td>${esc(t.run)} ${t.finished?'<span class="pill ok">完成</span>':'<span class="pill run">訓練中</span>'}</td>
+      <td>${t.epoch}${t.of?"/"+t.of:""} 輪<div class="bar"><i style="width:${p}%"></i></div></td>
+      <td class="num">${t.seconds_per_epoch?Math.round(t.seconds_per_epoch/60)+" 分":"–"}</td><td class="num">${t.finished?"—":esc(when(t.eta))}</td></tr>`}).join("")+`</table>`; }
+  const ch=(run.chains||[]);
+  if(ch.length){ rh+=`<p class="sub" style="margin-top:12px">訓練後的自動測驗</p><ul>`+ch.map(x=>`<li>${esc(x.name)} ${x.done?'<span class="pill ok">完成</span>':'<span class="pill run">進行中</span>'} <span class="meta">${x.min_ago} 分鐘前更新</span></li>`).join("")+`</ul>`; }
+  const ls=(run.leases||[]);
+  if(ls.length){ rh+=`<p class="sub" style="margin-top:12px">GPU 使用登記（租約）</p><ul>`+ls.map(l=>`<li>${esc(l.name)} · ${esc(l.resource==="4090"?"本機 4090":l.resource)} · ${esc(l.state)} ${esc(l.note)}</li>`).join("")+`</ul>`; }
+  const pd=(run.pods||[]).filter(p=>p.state==="RUNNING");
+  if(pd.length){ rh+=`<p class="sub" style="margin-top:12px">雲端機器</p><ul>`+pd.map(p=>`<li>${esc(p.name)} · ${esc(p.gpu)} · $${p.per_hour}/小時</li>`).join("")+`</ul>`; }
+  $("running").innerHTML=rh||`<p class="empty">目前沒有訓練、測驗或雲端機器在跑。</p>`;
+
+  const ed=c.editor||{};
+  $("editor-url").innerHTML=ed.url?`<a href="${esc(ed.url)}">${esc(ed.url)}</a> · ${esc(ed.login||"")}`:"";
+  $("features").innerHTML=(ed.features||[]).map(f=>`<span>${esc(f)}</span>`).join("");
+  $("gaps").innerHTML=(ed.gaps||[]).map(f=>`<span>${esc(f)}</span>`).join("");
+
+  const ef=s.editor_effort||[];
+  $("effort").innerHTML=ef.length?`<tr><th>頁</th><th>修改</th><th>被擋</th><th>改過的小節</th><th>實際花的時間</th><th>最後一次</th></tr>`+
+    ef.map(e=>`<tr><td>${esc(e.page)}</td><td class="num">${e.edits}</td><td class="num">${e.refused}</td><td class="num">${e.bars_touched}</td><td class="num">${e.active_minutes} 分</td><td class="num">${esc(when(e.last))}</td></tr>`).join("")
+    :`<tr><td class="empty">還沒有修譜紀錄。</td></tr>`;
+
+  $("weak").innerHTML=(c.weaknesses||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+  $("next").innerHTML=(c.next||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+
+  const sp=s.spend||{};
+  if(sp.budget){ const used=sp.month+(sp.committed||0), p=Math.min(100,Math.round(100*used/sp.budget));
+    $("spend").innerHTML=`已花 <b>$${sp.month.toFixed(2)}</b>${sp.committed?` ＋ 進行中預留 $${sp.committed.toFixed(2)}`:""} ／ 月預算 $${sp.budget}<div class="bar"><i style="width:${p}%"></i></div>`; }
+  else $("spend").innerHTML=`<p class="empty">暫時讀不到。</p>`;
+
+  $("milestones").innerHTML=(c.milestones||[]).map(m=>`<div><b>${esc(m.date)}</b><span>${esc(m.text)}</span></div>`).join("");
+  $("foot").textContent=`程式分支 ${s.repo?.branch||""} · 最後一次存檔：${(s.repo?.last_commit||"").slice(0,25)} · 頁面每分鐘自動重新整理資料`;
+}
+async function load(){
+  try{ const r=await fetch("/api/ai-omr/status",{cache:"no-store"}); render(await r.json()); }
+  catch(e){ $("meta").textContent="讀取失敗："+e.message; }
+}
+load(); setInterval(load,60000);
+</script>
+</body>
+</html>
