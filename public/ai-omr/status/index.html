@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hans">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI-OMR 開發狀態</title>
+<title>AI-OMR 开发状态</title>
 <link rel="icon" href="/ai-omr/favicon.png">
 <style>
 :root{--bg:#faf8f3;--card:#fffdf8;--ink:#15221f;--muted:#5d6a66;--line:#d9d4c8;--accent:#1e6b55;--accent-soft:#bfe7d5;
@@ -47,50 +47,50 @@ a{color:var(--accent)}
 <body>
 <div class="wrap">
 <header>
-  <h1>AI-OMR 開發狀態</h1>
-  <div class="meta" id="meta">載入中…</div>
+  <h1>AI-OMR 开发状态</h1>
+  <div class="meta" id="meta">加载中…</div>
 </header>
 <div class="headline" id="headline"></div>
 <div class="phase" id="phase"></div>
 
-<section id="decisions-sec"><h2>等你決定的事</h2><div id="decisions"></div></section>
+<section id="decisions-sec"><h2>等你决定的事</h2><div id="decisions"></div></section>
 
 <section>
-  <h2>讀譜準確度</h2>
+  <h2>读谱准确度</h2>
   <p class="sub" id="working"></p>
   <div class="scroll"><table id="scores"></table></div>
-  <p class="sub" style="margin-top:10px">「讀對」＝小節裡每個音的高低和長短都對。「沒被標記的錯」＝讀錯了但程式沒提醒老師，這個數字要壓到 0。
-  「印刷準確度」＝讀對的小節裡，連音符的橫槓（符槓）、弧線（圓滑線、連結線）也都和原譜一樣的比例。
-  G7、C1 是固定不變的考卷，用來確認新版本沒有退步；「影像劣化」是把照片故意弄模糊、變暗後的總得分。</p>
+  <p class="sub" style="margin-top:10px">「读对」＝小节里每个音的高低和长短都对。「没被标记的错」＝读错了但程式没提醒老师，这个数字要压到 0。
+  「印刷准确度」＝读对的小节里，连音符的横杠（符杠）、弧线（圆滑线、连音线）也都和原谱一样的比例。
+  G7、C1 是固定不变的考卷，用来确认新版本没有退步；「影像劣化」是把照片故意弄模糊、变暗后的总得分。</p>
 </section>
 
 <section>
-  <h2>現在在跑什麼</h2>
+  <h2>现在在跑什么</h2>
   <div id="running"></div>
 </section>
 
 <div class="grid2">
   <section>
-    <h2>修正編輯器</h2>
+    <h2>修正编辑器</h2>
     <p class="sub" id="editor-url"></p>
     <div><b style="font-size:.85rem">能做的</b><div class="chips" id="features"></div></div>
-    <div style="margin-top:8px"><b style="font-size:.85rem">還不能改的</b><div class="chips gap" id="gaps"></div></div>
+    <div style="margin-top:8px"><b style="font-size:.85rem">还不能改的</b><div class="chips gap" id="gaps"></div></div>
   </section>
   <section>
-    <h2>你的修譜紀錄</h2>
-    <p class="sub">從編輯器的修改紀錄自動統計（只讀，不會動到紀錄）。</p>
+    <h2>你的修谱纪录</h2>
+    <p class="sub">从编辑器的修改纪录自动统计（只读，不会动到纪录）。</p>
     <div class="scroll"><table id="effort"></table></div>
   </section>
 </div>
 
 <div class="grid2">
-  <section><h2>已知弱點</h2><ul id="weak"></ul></section>
-  <section><h2>接下來</h2><ul id="next"></ul></section>
+  <section><h2>已知弱点</h2><ul id="weak"></ul></section>
+  <section><h2>接下来</h2><ul id="next"></ul></section>
 </div>
 
-<section><h2>雲端花費（本月）</h2><div id="spend"></div></section>
+<section><h2>云端花费（本月）</h2><div id="spend"></div></section>
 
-<section><h2>最近的進展</h2><div class="timeline" id="milestones"></div></section>
+<section><h2>最近的进展</h2><div class="timeline" id="milestones"></div></section>
 
 <p class="foot" id="foot"></p>
 </div>
@@ -98,28 +98,28 @@ a{color:var(--accent)}
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pct=(a,b)=>b?Math.round(100*a/b)+"%":"–";
-function ago(iso){ if(!iso) return "從未"; const s=(Date.now()-Date.parse(iso))/1000;
-  if(s<90) return Math.round(s)+" 秒前"; if(s<5400) return Math.round(s/60)+" 分鐘前"; if(s<129600) return Math.round(s/3600)+" 小時前"; return Math.round(s/86400)+" 天前"; }
-function when(iso){ if(!iso) return ""; const d=new Date(iso); return d.toLocaleString("zh-TW",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}); }
-const PROBE_NAMES={live3:"live3（10 頁）",live4:"live4（12 頁新譜）",live2:"live2（2 頁）"};
+function ago(iso){ if(!iso) return "从未"; const s=(Date.now()-Date.parse(iso))/1000;
+  if(s<90) return Math.round(s)+" 秒前"; if(s<5400) return Math.round(s/60)+" 分钟前"; if(s<129600) return Math.round(s/3600)+" 小时前"; return Math.round(s/86400)+" 天前"; }
+function when(iso){ if(!iso) return ""; const d=new Date(iso); return d.toLocaleString("zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}); }
+const PROBE_NAMES={live3:"live3（10 页）",live4:"live4（12 页新谱）",live2:"live2（2 页）"};
 
 function render(w){
-  const s=w.state; if(!s){ $("meta").textContent="還沒有資料推上來。"; return; }
+  const s=w.state; if(!s){ $("meta").textContent="还没有资料推上来。"; return; }
   const c=s.curated||{};
   const age=(Date.now()-Date.parse(w.pushed_at))/1000;
-  $("meta").innerHTML=`資料更新：${esc(when(w.pushed_at))}（${ago(w.pushed_at)}）`+(age>1800?` · <span class="stale">超過 30 分鐘沒更新——作者的電腦可能關機或睡眠中</span>`:"")+
-    (c.updated?` · 文字說明更新於 ${esc(c.updated)}`:"");
+  $("meta").innerHTML=`资料更新：${esc(when(w.pushed_at))}（${ago(w.pushed_at)}）`+(age>1800?` · <span class="stale">超过 30 分钟没更新——作者的电脑可能关机或睡眠中</span>`:"")+
+    (c.updated?` · 文字说明更新于 ${esc(c.updated)}`:"");
   $("headline").textContent=c.headline||"";
-  $("phase").textContent=c.phase?("目前階段："+c.phase):"";
+  $("phase").textContent=c.phase?("目前阶段："+c.phase):"";
 
   const dec=c.decisions||[];
-  $("decisions").innerHTML=dec.length?dec.map(d=>`<div class="decision">${esc(d)}</div>`).join(""):`<p class="empty">目前沒有。</p>`;
+  $("decisions").innerHTML=dec.length?dec.map(d=>`<div class="decision">${esc(d)}</div>`).join(""):`<p class="empty">目前没有。</p>`;
   $("decisions-sec").style.display=dec.length?"":"none";
 
   const wk=c.working||{};
-  $("working").innerHTML=`現用讀法：<b>${esc(wk.label||wk.read||"")}</b>（${esc(wk.since||"")} 起）· 記錄檢查點：${esc(wk.record||"")}`;
+  $("working").innerHTML=`现用读法：<b>${esc(wk.label||wk.read||"")}</b>（${esc(wk.since||"")} 起）· 记录检查点：${esc(wk.record||"")}`;
   const probes=Object.keys(PROBE_NAMES);
-  let h=`<tr><th>版本</th>${probes.map(p=>`<th>${PROBE_NAMES[p]}<br>讀對 · 沒被標記的錯 · 印刷準確度</th>`).join("")}<th>G7</th><th>C1</th><th>影像劣化</th></tr>`;
+  let h=`<tr><th>版本</th>${probes.map(p=>`<th>${PROBE_NAMES[p]}<br>读对 · 没被标记的错 · 印刷准确度</th>`).join("")}<th>G7</th><th>C1</th><th>影像劣化</th></tr>`;
   for(const r of s.scores||[]){
     h+=`<tr><td>${esc(r.label)}</td>`;
     for(const p of probes){ const v=(r.probes||{})[p];
@@ -130,18 +130,18 @@ function render(w){
 
   const run=s.running||{}; let rh="";
   const tr=(run.training||[]);
-  if(tr.length){ rh+=`<table><tr><th>訓練</th><th>進度</th><th>每輪</th><th>預計完成</th></tr>`+tr.map(t=>{
+  if(tr.length){ rh+=`<table><tr><th>训练</th><th>进度</th><th>每轮</th><th>预计完成</th></tr>`+tr.map(t=>{
       const p=t.of?Math.min(100,Math.round(100*t.epoch/t.of)):0;
-      return `<tr><td>${esc(t.run)} ${t.finished?'<span class="pill ok">完成</span>':'<span class="pill run">訓練中</span>'}</td>
-      <td>${t.epoch}${t.of?"/"+t.of:""} 輪<div class="bar"><i style="width:${p}%"></i></div></td>
+      return `<tr><td>${esc(t.run)} ${t.finished?'<span class="pill ok">完成</span>':'<span class="pill run">训练中</span>'}</td>
+      <td>${t.epoch}${t.of?"/"+t.of:""} 轮<div class="bar"><i style="width:${p}%"></i></div></td>
       <td class="num">${t.seconds_per_epoch?Math.round(t.seconds_per_epoch/60)+" 分":"–"}</td><td class="num">${t.finished?"—":esc(when(t.eta))}</td></tr>`}).join("")+`</table>`; }
   const ch=(run.chains||[]);
-  if(ch.length){ rh+=`<p class="sub" style="margin-top:12px">訓練後的自動測驗</p><ul>`+ch.map(x=>`<li>${esc(x.name)} ${x.done?'<span class="pill ok">完成</span>':'<span class="pill run">進行中</span>'} <span class="meta">${x.min_ago} 分鐘前更新</span></li>`).join("")+`</ul>`; }
+  if(ch.length){ rh+=`<p class="sub" style="margin-top:12px">训练后的自动测验</p><ul>`+ch.map(x=>`<li>${esc(x.name)} ${x.done?'<span class="pill ok">完成</span>':'<span class="pill run">进行中</span>'} <span class="meta">${x.min_ago} 分钟前更新</span></li>`).join("")+`</ul>`; }
   const ls=(run.leases||[]);
-  if(ls.length){ rh+=`<p class="sub" style="margin-top:12px">GPU 使用登記（租約）</p><ul>`+ls.map(l=>`<li>${esc(l.name)} · ${esc(l.resource==="4090"?"本機 4090":l.resource)} · ${esc(l.state)} ${esc(l.note)}</li>`).join("")+`</ul>`; }
+  if(ls.length){ rh+=`<p class="sub" style="margin-top:12px">GPU 使用登记（租约）</p><ul>`+ls.map(l=>`<li>${esc(l.name)} · ${esc(l.resource==="4090"?"本机 4090":l.resource)} · ${esc(l.state)} ${esc(l.note)}</li>`).join("")+`</ul>`; }
   const pd=(run.pods||[]).filter(p=>p.state==="RUNNING");
-  if(pd.length){ rh+=`<p class="sub" style="margin-top:12px">雲端機器</p><ul>`+pd.map(p=>`<li>${esc(p.name)} · ${esc(p.gpu)} · $${p.per_hour}/小時</li>`).join("")+`</ul>`; }
-  $("running").innerHTML=rh||`<p class="empty">目前沒有訓練、測驗或雲端機器在跑。</p>`;
+  if(pd.length){ rh+=`<p class="sub" style="margin-top:12px">云端机器</p><ul>`+pd.map(p=>`<li>${esc(p.name)} · ${esc(p.gpu)} · $${p.per_hour}/小时</li>`).join("")+`</ul>`; }
+  $("running").innerHTML=rh||`<p class="empty">目前没有训练、测验或云端机器在跑。</p>`;
 
   const ed=c.editor||{};
   $("editor-url").innerHTML=ed.url?`<a href="${esc(ed.url)}">${esc(ed.url)}</a> · ${esc(ed.login||"")}`:"";
@@ -149,24 +149,24 @@ function render(w){
   $("gaps").innerHTML=(ed.gaps||[]).map(f=>`<span>${esc(f)}</span>`).join("");
 
   const ef=s.editor_effort||[];
-  $("effort").innerHTML=ef.length?`<tr><th>頁</th><th>修改</th><th>被擋</th><th>改過的小節</th><th>實際花的時間</th><th>最後一次</th></tr>`+
+  $("effort").innerHTML=ef.length?`<tr><th>页</th><th>修改</th><th>被挡</th><th>改过的小节</th><th>实际花的时间</th><th>最后一次</th></tr>`+
     ef.map(e=>`<tr><td>${esc(e.page)}</td><td class="num">${e.edits}</td><td class="num">${e.refused}</td><td class="num">${e.bars_touched}</td><td class="num">${e.active_minutes} 分</td><td class="num">${esc(when(e.last))}</td></tr>`).join("")
-    :`<tr><td class="empty">還沒有修譜紀錄。</td></tr>`;
+    :`<tr><td class="empty">还没有修谱纪录。</td></tr>`;
 
   $("weak").innerHTML=(c.weaknesses||[]).map(x=>`<li>${esc(x)}</li>`).join("");
   $("next").innerHTML=(c.next||[]).map(x=>`<li>${esc(x)}</li>`).join("");
 
   const sp=s.spend||{};
   if(sp.budget){ const used=sp.month+(sp.committed||0), p=Math.min(100,Math.round(100*used/sp.budget));
-    $("spend").innerHTML=`已花 <b>$${sp.month.toFixed(2)}</b>${sp.committed?` ＋ 進行中預留 $${sp.committed.toFixed(2)}`:""} ／ 月預算 $${sp.budget}<div class="bar"><i style="width:${p}%"></i></div>`; }
-  else $("spend").innerHTML=`<p class="empty">暫時讀不到。</p>`;
+    $("spend").innerHTML=`已花 <b>$${sp.month.toFixed(2)}</b>${sp.committed?` ＋ 进行中预留 $${sp.committed.toFixed(2)}`:""} ／ 月预算 $${sp.budget}<div class="bar"><i style="width:${p}%"></i></div>`; }
+  else $("spend").innerHTML=`<p class="empty">暂时读不到。</p>`;
 
   $("milestones").innerHTML=(c.milestones||[]).map(m=>`<div><b>${esc(m.date)}</b><span>${esc(m.text)}</span></div>`).join("");
-  $("foot").textContent=`程式分支 ${s.repo?.branch||""} · 最後一次存檔：${(s.repo?.last_commit||"").slice(0,25)} · 頁面每分鐘自動重新整理資料`;
+  $("foot").textContent=`程式分支 ${s.repo?.branch||""} · 最后一次保存：${(s.repo?.last_commit||"").slice(0,25)} · 页面每分钟自动重新整理资料`;
 }
 async function load(){
   try{ const r=await fetch("/api/ai-omr/status",{cache:"no-store"}); render(await r.json()); }
-  catch(e){ $("meta").textContent="讀取失敗："+e.message; }
+  catch(e){ $("meta").textContent="读取失败："+e.message; }
 }
 load(); setInterval(load,60000);
 </script>
