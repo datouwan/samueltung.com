@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>读谱模型 · 设备速度测试</title>
+<style>
+:root{--bg:#f6f5f1;--fg:#1c1c1a;--mut:#6b6a64;--line:#d9d6cc;--card:#fff;--acc:#10483a;--bad:#a33}
+@media (prefers-color-scheme:dark){:root{--bg:#161614;--fg:#eceae4;--mut:#9c9a92;--line:#33322e;--card:#1f1f1c;--acc:#7fd1b5;--bad:#f08a8a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+main{max-width:720px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:22px;margin:0 0 4px}
+p{margin:8px 0}.mut{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:16px 0}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-weight:600;padding:12px 16px;border-radius:10px;border:1px solid var(--acc);background:var(--acc);color:var(--bg);cursor:pointer}
+button.alt{background:transparent;color:var(--acc)}
+button:disabled{opacity:.45;cursor:default}
+#big{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;margin:6px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+#log{white-space:pre-wrap;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;color:var(--mut)}
+.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+<main>
+<h1>读谱模型 · 设备速度测试</h1>
+<p class="mut">在这台设备的浏览器里直接运行我们的音符模型，读一整页真实乐谱（22 行），看要几秒。全部在本机计算，不上传任何东西。第一次要下载约 47 MB，请用 Wi‑Fi。</p>
+
+<div class="card">
+ <div class="btns" id="btns">
+  <button data-t="4" data-gpu="1">开始测试（图形处理器）</button>
+  <button class="alt" data-t="4">只用处理器 · 4 线程</button>
+  <button class="alt" data-t="8">8 线程</button>
+  <button class="alt" data-t="1">1 线程</button>
+ </div>
+ <p class="mut" id="env"></p>
+</div>
+
+<div class="card">
+ <div class="mut" id="stage">还没开始</div>
+ <div id="big">—</div>
+ <div class="mut" id="detail"></div>
+</div>
+
+<div class="card">
+ <b>这台设备上跑过的结果</b>
+ <table id="hist"><thead><tr><th>方式</th><th>整页 22 行</th><th>每行中位数</th><th>结果一致</th></tr></thead><tbody></tbody></table>
+ <p class="mut">把这张表截图或把数字告诉我就可以。换一种方式测试时页面会自动重新载入。</p>
+</div>
+
+<div class="card"><div id="log"></div></div>
+<p class="mut">说明：这里只测「音符模型」这一个模型的计算时间；现用读法一共接力约 10 个同样大小的模型，另外还有切行等图像处理。浏览器比正式的 iOS 应用（Core ML）慢，所以这是保守的数字。</p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.all.min.js" crossorigin="anonymous"></script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const q = new URLSearchParams(location.search);
+const log = s => { $("log").textContent += s + "\n"; };
+const KEY = "claude_omr_ipad_bench";
+function hist() { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { return []; } }
+function showHist() {
+  $("hist").tBodies[0].innerHTML = hist().map(r =>
+    `<tr><td>${r.mode}</td><td>${r.total.toFixed(2)} 秒</td><td>${r.median.toFixed(0)} 毫秒</td><td>${r.same}/${r.n}</td></tr>`).join("")
+    || `<tr><td colspan="4" class="mut">还没有</td></tr>`;
+}
+const isolated = !!self.crossOriginIsolated;
+const cores = navigator.hardwareConcurrency || 0;
+$("env").textContent = `处理器核心：${cores || "未知"} · 多线程：${isolated ? "可用" : "不可用（只能单线程）"} · WebGPU：${navigator.gpu ? "可用" : "不可用"}`;
+showHist();
+
+document.querySelectorAll("#btns button").forEach(b => b.onclick = () => {
+  const p = new URLSearchParams({ run: "1", t: b.dataset.t });
+  if (b.dataset.gpu) p.set("gpu", "1");
+  location.search = p.toString();      // reload: the thread count is fixed when the runtime starts
+});
+
+async function fetchBytes(url, label, done, total) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url} → HTTP ${r.status}`);
+  const rd = r.body.getReader(); const parts = []; let n = 0;
+  for (;;) {
+    const { done: end, value } = await rd.read();
+    if (end) break;
+    parts.push(value); n += value.length;
+    $("stage").textContent = `${label} ${(((done + n) / total) * 100).toFixed(0)}%`;
+  }
+  const out = new Uint8Array(n); let o = 0;
+  for (const p of parts) { out.set(p, o); o += p.length; }
+  return out;
+}
+
+async function run() {
+  const threads = Math.max(1, parseInt(q.get("t") || "4", 10));
+  const gpu = q.get("gpu") === "1" && !!navigator.gpu;
+  if (q.get("gpu") === "1" && !gpu) log("这个浏览器没有 WebGPU，改用处理器");
+  document.querySelectorAll("#btns button").forEach(b => b.disabled = true);
+  const used = isolated ? threads : 1;
+  ort.env.wasm.numThreads = used;
+  const mode = gpu ? "图形处理器 WebGPU" : `处理器 ${used} 线程`;
+  log(`方式：${mode}${!isolated && threads > 1 ? "（这个浏览器不给多线程，改用单线程）" : ""}`);
+
+  const meta = await (await fetch("inputs.json")).json();
+  const total = meta.model_bytes + meta.inputs.reduce((s, m) => s + m.h * m.w, 0);
+  const model = new Uint8Array(meta.model_bytes); let got = 0;
+  for (let i = 0; i < meta.model_parts; i++) {
+    const part = await fetchBytes(`model.${i}.bin`, "下载模型和乐谱行", got, total);
+    model.set(part, got); got += part.length;
+  }
+  const raw = await fetchBytes("inputs.bin", "下载模型和乐谱行", got, total);
+
+  $("stage").textContent = "载入模型…";
+  let t = performance.now();
+  const sess = await ort.InferenceSession.create(model.buffer, {
+    executionProviders: gpu ? ["webgpu", "wasm"] : ["wasm"], graphOptimizationLevel: "all" });
+  log(`载入模型 ${((performance.now() - t) / 1000).toFixed(2)} 秒`);
+
+  const feed = m => {
+    const n = m.h * m.w, f = new Float32Array(n), u = raw.subarray(m.offset, m.offset + n);
+    for (let i = 0; i < n; i++) f[i] = u[i] / 255;
+    return { images: new ort.Tensor("float32", f, [1, 1, m.h, m.w]) };
+  };
+  const greedy = out => {
+    const [T, , C] = out.dims, d = out.data, toks = []; let prev = -1;
+    for (let i = 0; i < T; i++) {
+      let best = 0, bv = d[i * C];
+      for (let c = 1; c < C; c++) { const v = d[i * C + c]; if (v > bv) { bv = v; best = c; } }
+      if (best !== meta.blank && best !== prev) toks.push(best);
+      prev = best;
+    }
+    return toks;
+  };
+
+  $("stage").textContent = "预热…";
+  t = performance.now();
+  await sess.run(feed(meta.inputs[0]));
+  log(`预热（第一次计算，不计入）${((performance.now() - t) / 1000).toFixed(2)} 秒`);
+
+  const times = []; let same = 0;
+  for (let i = 0; i < meta.inputs.length; i++) {
+    $("stage").textContent = `${mode}：第 ${i + 1} / ${meta.inputs.length} 行`;
+    const f = feed(meta.inputs[i]);
+    await new Promise(r => setTimeout(r));          // let the page repaint
+    t = performance.now();
+    const out = (await sess.run(f)).logp;
+    const data = out.getData ? await out.getData() : out.data;
+    times.push(performance.now() - t);
+    const toks = greedy({ dims: out.dims, data });
+    const exp = meta.inputs[i].tokens;
+    if (toks.length === exp.length && toks.every((v, k) => v === exp[k])) same++;
+    $("big").textContent = (times.reduce((a, b) => a + b, 0) / 1000).toFixed(2) + " 秒";
+  }
+  const sum = times.reduce((a, b) => a + b, 0) / 1000;
+  const median = times.slice().sort((a, b) => a - b)[times.length >> 1];
+  $("stage").textContent = `${mode}：读完整页 22 行`;
+  $("big").textContent = sum.toFixed(2) + " 秒";
+  $("detail").innerHTML = `每行中位数 ${median.toFixed(0)} 毫秒 · 最慢 ${Math.max(...times).toFixed(0)} 毫秒 · ` +
+    `和电脑上的结果一致：<span class="${same === times.length ? "" : "bad"}">${same}/${times.length} 行</span>`;
+  log(`整页 ${sum.toFixed(2)} 秒；每行 ${times.map(x => x.toFixed(0)).join(" ")} 毫秒`);
+  try {
+    const h = hist(); h.push({ mode, total: sum, median, same, n: times.length });
+    localStorage.setItem(KEY, JSON.stringify(h.slice(-12)));
+  } catch (e) {}
+  showHist();
+  document.querySelectorAll("#btns button").forEach(b => b.disabled = false);
+  window.__benchDone = { mode, sum, median, same, n: times.length };
+}
+
+if (q.get("run") === "1") run().catch(e => {
+  $("stage").innerHTML = `<span class="bad">出错了：${String(e && e.message || e)}</span>`;
+  log(String(e && e.stack || e));
+  document.querySelectorAll("#btns button").forEach(b => b.disabled = false);
+  window.__benchDone = { error: String(e) };
+});
+</script>
+</body>
+</html>

@@ -3,3 +3,7 @@ node_modules/
 .dev.vars
 *.local
 .DS_Store
+
+# device speed test: model weights and score crops stay out of this public repo
+public/ai-omr/status/ipad/*.bin
+public/ai-omr/status/ipad/inputs.json
