@@ -139,9 +139,9 @@ function render(w){
   $("models-sec").style.display=mr.length?"":"none";
   $("models-sub").textContent=md.sub||"";
   $("models-note").textContent=md.note||"";
-  $("models").innerHTML=`<tr><th>读法</th><th>读对小节</th><th>速度</th><th>花费</th><th>备注</th></tr>`+mr.map(r=>
+  $("models").innerHTML=`<tr><th>读法</th><th>读对小节</th><th>速度</th><th>每页价格</th><th>这次测试花费</th><th>备注</th></tr>`+mr.map(r=>
     `<tr><td>${r.ours?`<b>${esc(r.name)}</b>`:esc(r.name)}</td><td class="num"><b>${r.correct}/${r.of}</b> ${pct(r.correct,r.of)}<div class="bar"><i style="width:${r.of?100*r.correct/r.of:0}%"></i></div></td>`+
-    `<td>${esc(r.speed||"–")}</td><td>${esc(r.cost||"–")}</td><td>${esc(r.remark||"")}</td></tr>`).join("");
+    `<td>${esc(r.speed||"–")}</td><td class="num"><b>${esc(r.price||"–")}</b></td><td>${esc(r.cost||"–")}</td><td>${esc(r.remark||"")}</td></tr>`).join("");
 
   const run=s.running||{}; let rh="";
   const tr=(run.training||[]);
