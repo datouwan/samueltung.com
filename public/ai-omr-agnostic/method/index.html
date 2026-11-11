@@ -37,29 +37,37 @@
     .grp td { background:var(--mint); color:var(--green-dark); font-weight:800; font-size:.8rem; }
     footer { margin-top:50px; padding:28px 0 50px; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem; }
   </style>
+  <script src="/ai-omr-agnostic/lang.js"></script>
 </head>
 <body>
   <nav>
     <div class="wrap nav-inner">
       <a class="brand" href="/ai-omr-agnostic/">AI&nbsp;OMR&nbsp;<span>Agnostic</span></a>
       <div class="nav-links">
-        <a href="/ai-omr-agnostic/#roadmap">路线图</a>
-        <a class="on" href="/ai-omr-agnostic/method/">方法记录</a>
-        <a href="/ai-omr-agnostic/progress/">实拍进度</a>
-        <a href="/ai-omr/status/">状态</a>
+        <a href="/ai-omr-agnostic/#roadmap"><span data-l="en">Roadmap</span><span data-l="zh">路线图</span></a>
+        <a class="on" href="/ai-omr-agnostic/method/"><span data-l="en">Method record</span><span data-l="zh">方法记录</span></a>
+        <a href="/ai-omr-agnostic/progress/"><span data-l="en">Progress on real pages</span><span data-l="zh">实拍进度</span></a>
+        <a href="/ai-omr/status/"><span data-l="en">Status</span><span data-l="zh">状态</span></a>
+        <a class="lang-btn" href="#"><span data-l="zh">EN</span><span data-l="en">中文</span></a>
       </div>
     </div>
   </nav>
 
   <header>
-    <div class="wrap">
+    <div class="wrap" data-l="zh">
       <p class="eyebrow">方法记录 · 2026-11-10</p>
       <h1>现用读法：12 个小模型接力</h1>
       <p class="lede">现在读一页乐谱，不是一个模型读完，而是 12 个同样大小的小模型各读一遍整页，每一种记号取自最可靠的那一个（或那一对）。这一页记下它们各自负责什么、为什么会变成 12 个、要花多少时间，以及接下来把它们合并的想法。网页以后再整理，这里先存档。</p>
     </div>
+    <div class="wrap" data-l="en">
+      <p class="eyebrow">METHOD RECORD · 2026-11-10</p>
+      <h1>The working read: a relay of 12 small models</h1>
+      <p class="lede">A page of music is not read by one model today. Twelve small models of the same size each read the whole page, and every kind of mark is taken from the model (or the pair) that reads it most reliably. This page records what each one does, why there are twelve, what it costs in time, and the plan to merge them. The site will be tidied later; this is the archive copy.</p>
+    </div>
   </header>
 
   <main class="wrap">
+    <div data-l="zh">
     <h2>12 个模型各自负责什么</h2>
     <p>12 个都是同一种网络（卷积 + 双向 LSTM，每个约 31 MB），差别只在训练时教它写下哪些记号。</p>
     <div class="tablewrap">
@@ -111,10 +119,65 @@
       <p><b>训练后要量的，不先假设：</b>一个模型加上把握度门槛能不能代替「两个一致」；合并模型自己读的音符能不能代替 2 号做对照；每一类记号找到多少、写错多少；把它多读出来的记号裁图出来看。</p>
       <p><b>风险：</b>连线（长连线、把延音线读成连线）和符杠是最难的两类；十类记号挤进一个 31 MB 的模型可能装不下。哪一类输了，就先留在原来的模型上——结果可能先是「12 个变 4 个」，再到「12 个变 3 个」甚至 2 个。</p>
     </div>
+    </div>
+    <div data-l="en">
+    <h2>What each of the 12 models does</h2>
+    <p>All twelve are the same network (convolutions + a bidirectional LSTM, about 31 MB each). They differ only in which marks they were taught to write down.</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>#</th><th>Model</th><th>What the read takes from it</th><th>Relay rule</th><th>Trained from</th></tr>
+        <tr class="grp"><td colspan="5">Notes</td></tr>
+        <tr><td class="n">1</td><td><code>claude_omr_r2f-s2</code></td><td>Notes, rests, clefs, key and time signatures, ties; plus the slurs, dynamics, hairpins and grace notes it reads itself</td><td>The base read; every other model's marks are attached to its notes</td><td>The note-model line (p8q → r2), about 110k staff lines</td></tr>
+        <tr><td class="n">2</td><td><code>claude_p8q-s2</code></td><td>Prints nothing; a cross-check on the notes only</td><td>Bars where it disagrees with model 1 are flagged in the editor for review</td><td>The previous note model</td></tr>
+        <tr class="grp"><td colspan="5">Marks (3–12, the part to be merged)</td></tr>
+        <tr><td class="n">3</td><td><code>claude_p8v-s1</code></td><td>Staccato, accent, tenuto</td><td>Staccato and accent are voted with the other mark models, two votes needed; tenuto comes from it alone</td><td>About 120k lines labelled with beams and articulations</td></tr>
+        <tr><td class="n">4–5</td><td><code>claude_p8w-s1</code> / <code>-s2</code></td><td>Fingering, bowing, fermata, ornaments, arpeggio</td><td>A fermata counts if either reads it; bowing and fingering need both</td><td>Model 3 plus the extra mark labels</td></tr>
+        <tr><td class="n">6–7</td><td><code>claude_p9-s1</code> / <code>-s2</code></td><td>Fingering only</td><td>A second fingering pair; used only when the two agree</td><td>About 190k lines</td></tr>
+        <tr><td class="n">8–9</td><td><code>claude_omr_r4s-s1</code> / <code>-s2</code></td><td>Slurs</td><td>Added only when both read it; arcs that look like ties are filtered out</td><td>The note corpus rebuilt with slurs of many shapes</td></tr>
+        <tr><td class="n">10–11</td><td><code>claude_omr_r7m-s1</code> / <code>-s2</code></td><td>Votes on fingering and accents</td><td>Two votes needed</td><td>Continued from models 6–7, about 200k lines, with more photo-like rendering</td></tr>
+        <tr><td class="n">12</td><td><code>claude_omr_r8b-s2</code></td><td>Beaming (which notes are joined into one group)</td><td>Beams only; the other marks it reads are not used</td><td>About 130k lines, with scanned scores and more beam patterns</td></tr>
+      </table>
+    </div>
+    <p>One external open-source reader also runs as a second opinion. It only flags doubtful bars; it is never trained on and will not ship in the product.</p>
+
+    <h2>Why there are twelve</h2>
+    <div class="card">
+      <ul>
+        <li><b>Teaching one model new marks makes it read notes worse.</b> Four rounds in a row measured the same thing: add new marks to the note model and the synthetic score goes up while the notes on real photos get worse. So the note model stays fixed, and each new family of marks gets its own model, attached to the notes afterwards.</li>
+        <li><b>A single mark model invents marks.</b> Fingering is the example: one model finds more than half but writes dozens of wrong digits; requiring two models to read the same digit removes almost all of them. Precision is bought with "two agree", so every family of marks is a pair.</li>
+        <li><b>Add, never remove.</b> A change is adopted only when it is measurably better on the pages the author has corrected, and an older source stays wherever the new one is not better. The relay only grows.</li>
+      </ul>
+    </div>
+
+    <h2>What it costs in time</h2>
+    <div class="card">
+      <ul>
+        <li>Desktop GPU: 0.6 s per model per page, about 7 s for all twelve; about 74 s on CPU only.</li>
+        <li>iPad Pro M4 (measured in the browser, note model only): 3.4 s per page; all twelve are estimated at about 41 s, and about 86 s on an iPhone 16 Pro.</li>
+        <li>With "note model + merged mark model": an estimated 7 s on iPad (2 models) to 10 s (3 models).</li>
+      </ul>
+      <p>The product is an iOS app, so the models have to be few and small. That is the reason for the merge below.</p>
+    </div>
+
+    <h2>The merge plan (round 11)</h2>
+    <div class="card">
+      <ol>
+        <li><b>The note model is untouched.</b> Model 1 stays as it is; the notes must be identical before and after the merge.</li>
+        <li><b>Models 3–12 become one "mark model".</b> One pass reads beams, staccato / accent / tenuto, fingering, bowing, fermata, ornaments, arpeggio and slurs. It also reads notes (marks hang on notes), but its notes are not printed.</li>
+        <li><b>Training continues from models 10–11.</b> They already know most marks and lack only slur shapes and more beam patterns.</li>
+        <li><b>One combined corpus in which every line carries every label.</b> The slur corpus had no beam or fingering labels and the beam corpus had no slur shapes; a line with missing labels teaches "nothing here", so the missing parts are regenerated rather than mixed as they are.</li>
+        <li><b>Two seeds first</b> (today's precision depends on two agreeing), trained in the cloud and scored locally, at an estimated cost of about 70 US dollars.</li>
+        <li><b>A free measurement before training:</b> build a relay from models 10–11 alone, compare it family by family with the working read on the author's corrected pages, and fix the numbers the merged model must reach.</li>
+      </ol>
+      <p><b>To be measured after training, not assumed:</b> whether one model with a confidence threshold can replace "two agree"; whether the merged model's own notes can replace model 2 as the cross-check; how many marks of each family are found and how many are wrong; and crops of every mark it adds, looked at by eye.</p>
+      <p><b>Risks:</b> slurs (long slurs, ties read as slurs) and beams are the two hardest families, and ten families may not fit in one 31 MB model. A family that loses stays on its current model for now — the outcome may be "12 become 4" first, then 3 or even 2.</p>
+    </div>
+    </div>
   </main>
 
   <footer>
-    <div class="wrap">AI OMR Agnostic · 方法记录。数字和进度看<a href="/ai-omr/status/">状态页</a>；这一页在方法改变时更新。</div>
+    <div class="wrap" data-l="zh">AI OMR Agnostic · 方法记录。数字和进度看<a href="/ai-omr/status/">状态页</a>；这一页在方法改变时更新。</div>
+    <div class="wrap" data-l="en">AI OMR Agnostic · method record. Numbers and progress are on the <a href="/ai-omr/status/">status page</a> (Chinese only); this page is updated when the method changes.</div>
   </footer>
 </body>
 </html>

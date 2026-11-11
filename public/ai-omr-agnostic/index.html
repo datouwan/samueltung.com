@@ -89,28 +89,30 @@
       .flow .arrow { transform: rotate(90deg); }
     }
   </style>
+  <script src="/ai-omr-agnostic/lang.js"></script>
 </head>
 <body>
   <nav>
     <div class="wrap nav-inner">
       <a class="brand" href="/ai-omr-agnostic/">AI&nbsp;OMR&nbsp;<span>Agnostic</span></a>
       <div class="nav-links">
-        <a href="#why">Why</a>
-        <a href="#theory">Theory</a>
-        <a href="#method">Method</a>
-        <a href="#roadmap">Roadmap</a>
-        <a href="#target">Target</a>
-        <a href="/ai-omr-agnostic/progress/">Progress on real pages</a>
-        <a href="/ai-omr-agnostic/method/">方法记录</a>
-        <a href="/ai-omr/status/">状态</a>
-        <a href="/ai-omr-agnostic/playscore/">PlayScore assessment</a>
-        <a href="/ai-omr/">Track A plan →</a>
+        <a href="#why"><span data-l="en">Why</span><span data-l="zh">为什么</span></a>
+        <a href="#theory"><span data-l="en">Theory</span><span data-l="zh">理论</span></a>
+        <a href="#method"><span data-l="en">Design</span><span data-l="zh">设计</span></a>
+        <a href="#roadmap"><span data-l="en">Roadmap</span><span data-l="zh">路线图</span></a>
+        <a href="#target"><span data-l="en">Target</span><span data-l="zh">量尺</span></a>
+        <a href="/ai-omr-agnostic/progress/"><span data-l="en">Progress on real pages</span><span data-l="zh">实拍进度</span></a>
+        <a href="/ai-omr-agnostic/method/"><span data-l="en">Method record</span><span data-l="zh">方法记录</span></a>
+        <a href="/ai-omr/status/"><span data-l="en">Status</span><span data-l="zh">状态</span></a>
+        <a href="/ai-omr-agnostic/playscore/"><span data-l="en">PlayScore assessment</span><span data-l="zh">PlayScore 评估</span></a>
+        <a href="/ai-omr/"><span data-l="en">Track A plan →</span><span data-l="zh">A 路线计划 →</span></a>
+        <a class="lang-btn" href="#"><span data-l="zh">EN</span><span data-l="en">中文</span></a>
       </div>
     </div>
   </nav>
 
   <header>
-    <div class="wrap">
+    <div class="wrap" data-l="en">
       <p class="eyebrow">Parallel research track · founded 2026-08-13</p>
       <h1>Recognize what is <em>printed</em>.<br>Derive what it <em>means</em>.</h1>
       <p class="lede">A from-scratch parallel bet on the same goal as the main AI-OMR effort: reliable
@@ -118,10 +120,15 @@
       the neural network reads glyphs at staff positions, and a deterministic engraving state
       machine turns them into music. Pitch spelling is code, not learned behavior.</p>
     </div>
+    <div class="wrap" data-l="zh">
+      <p class="eyebrow">并行研究路线 · 2026-08-13 开始</p>
+      <h1 style="font-size:clamp(2.4rem,5.4vw,4.6rem);line-height:1.08;letter-spacing:-.02em">认出纸上<em>印了什么</em>，<br>再推出它<em>是什么音</em>。</h1>
+      <p class="lede">和主线 AI-OMR 目标相同、从零开始的另一条路：用普通手机照片可靠地读出乐谱。差别在分工——神经网络只读「哪个符号印在五线谱的哪个位置」，再由一套确定的记谱规则程序把它们变成音乐。音高怎么拼写是代码，不是学出来的行为。</p>
+    </div>
   </header>
 
   <section id="why">
-    <div class="wrap">
+    <div class="wrap" data-l="en">
       <div class="section-head">
         <div>
           <p class="eyebrow">Why this track exists</p>
@@ -141,10 +148,29 @@
         <article class="card"><h3>Gains are asymptoting</h3><p>Every well-run intervention — key-aware corpora, calibrated augmentation, encoder adaptation — buys single-digit relative improvements. Real-photo TER sits at ~0.26 vs ~0.07 clean, with 0/60 exact systems.</p></article>
       </div>
     </div>
+    <div class="wrap" data-l="zh">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">为什么有这条路线</p>
+          <h2>主线自己量到的数字，指向的是表示方式。</h2>
+        </div>
+        <p>A 路线是一个从图像直接输出「语义记号」的 Transformer，实验做得很严谨。它的数字可信——而这些数字显示的是结构上的天花板，不是调参能解决的。</p>
+      </div>
+      <div class="grid cols3">
+        <article class="card metric good"><strong>695 / 733</strong><span>在<em>合成</em>图像上，调号读对时，按调号默认升降的音高拼写正确——模型在训练分布内会做调号运算</span></article>
+        <article class="card metric bad"><strong>0 / 70</strong><span>同一项测量放到<em>真实照片</em>上，即使 100 个调号读对 81 个——学出来的这一步在真实照片上完全失效</span></article>
+        <article class="card metric bad"><strong>87.4%</strong><span>真实照片上，本该升降的音被输出成还原音的比例——远超其他错误类型</span></article>
+      </div>
+      <div class="grid cols3" style="margin-top:18px">
+        <article class="card"><h3>加重损失没有用</h3><p>把升降音的损失加到 2 倍，合成数据上升降音输出升到约 20%，真实照片的错误率反而<em>变差</em>。硬推类别比例不会迁移。</p></article>
+        <article class="card"><h3>事后修补不安全</h3><p>解码之后再把调号套到还原音上，会破坏本来就印着的还原号——这样的音有几千个。解码器一旦丢掉「印出来的」和「推出来的」的区别，任何代码都找不回来。</p></article>
+        <article class="card"><h3>进步越来越小</h3><p>每一项做得很好的改进——带调号的语料、校准过的增强、编码器适配——都只带来个位数百分比的相对改善。真实照片的记号错误率停在约 0.26（干净图约 0.07），60 行里没有一行全对。</p></article>
+      </div>
+    </div>
   </section>
 
   <section id="theory" class="dark">
-    <div class="wrap">
+    <div class="wrap" data-l="en">
       <div class="section-head">
         <div>
           <p class="eyebrow">Theory</p>
@@ -176,10 +202,32 @@
       and tie carry-over — the standard engraving rules, implemented once, tested exhaustively,
       identical in both directions.</p>
     </div>
+    <div class="wrap" data-l="zh">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">理论</p>
+          <h2>在证据显示会断的地方，把问题切开。</h2>
+        </div>
+        <p>读谱是两件不同的事。看见墨迹是感知；知道墨迹的意思是算术。只有前一件需要神经网络。</p>
+      </div>
+      <div class="flow">
+        <div class="node">手机照片</div><div class="arrow">→</div>
+        <div class="node">神经网络识别<br><small>印了什么</small></div><div class="arrow">→</div>
+        <div class="node det">记谱规则状态机<br><small>是什么意思——纯代码</small></div><div class="arrow">→</div>
+        <div class="node det">MusicXML → Verovio</div>
+      </div>
+      <p style="margin-top:26px">模型输出的词表是<strong>「只看图形」</strong>的：475 个记号，写的是印出来的符号和它在五线谱上的高低位置——符头形状、印出来的变音记号、休止符、附点、小节线、延音线。里面没有任何东西表示实际音高、调号运算或小节内的状态。用这个词表训练的模型<em>不可能</em>出现「升降音变还原音」的毛病，因为拼写不归它管。连调号也只是一串普通的变音记号——读四个升号的调号，变成四次局部识别，而不是一次脆弱的 15 选 1。</p>
+      <div class="tokens">
+        <code>clef.G2</code><code class="acc">acc.flat@4</code><code class="acc">acc.flat@7</code><code class="acc">acc.flat@3</code>
+        <code>time.2/4</code><code>note.sixteenth@4</code><code>rest.eighth</code>
+        <code class="acc">acc.natural@4</code><code>note.quarter@4</code><code>barline</code>
+      </div>
+      <p style="margin-top:18px;font-size:.9rem">一行真实的训练目标：三个降号，2/4 拍，第三线上一个十六分音符（按调号是降 B——转换程序知道，模型不需要知道），一个八分休止符，然后一个印出来的还原号。确定的转换程序负责套用调号默认值、小节内变音记号的记忆、延音线的延续——标准的记谱规则，只实现一次、彻底测试、正反两个方向完全一致。</p>
+    </div>
   </section>
 
   <section id="method">
-    <div class="wrap">
+    <div class="wrap" data-l="en">
       <div class="section-head">
         <div>
           <p class="eyebrow">Method</p>
@@ -221,10 +269,37 @@
         </article>
       </div>
     </div>
+    <div class="wrap" data-l="zh">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">设计</p>
+          <h2>和主线刻意不同的四个地方。</h2>
+        </div>
+        <p>每一个都针对一种量到的失败，而不是凭感觉。</p>
+      </div>
+      <div class="grid cols2">
+        <article class="card">
+          <h3>1 · 目标只写图形，语义由规则决定</h3>
+          <p>记谱规则状态机把乐谱转成「印出来的符号序列」，也能转回来；两个方向遇到不合规则的情况都直接报错，并用随机扫描证明来回完全一致。它同时是标准答案的生成器：每一行渲染出来的谱都自动得到精确的图形标注，不需要人工标注——MusicXML 写出程序用的也是同一个函数来决定印哪些变音记号，所以渲染出来的图和训练目标永远不会对不上。</p>
+        </article>
+        <article class="card">
+          <h3>2 · 用 CTC，不用自回归</h3>
+          <p>五线谱是从左到右单调读下去的，CTC 对齐把这一点变成硬性前提。识别器在机制上就不可能重复一段、在谱上乱跳、或停不下来——自回归方法需要的语法屏蔽、重复阻挡、结束符偏置这一整套都用不着。模型是一个 600 万参数的 CRNN，比主线单是编码器还小约 5 倍。</p>
+        </article>
+        <article class="card">
+          <h3>3 · 按谱线间距归一化</h3>
+          <p>每一张图——干净渲染、退化渲染、真实照片——都走同一条确定的流程：从墨迹的周期估出谱线间距，缩放到间距正好 16 像素，把谱表放在固定 192 像素高的画布中央。这样每个高低位置对应稳定的像素偏移。在全部 180 张真实训练照片上验证过，没有用到任何学习的组件。</p>
+        </article>
+        <article class="card">
+          <h3>4 · 真实照片只用来评估</h3>
+          <p>和主线目前的做法刻意相反。一条量过的退化流程（透视、纸张弯曲、光照、阴影、灰墨、传感器噪点、JPEG）必须独自承担「像照片」这件事：它输出的亮度、对比度、清晰度统计要落在真实照片的四分位区间内。这一关在 2026-08-13 通过。真实照片不进训练，留作诚实的测量。</p>
+        </article>
+      </div>
+    </div>
   </section>
 
   <section id="roadmap" style="background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
-    <div class="wrap">
+    <div class="wrap" data-l="en">
       <div class="section-head">
         <div>
           <p class="eyebrow">Living roadmap · updated 2026-09-07 · p5a: dynamics read on real pages; record p4h-s1 (G7 sealed)</p>
@@ -534,10 +609,78 @@
         </div>
       </div>
     </div>
+    <div class="wrap" data-l="zh">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">路线图 · 这一段最后更新于 2026-09-19，之后的进展看「方法记录」和「状态」</p>
+          <h2>每个里程碑都有关卡，不凭感觉。</h2>
+        </div>
+        <p>每个里程碑都要通过事先定好的关卡才算完成。实心圆点是封存的结果；高亮的圆点是当时正在做的地方。</p>
+      </div>
+      <div class="timeline">
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">A0–A1</span><div class="tl-body">
+          <h3>表示方式的核心与数据流程</h3>
+          <p>475 个记号的图形词表、遇错即停的记谱规则状态机（音高拼写是经过测试的代码）、标准的 MusicXML 读写、带调号的出题程序、经过审计的语料生成器——处处证明来回一致。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">A2–A3</span><div class="tl-body">
+          <h3>归一化、退化流程与 CTC 识别器</h3>
+          <p>按谱线间距归一化的画布、对照真实照片统计校准的相机退化流程，以及 600 万参数的 CRNN+CTC：训练约 25 分钟后，在退化的合成验证集上<strong>记号错误率 0.003，93% 整行全对</strong>。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">A4–A5</span><div class="tl-body">
+          <h3>真实照片上的正面对比：这一注押对了</h3>
+          <p>同样 60 张没用过的照片、同一种评分：<strong>记号错误率 0.0632，对 A 路线的 0.2561；全对 29/60，对 0/60</strong>，所有印出来的变音记号都读回来了。「先读图形」成为建议的主干。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">A6</span><div class="tl-body">
+          <h3>干扰墨迹与变音记号的修正</h3>
+          <p>连线、歌词、力度、速度文字作为干扰渲染出来，目标不变；并让拍摄用的谱页把半音变音记号真的印出来——第一批墨迹和标注完全一致的打印页。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">B1</span><div class="tl-body">
+          <h3>封存基准测试：八个关卡全部通过</h3>
+          <p>120 行从没拍过的谱，拍摄前先用 SHA-256 声明检查点，只评估一次：<strong>记号错误率 0.0190，109/120 全对，变音记号找回 97.4%，95% 的小节不用修改</strong>。第一版单行谱的开发到此结束。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">A7</span><div class="tl-body">
+          <h3>和弦——在真实照片上验证</h3>
+          <p>一个分组记号，每个符头的变音记号都走同一套规则状态机，在 1.1 万行的语料上重新训练。C1 真实照片开发集（120 行新谱，90 行有和弦）确认：<strong>记号错误率 0.0130，100/120 全对，99.3% 的和弦结构正确</strong>——有和弦的真实照片错误率比封存的单音基准还低。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">A8</span><div class="tl-body">
+          <h3>整页多行读谱——核心关卡通过</h3>
+          <p>一张整页照片现在不需要任何版面信息就能读：找谱表的程序经得起梯形变形、纸张卷曲、地毯背景和失焦，在 C1 照片（120/120）和 270 行版式各异的合成语料（270/270）上验证，并且接上识别器端到端：<strong>不给版面的记号错误率 0.0162，对已知版面的 0.0130</strong>，没有一行归错。之后找谱表的程序又经过四轮封存的真实照片测试——见下面 P3.5。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P1</span><div class="tl-body">
+          <h3>单行谱上的低音谱号</h3>
+          <p>计划向最终目标——钢琴大谱表，再到小提琴＋钢琴——靠拢，所以整页之后下一步是第二种谱号。检查点 <strong>p1-s2：C1 记号错误率 0.0091，104/120 全对，《欢乐颂》全对，教本 6/9 并读出反复记号</strong>。在这里学到并一直沿用的选择规则：用综合标准（合成验证＋真实页面），绝不只看合成验证——每一次多种子训练里它都选错过。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P3.1–P3.4</span><div class="tl-body">
+          <h3>大谱表：配对、组合、合成里程碑</h3>
+          <p>两行同步的图形记号通过同一套规则状态机组合成钢琴的 MusicXML，宽容的修补会标出来等待检查；用穿过两行之间的小节线找出花括号连着的一对谱表；行中换谱号、8va 括线、和弦加入出题程序。检查点 <strong>p3f-s2：C1 0.0032／111 全对，教本 8/10，合成大谱表端到端 16/16 页，一张真实钢琴页 3/3 行组合成功</strong>。之后三轮（p3g/p3h/p3i）没有被选上：调语料的旋钮会移动分布——每次换来合成上的进步和一项真实页面的能力，却丢掉另一项。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P3.5</span><div class="tl-body">
+          <h3>封存的真实照片大谱表基准——第五套通过</h3>
+          <p>把 B1 的纪律用在钢琴页上：20 页 60 行打印的大谱表，拍摄前用 SHA-256 固定检查点，在桌面和地毯上拍，只评估一次，照片用过即作废。关卡：结构 ≥ 58/60，记号错误率 ≤ 0.015，组合 ≥ 54/60。<strong>G1 到 G4 都没过，G5 60/60 · 0.0121 · 58/60——通过。</strong>每一次失败都出在找谱表的程序，从来不是识别器：页边的一条地毯、侧光造成的亮楔形、硬阴影、太小的谱表、符杠太密的谱表。每一个都在封存结果上诊断、在没封存的照片上重现并修好，封存的数字保持原样。G1 到 G5 之间识别器没有变过。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P3.8</span><div class="tl-body">
+          <h3>识别器容量的几轮训练——新的记录检查点，在 G6 上封存</h3>
+          <p>G5 剩下的错误是附点、延音线和变音记号。p3j（同样的配方，语料加倍，40 轮）在每个封存测试上都超过记录，却在拍下来的教本上崩了：指法数字和虚线把位括线被读成 8va。p3k 把教本上的这些杂物只当墨迹渲染进出题程序；三个种子都保住了进步并把教本读回来。p3k-s3 被固定并通过一套全新的封存测试：<strong>G6——结构 60/60，记号错误率 0.0084，60/60 组合成功，105/120 全对</strong>，一半的页面拍在摄影灯下的深色布上，是以前封存测试没见过的背景。实拍对照见<a href="/ai-omr-agnostic/progress/">实拍进度</a>。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P4.1</span><div class="tl-body">
+          <h3>和弦标记——要读出来，不是忽略（已收尾）</h3>
+          <p>歌本页面上有和弦标记，读谱程序原来没有对应的词。决定：读出来。词表只增不改地加了 30 个记号，MusicXML 读写都支持，出题程序按歌本的方式印出来。第一轮训练十五分钟就停了：这些标记<em>在识别器的画布之外</em>——它们印在一行最高的墨迹之上，四分之一落在读谱程序一直看到的范围外面。画布加高到谱表上方十个间距。第一个种子 p4b-s1 能从真实歌本照片上读出一半的和弦标记，但也会从标题、速度文字和歌词里「编」出标记来，所以不当作记录。之后又做了九轮（p4c–p4k），途中修了两个「目标看不见」的错误，也摸清了取舍：训练里的文字干扰让读谱程序丢掉真的标记（不加干扰：歌本页 24 个读对 13 个，但会从标题编出标记）。2026-09-06 决定到此为止，以 24 个读对 5–11 个为现状，转到读取端的工作。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P4.6</span><div class="tl-body">
+          <h3>记录在 G7 上封存；歌本的三行谱在读取端组合</h3>
+          <p>p4h-s1 成为记录检查点后，专门做了第七套封存测试，拍二十页、只评估一次：<strong>G7——结构 60/60，记号错误率 0.0013，116/120 行全对，60/60 组合成功、没有任何修补</strong>，是这个项目最好的封存结果。读取端现在能把花括号上方的一行人声谱和钢琴组合成三行一组的歌本谱——同样的规则也适用于小提琴＋钢琴。H1（四十组这样的三行谱）同一天拍摄并评估：<strong>没有通过</strong>——有一行人声谱离钢琴 14.7 个间距，超过分组规则的 14 间距上限，那一页的两组都丢了。在成功分组的 38 组上：记号错误率 0.0003，<strong>112 个和弦标记全部读对，没有编出来的</strong>。上限在测试后已修正；封存的数字保持原样。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P5.1</span><div class="tl-body">
+          <h3>力度和速度文字——读出、印出、量过</h3>
+          <p>「打印还原度」清单的第一项。力度记号（pp … ff、sfz、cresc.、dim.）、十二个速度词和节拍器标记共 36 个记号，从「只当墨迹」变成目标。三个种子一夜训练完。<strong>力度解决了：读出 99.5%，多读 0.2%，在拍下来的巴赫和亨德尔页面上都标在正确的小节下面。</strong>速度词能读；节拍器数字大约一半读对——留给下一轮。音符在最难的真实页面上略有退步，所以记录仍是 p4h-s1。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P6</span><div class="tl-body">
+          <h3>连音、sf 一族，以及曲子中间的钢琴页到底印了什么</h3>
+          <p>三连音和六连音成为目标，sf/sfp/fp/fz 和演奏记号当作墨迹。<strong>在训练分布内连音已经完成——440 组全部读出，没有编出来的。</strong>但促成这件事的那张钢琴页没有变好，照片说明了原因：从第 37 小节起它<em>不印连音数字，也不印拍号</em>——每组六个连在一起的音，页面上唯一的数字是指法。抄谱的人是从前几页知道那是六连音的；单看一张照片谁也不知道。这一页还暴露了训练的缺口：我们渲染过的每一行大谱表都印了拍号，所以遇到没有拍号的页面，每个种子都自己编一个。现在 35% 的大谱表是「接续行」（不印拍号），再训练之后编出来的降到 0–1 个。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P7</span><div class="tl-body">
+          <h3>渐强渐弱记号和倚音成为目标；更长的训练</h3>
+          <p>渐强、渐弱的开口记号和倚音加入词表（559 → 649 个记号，只增不改），并且第一次训练 60 轮而不是 40 轮——多出来的轮数有回报。<strong>p7a-s2 成为现用检查点：</strong>G7 以 114/120 行全对通过，C1 118/120，连音 460/460，倚音 0.998 且没有编出来的，live2 小提琴页 71 小节读对 62 小节。剩下的是渐强渐弱记号：真实页面上模型看得见开口，看不见尖端——我们的渲染让它结束在音符开始处，而书上是结束在最后一个音之后的空白处。当天改了渲染并接着训练（p7b-s1），密集测试的找回率从 0.85 升到 0.97，封存的数字都没变。</p></div></div>
+        <div class="tl-item done"><span class="tl-dot"></span><span class="tl-phase">P8</span><div class="tl-body">
+          <h3>live3 的标准答案、三十二分音符，以及比重新训练更值的读取端修补</h3>
+          <p>2026-09-16 到 09-19。读取端加入按小节时值推理（没标的六连音和缺的拍号，从小节怎么填满来判断）。三种目标版式——钢琴、小提琴、小提琴＋钢琴——的十张新手机照片有了人工核对的标准答案（166 小节）。它指出下一个缺口：三十二分音符。把它加入目标后，模型学会了，却改变了它在真实照片上数符杠的习惯。两个办法都留下：用 3% 的剂量再训练（p8b），以及读取端修补——以前一个和弦读出两种时值、或变音记号偏一格，整行就被丢掉，现在修好并标出来。live3 137 → <strong>166 小节读对 149（90%）</strong>。<strong>09-19 更新：</strong>第二份标准答案（一共 372 小节）显示莫扎特那几页错在别的地方——拍出来斑驳发灰的实心符头被读成二分音符。读谱程序现在每行看两遍（原图、调过墨色曲线的图），留下小节凑得齐的那一遍；再用斑驳墨迹训练（p8c-s1）后，live3 372 小节读对 293。<strong>p8c-s1 成为现用检查点。</strong></p></div></div>
+        <div class="tl-item now"><span class="tl-dot"></span><span class="tl-phase">之后</span><div class="tl-body">
+          <h3>2026-09-19 之后：一行谱上的多个声部、接力读法、编辑器</h3>
+          <p>这一页的路线图停在 09-19。之后的工作——两个声部、十二个模型的接力读法、修谱编辑器、和通用大模型的对比、iPad 上的速度、把记号模型合并——记在<a href="/ai-omr-agnostic/method/">方法记录</a>，最新数字和进度在<a href="/ai-omr/status/">状态页</a>。路线图本身以后再整理。</p></div></div>
+        <div class="tl-item"><span class="tl-dot"></span><span class="tl-phase">产品</span><div class="tl-body">
+          <h3>给老师用的「所见即所得」修谱</h3>
+          <p>每个记号的把握度和位置坐标作为正式输出，点哪里改哪里，并以「修好一页要几分钟」作为决定以上一切的产品指标。</p></div></div>
+      </div>
+    </div>
   </section>
 
   <section id="target">
-    <div class="wrap">
+    <div class="wrap" data-l="en">
       <div class="section-head">
         <div>
           <p class="eyebrow">The measuring stick</p>
@@ -574,15 +717,43 @@
       Score IR v2 representation work (chords, beams, fingerings, voices) remains the shared
       downstream layer both tracks feed into.</p>
     </div>
+    <div class="wrap" data-l="zh">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">量尺</p>
+          <h2>同样的图、同样的评分、不同的理论。</h2>
+        </div>
+        <p>图形记号的预测可以确定地转换到主线的记号空间，所以两种方法在同样 60 张没用过的照片上用完全相同的方式评分。</p>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>真实照片验证（60 行）</th><th class="num">A 路线 冻结</th><th class="num">A 路线 适配后</th><th class="num">这条路线 最终</th></tr></thead>
+          <tbody>
+            <tr><td>记号错误率</td><td class="num">0.2748</td><td class="num">0.2561</td><td class="num"><strong>0.0632</strong></td></tr>
+            <tr><td>音高错误率</td><td class="num">0.4531</td><td class="num">0.4319</td><td class="num"><strong>0.1398</strong></td></tr>
+            <tr><td>时值错误率</td><td class="num">0.2407</td><td class="num">0.2248</td><td class="num"><strong>0.0212</strong></td></tr>
+            <tr><td>整行全对</td><td class="num">0 / 60</td><td class="num">0 / 60</td><td class="num"><strong>29 / 60</strong></td></tr>
+            <tr><td>调号／拍号</td><td class="num">93% / 95%</td><td class="num">93% / 95%</td><td class="num"><strong>98% / 98%</strong></td></tr>
+            <tr><td>升降音 输出／答案</td><td class="num">69 / 203</td><td class="num">85 / 203</td><td class="num"><strong>137 / 203</strong>（= 印出来的 137 个全部）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:16px;color:var(--muted);font-size:.92rem"><strong style="color:var(--ink)">结果，2026-08-13：</strong>只评估一次、同一种评分、同样 60 张照片。一个只用合成渲染训练约 25 分钟的 600 万参数模型，真实照片的错误率<em>低于主线在干净合成图上的错误率</em>（0.0689）。对照「印得出来的」答案，记号错误率是 0.0206，58/60 全对。</p>
+      <p style="margin-top:12px;color:var(--muted);font-size:.92rem"><strong style="color:var(--ink)">封存确认，2026-08-14：</strong>在独立的 B1 基准上——120 行从没拍过的谱，拍摄前声明检查点，只评估一次——<em>记号错误率 0.0190，109/120 全对，升降音找回 97.4%</em>，八个事先定好的关卡全部通过。</p>
+      <p style="margin-top:20px;color:var(--muted);font-size:.92rem">这张表的范围刻意和主线第一版相同：单行高音谱表、单音、九种时值、调号 −7…+7。</p>
+    </div>
   </section>
 
   <footer>
-    <div class="wrap">
+    <div class="wrap" data-l="en">
       <p>AI OMR Agnostic — a parallel research track by Samuel Tung. Repo: <code>ai-omr-agnostic</code> ·
       Main track plan: <a href="/ai-omr/">/ai-omr</a> ·
       <a href="/ai-omr-agnostic/playscore/">PlayScore 2 competitive assessment</a> ·
       <a href="/ai-omr-agnostic/progress/">Progress on real pages</a> · This page is the
       living planning document and is updated as milestones complete.</p>
+    </div>
+    <div class="wrap" data-l="zh">
+      <p>AI OMR Agnostic——Samuel Tung 的并行研究路线。主线计划：<a href="/ai-omr/">/ai-omr</a> · <a href="/ai-omr-agnostic/playscore/">PlayScore 2 竞品评估</a> · <a href="/ai-omr-agnostic/progress/">实拍进度</a> · <a href="/ai-omr-agnostic/method/">方法记录</a>。</p>
     </div>
   </footer>
 </body>

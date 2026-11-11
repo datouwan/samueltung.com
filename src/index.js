@@ -18,13 +18,12 @@ import { handleAiOmrStatusApi, STATUS_API } from "./aiomrstatus/api.js";
 // Paths that stay public (no password): project pages and public APIs.
 function isPublicPath(pathname) {
   // The AI-OMR status page and its data stay behind the site password (spend, editor usage).
+  // /ai-omr-agnostic is not listed below: it is behind the site password too (owner 2026-11-10).
   if (pathname === "/ai-omr/status" || pathname.startsWith("/ai-omr/status/") || pathname === STATUS_API) {
     return false;
   }
   return pathname === "/ai-omr"
     || pathname.startsWith("/ai-omr/")
-    || pathname === "/ai-omr-agnostic"
-    || pathname.startsWith("/ai-omr-agnostic/")
     || pathname === "/worldcup"
     || pathname.startsWith("/worldcup/")
     || pathname === "/ai-omr-deepseek"
