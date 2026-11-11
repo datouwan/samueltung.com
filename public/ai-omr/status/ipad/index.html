@@ -49,7 +49,8 @@ td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
 <div class="card">
  <b>这台设备上跑过的结果</b>
  <table id="hist"><thead><tr><th>方式</th><th>整页 22 行</th><th>每行中位数</th><th>结果一致</th></tr></thead><tbody></tbody></table>
- <p class="mut">把这张表截图或把数字告诉我就可以。换一种方式测试时页面会自动重新载入。</p>
+ <p class="mut">把这张表截图或把数字告诉我就可以。同一种方式再跑一次，会覆盖原来那一行。</p>
+ <button class="alt" id="clear">清空结果</button>
 </div>
 
 <div class="card"><div id="log"></div></div>
@@ -73,6 +74,7 @@ const isolated = !!self.crossOriginIsolated;
 const cores = navigator.hardwareConcurrency || 0;
 $("env").textContent = `处理器核心：${cores || "未知"} · 多线程：${isolated ? "可用" : "不可用（只能单线程）"} · WebGPU：${navigator.gpu ? "可用" : "不可用"}`;
 showHist();
+$("clear").onclick = () => { try { localStorage.removeItem(KEY); } catch (e) {} showHist(); };
 
 document.querySelectorAll("#btns button").forEach(b => b.onclick = () => {
   const p = new URLSearchParams({ run: "1", t: b.dataset.t });
@@ -163,7 +165,8 @@ async function run() {
     `和电脑上的结果一致：<span class="${same === times.length ? "" : "bad"}">${same}/${times.length} 行</span>`;
   log(`整页 ${sum.toFixed(2)} 秒；每行 ${times.map(x => x.toFixed(0)).join(" ")} 毫秒`);
   try {
-    const h = hist(); h.push({ mode, total: sum, median, same, n: times.length });
+    const h = hist().filter(r => r.mode !== mode);   // a re-run replaces the earlier row of the same mode
+    h.push({ mode, total: sum, median, same, n: times.length });
     localStorage.setItem(KEY, JSON.stringify(h.slice(-12)));
   } catch (e) {}
   showHist();
