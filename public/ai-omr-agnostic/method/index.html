@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AI OMR Agnostic 方法记录：现用读法由 12 个小模型接力组成，以及把记号模型合并的计划。">
+  <meta name="theme-color" content="#101c19">
+  <title>AI OMR Agnostic — 方法记录</title>
+  <style>
+    :root { --ink:#15221f; --muted:#5d6a66; --paper:#f4f0e7; --card:#fffdf8; --line:#d9d4c8; --green:#1e6b55; --green-dark:#10483a; --mint:#bfe7d5; }
+    * { box-sizing: border-box; }
+    body { margin:0; color:var(--ink); background:var(--paper); font:16px/1.7 Inter, ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    a { color: var(--green-dark); }
+    .wrap { width:min(1080px, calc(100% - 32px)); margin-inline:auto; }
+    nav { position:sticky; top:0; z-index:10; background:rgba(244,240,231,.92); border-bottom:1px solid rgba(21,34,31,.1); backdrop-filter:blur(14px); }
+    .nav-inner { min-height:60px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; padding:8px 0; }
+    .brand { font-weight:900; text-decoration:none; color:var(--ink); }
+    .brand span { color:var(--green); }
+    .nav-links { display:flex; gap:18px; font-size:.88rem; font-weight:700; flex-wrap:wrap; }
+    .nav-links a { text-decoration:none; color:var(--ink); }
+    .nav-links a.on, .nav-links a:hover { color:var(--green); }
+    header { padding:48px 0 12px; }
+    .eyebrow { margin:0 0 10px; color:var(--green); font-size:.78rem; font-weight:800; letter-spacing:.12em; }
+    h1 { margin:0; font:500 clamp(2rem, 5vw, 3.2rem)/1.1 Georgia, "Songti SC", serif; }
+    h2 { margin:44px 0 12px; font:500 1.6rem/1.2 Georgia, "Songti SC", serif; }
+    p, li { color:var(--muted); }
+    .lede { max-width:760px; font-size:1.05rem; }
+    .card { padding:20px 22px; background:var(--card); border:1px solid var(--line); border-radius:16px; margin:14px 0; }
+    .tablewrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:16px; }
+    table { width:100%; min-width:760px; border-collapse:collapse; font-size:.9rem; }
+    th, td { padding:10px 12px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    tr:last-child td { border-bottom:0; }
+    th { font-size:.78rem; color:var(--muted); white-space:nowrap; }
+    td.n { font-variant-numeric:tabular-nums; color:var(--muted); }
+    td code { font:.8rem ui-monospace, Consolas, monospace; white-space:nowrap; }
+    td { color:var(--ink); }
+    .grp td { background:var(--mint); color:var(--green-dark); font-weight:800; font-size:.8rem; }
+    footer { margin-top:50px; padding:28px 0 50px; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap nav-inner">
+      <a class="brand" href="/ai-omr-agnostic/">AI&nbsp;OMR&nbsp;<span>Agnostic</span></a>
+      <div class="nav-links">
+        <a href="/ai-omr-agnostic/#roadmap">路线图</a>
+        <a class="on" href="/ai-omr-agnostic/method/">方法记录</a>
+        <a href="/ai-omr-agnostic/progress/">实拍进度</a>
+        <a href="/ai-omr/status/">状态</a>
+      </div>
+    </div>
+  </nav>
+
+  <header>
+    <div class="wrap">
+      <p class="eyebrow">方法记录 · 2026-11-10</p>
+      <h1>现用读法：12 个小模型接力</h1>
+      <p class="lede">现在读一页乐谱，不是一个模型读完，而是 12 个同样大小的小模型各读一遍整页，每一种记号取自最可靠的那一个（或那一对）。这一页记下它们各自负责什么、为什么会变成 12 个、要花多少时间，以及接下来把它们合并的想法。网页以后再整理，这里先存档。</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2>12 个模型各自负责什么</h2>
+    <p>12 个都是同一种网络（卷积 + 双向 LSTM，每个约 31 MB），差别只在训练时教它写下哪些记号。</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>#</th><th>模型</th><th>读法里用它的什么</th><th>接力规则</th><th>训练来源</th></tr>
+        <tr class="grp"><td colspan="5">音符</td></tr>
+        <tr><td class="n">1</td><td><code>claude_omr_r2f-s2</code></td><td>音符、休止符、谱号、调号、拍号、延音线；连同它自己读到的连线、力度、渐强渐弱、倚音</td><td>底稿，其他模型的记号都挂在它的音符上</td><td>音符模型一脉（p8q → r2），约 11 万行</td></tr>
+        <tr><td class="n">2</td><td><code>claude_p8q-s2</code></td><td>不印出任何东西，只做音符的对照</td><td>和 1 号不一致的小节，在编辑器里标出来提醒检查</td><td>上一代音符模型</td></tr>
+        <tr class="grp"><td colspan="5">记号（3–12，这次要合并的部分）</td></tr>
+        <tr><td class="n">3</td><td><code>claude_p8v-s1</code></td><td>跳音、重音、保持音</td><td>跳音、重音和其他记号模型投票，两票才算；保持音只用它的</td><td>约 12 万行，带符杠和演奏记号标注</td></tr>
+        <tr><td class="n">4–5</td><td><code>claude_p8w-s1</code> / <code>-s2</code></td><td>指法、弓法、延长号、装饰音、琶音</td><td>延长号任一个读到就算；弓法、指法要两个都读到</td><td>在 3 号的基础上加记号标注</td></tr>
+        <tr><td class="n">6–7</td><td><code>claude_p9-s1</code> / <code>-s2</code></td><td>只用指法</td><td>第二对指法来源，两个一致才用</td><td>约 19 万行</td></tr>
+        <tr><td class="n">8–9</td><td><code>claude_omr_r4s-s1</code> / <code>-s2</code></td><td>连线</td><td>两个都读到才加上；像延音线的弧线滤掉</td><td>音符语料重建，加上各种形状的连线</td></tr>
+        <tr><td class="n">10–11</td><td><code>claude_omr_r7m-s1</code> / <code>-s2</code></td><td>指法和重音的投票</td><td>两票才算</td><td>从 6–7 号接着训练，约 20 万行，加了更像照片的效果</td></tr>
+        <tr><td class="n">12</td><td><code>claude_omr_r8b-s2</code></td><td>符杠怎么连（哪几个音连成一组）</td><td>只取符杠，它读到的其他记号不用</td><td>约 13 万行，加了扫描谱和更多符杠写法</td></tr>
+      </table>
+    </div>
+    <p>另外还有一个外部的开源读谱程序做第二次对照，只用来标出可疑的小节，不参与训练，也不会放进产品。</p>
+
+    <h2>为什么会变成 12 个</h2>
+    <div class="card">
+      <ul>
+        <li><b>一个模型学了新记号，音符就读差。</b>连续四轮都量到同样的结果：把新记号教给音符模型，合成数据上分数变高，真实照片上音符变差。所以音符模型固定不动，每一类新记号另外训练一个模型，再接到音符上。</li>
+        <li><b>单独一个记号模型会「编」记号。</b>例如指法：单个模型找得到一半多，但会写错几十个数字；要求两个模型都读到同一个数字才采用，写错的几乎都消失。准确是靠「两个一致」换来的，所以每一类记号都是一对。</li>
+        <li><b>只加不减。</b>每一次改进只在作者修过的页面上确实变好才采用，旧的来源在新来源没有更好的地方就留着，于是越接越长。</li>
+      </ul>
+    </div>
+
+    <h2>要花多少时间</h2>
+    <div class="card">
+      <ul>
+        <li>电脑显卡：每个模型读一页 0.6 秒，12 个约 7 秒；只用处理器约 74 秒。</li>
+        <li>iPad Pro M4（浏览器实测，只测音符模型）：每页 3.4 秒；12 个全跑估计约 41 秒，iPhone 16 Pro 估计约 86 秒。</li>
+        <li>如果变成「音符模型 + 合并后的记号模型」：iPad 估计约 7 秒（2 个模型）到 10 秒（3 个模型）。</li>
+      </ul>
+      <p>产品是 iOS 应用，模型必须少、必须小，这就是下面合并的原因。</p>
+    </div>
+
+    <h2>合并的想法（第 11 轮）</h2>
+    <div class="card">
+      <ol>
+        <li><b>音符模型不动。</b>1 号照旧，合并前后音符必须一模一样。</li>
+        <li><b>3–12 号合成一个「记号模型」。</b>一次读出符杠、跳音／重音／保持音、指法、弓法、延长号、装饰音、琶音、连线。它也会读音符（记号要挂在音符上），但它的音符不印出来。</li>
+        <li><b>从 10–11 号接着训练。</b>它们已经会大部分记号，只差连线的形状和更多的符杠写法。</li>
+        <li><b>语料合在一起，而且每一行都标全所有记号。</b>以前连线的语料没有标符杠和指法，符杠的语料没有标连线形状；缺标注的行会教模型「这里没有」，所以缺的部分要重新生成，不能直接混在一起。</li>
+        <li><b>先训练两个</b>（因为现在的准确靠两个一致），云端训练、本机评分，预计花费约 70 美元。</li>
+        <li><b>训练前先做一次不花钱的测量：</b>只用现有的 10–11 号做接力，和现用读法在作者修过的页面上逐类比较，定下合并后必须达到的数字。</li>
+      </ol>
+      <p><b>训练后要量的，不先假设：</b>一个模型加上把握度门槛能不能代替「两个一致」；合并模型自己读的音符能不能代替 2 号做对照；每一类记号找到多少、写错多少；把它多读出来的记号裁图出来看。</p>
+      <p><b>风险：</b>连线（长连线、把延音线读成连线）和符杠是最难的两类；十类记号挤进一个 31 MB 的模型可能装不下。哪一类输了，就先留在原来的模型上——结果可能先是「12 个变 4 个」，再到「12 个变 3 个」甚至 2 个。</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">AI OMR Agnostic · 方法记录。数字和进度看<a href="/ai-omr/status/">状态页</a>；这一页在方法改变时更新。</div>
+  </footer>
+</body>
+</html>
